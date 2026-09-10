@@ -1,6 +1,6 @@
 # Killer W.H.A.L.E. fan shroud + steering vanes (OpenSCAD)
 
-State as of 2026-09-09. Parametric port of Armen's Shapr3D shroud, plus a new print-in-place
+State as of 2026-09-09 (evening). Parametric port of Armen's Shapr3D shroud, plus a new print-in-place
 vane mechanism reconstructed from photos of the real MET-b52 parts.
 
 ## Files
@@ -10,11 +10,13 @@ vane mechanism reconstructed from photos of the real MET-b52 parts.
 | `viewer.json` | Part list for the browser viewer (`../viewer`, `bun run dev`, open http://127.0.0.1:5180/). |
 | `print_layout.scad` | `-D part="..."`: each part laid flat/upright in its printing pose. |
 | `hinge_coupon.scad` | Tolerance test print: hinge x3, tooth notches x3, keyhole eyes x3, strut twist-lock sample. |
-| `check.scad` | Collision pairs (`-D pair="..."`, `steer`, `tilt`, `strut_a`). Empty export = clear. |
-| `compare.scad` | Volume diff against the Shapr3D export (`ref_bodies/` = the STL split per shell). |
+| `check.scad` | Collision pairs (`-D pair="..."`, `steer`, `tilt`, `strut_a`). Run them all: `../tools/check.sh check.scad 'steer=0' 'steer=30' 'steer=-30 tilt=20'`. |
+| `compare.scad` | Volume diff against the Shapr3D export (`ref_bodies/` = the STL split per shell). Numeric version: `../tools/voxcmp.py stl/shroud.stl ref_bodies/shroud.stl`. |
 | `export.sh` | Regenerates every STL in `stl/`. Run after changing parameters. |
 | `render.sh` | Headless PNGs into `renders/`. |
-| `Shroud.shapr/.step/.stl` | Armen's originals. The .shapr is zip+SQLite; sketches are JSON in metres, history is MessagePack. |
+| `Shroud.shapr/.step/.stl` | Armen's originals. Read the .shapr with `../tools/shapr_dump.py Shroud.shapr`. |
+
+Generic helpers (`rounded_pad`, `wall_blend`, `arc_sweep`, `arc_pts`, `stroke_2d`, `grooves_2d`, `teardrop_2d`, `keyhole_2d`) moved to `../lib/` on 2026-09-09; STL output was hash-identical before and after.
 
 ## Coordinate frame
 Z = duct axis (airflow exits +Z). Y = the toy's vertical, **+Y (tab side) = the toy's bottom**. X = port/starboard.

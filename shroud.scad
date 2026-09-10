@@ -156,6 +156,9 @@ fillet_fn        = 24;    // facets on fillet arcs (19 boxes x several fillets, 
 $fn = 120;
 eps = 0.01;
 
+use <../lib/shape.scad>   // rounded_pad, annulus_2d, wall_blend, arc_sweep, arc_pts, stroke_2d, grooves_2d
+use <../lib/fit.scad>     // teardrop_2d, keyhole_2d
+
 // =====================================================================
 //  helpers
 // =====================================================================
@@ -166,57 +169,6 @@ module below_taper() {
     L = 200;
     translate([0, 0, duct_h_mid]) rotate([taper_deg, 0, 0])
         translate([-L, -L, -2 * L]) cube([2 * L, 2 * L, 2 * L]);
-}
-
-// A block standing on a surface, with the free face's edges rounded by r.
-// Children: a convex 2D outline. Result spans z=0 (base, unrounded) to z=h
-// (free face). Hull of the straight lower part and a minkowski-rounded slab.
-// This is how you fillet in OpenSCAD: build the rounded shape, don't cut it.
-module rounded_pad(h, r) {
-    hull() {
-        linear_extrude(h - r) children();
-        translate([0, 0, h - r - eps])              // slab top at h-r, so the spheres crest at exactly h
-            minkowski() {
-                linear_extrude(eps) offset(r = -r) children();
-                sphere(r, $fn = fillet_fn);
-            }
-    }
-}
-
-// 2D annulus
-module annulus_2d(r_in, r_out) { difference() { circle(r_out); circle(r_in); } }
-
-// Concave fillet collar where a block of chord width w, spanning z0..z0+h,
-// meets the outside of the duct wall (radius duct_r_out). Local frame: the
-// block is centred on +Y. Two vertical prisms (block sides) and two swept arcs
-// (block top and bottom), each a square minus a circle, i.e. a quarter-round
-// of material added into the corner.
-module wall_blend(w, z0, h, r) {
-    R  = duct_r_out;
-    xc = w / 2 + r;
-    yc = sqrt((R + r) * (R + r) - xc * xc);   // circle centre sits r off both faces
-    // vertical edges
-    for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0])
-        translate([0, 0, z0]) linear_extrude(h)
-            difference() {
-                intersection() {
-                    translate([w / 2, 0]) square([r + eps, R + r + 1]);
-                    annulus_2d(R - eps, R + r);
-                }
-                translate([xc, yc]) circle(r, $fn = fillet_fn);
-            }
-    // top and bottom edges, swept along the wall over the block's angular span
-    half_a = asin(xc / R);
-    for (top = [true, false]) {
-        zf = top ? z0 + h : z0;                 // the block face the fillet leans on
-        zc = top ? zf + r : zf - r;             // profile circle centre
-        rotate([0, 0, 90 - half_a])
-            rotate_extrude(angle = 2 * half_a, $fn = 720, $fa = 0.5, $fs = 0.2)   // partial sweeps need this or they render as one chord
-                difference() {
-                    translate([R - eps, min(zf, zc)]) square([r + eps, r]);
-                    translate([R + r, zc]) circle(r, $fn = fillet_fn);
-                }
-    }
 }
 
 // 2D bow-tie: the strut plan view, extended into the wall
@@ -233,9 +185,9 @@ module strut_2d() {
 module deco_box() {
     bury = 0.5;
     translate([0, duct_r_out - bury, 0]) rotate([-90, 0, 0]) mirror([0, 1, 0])
-        rounded_pad(box_r_out - duct_r_out + bury, box_fillet_out)
+        rounded_pad(box_r_out - duct_r_out + bury, box_fillet_out, fillet_fn)
             translate([-box_w / 2, box_z0]) square([box_w, box_h]);
-    wall_blend(box_w, box_z0, box_h, wall_blend_r);
+    wall_blend(duct_r_out, box_w, box_z0, box_h, wall_blend_r, fillet_fn);
 }
 
 // one underside panel (2D), symmetric about y=0, tapered like the strut
@@ -261,13 +213,6 @@ module duct_ring() {
 function tooth_nub_c(p) = let (yc = (p[0][0] + p[1][0]) / 2, sgn = yc > 0 ? 1 : -1)
     [vane_x + tooth_nub_d / 2 - tooth_nub_h, yc + tooth_nub_off * sgn, p[0][1] - tooth_extra + 2];
 
-// Sweep a convex (r, z) profile along an arc about Z by hulling thin slabs, one
-// per degree. (This build renders a small-angle rotate_extrude as one chord.)
-module arc_sweep(a0, a1) {
-    n = max(2, ceil(abs(a1 - a0)));
-    for (i = [0 : n - 1]) hull() for (a = [a0 + (a1 - a0) * i / n, a0 + (a1 - a0) * (i + 1) / n])
-        rotate([0, 0, a]) rotate([90, 0, 0]) linear_extrude(0.01, center = true) children();
-}
 // Twist-lock rib, stop and detent at the +X end (rotate 180 for the other end)
 module strut_rib() {
     R = duct_r_in;
@@ -306,7 +251,7 @@ module tab() {
     // Fillet 02 also blends the tab stem into the wall
     stem_x0 = tab_pts[0][0]; stem_x1 = tab_pts[4][0];
     rotate([0, 0, -atan((stem_x0 + stem_x1) / 2 / duct_r_out)])
-        wall_blend(stem_x1 - stem_x0, tab_z0, tab_h, wall_blend_r);
+        wall_blend(duct_r_out, stem_x1 - stem_x0, tab_z0, tab_h, wall_blend_r, fillet_fn);
 }
 
 module shroud() {
@@ -340,7 +285,7 @@ module strut() {
                 for (s = [-1, 1], k = [0 : panel_n - 1])
                     mirror([s < 0 ? 1 : 0, 0, 0])
                         translate([0, 0, -strut_t / 2 + eps]) mirror([0, 0, 1])   // hang the pad off the underside, eps into the plate
-                            rounded_pad(panel_t + eps, panel_fillet)
+                            rounded_pad(panel_t + eps, panel_fillet, fillet_fn)
                                 panel_2d(panel_x0 + k * (panel_len + panel_gap));
                 cylinder(r = shoe_x - 0.05, h = 10, center = true);
             }
@@ -366,14 +311,6 @@ module strut_shoe() {
     }
 }
 
-// points along a circular arc from p0 to p1 about centre c, shortest way round
-function arc_pts(a, n = 16) =
-    let (c = a[2], r = norm(a[0] - c),
-         a0 = atan2(a[0][1] - c[1], a[0][0] - c[0]),
-         a1 = atan2(a[1][1] - c[1], a[1][0] - c[0]),
-         d  = ((a1 - a0 + 540) % 360) - 180)                 // signed sweep in (-180, 180]
-    [for (i = [0 : n]) c + r * [cos(a0 + d * i / n), sin(a0 + d * i / n)]];
-
 // vane bar profile in the YZ plane: the sketch outline traced as one polygon.
 // (A hull of corner circles was wrong here: the arcs are not tangent to the
 // vertical ends, so a hull bulges past the top line.)
@@ -394,8 +331,7 @@ module pin_prism(d, y0, y1) {
 // so the roof of the hole needs no bridging. The pin turns on the circular part.
 // (A diamond pin in a diamond hole was the first attempt: it cannot rotate.)
 module teardrop_prism(r, y0, y1) {
-    translate([hinge_x, y0, hinge_z]) rotate([-90, 0, 0])
-        linear_extrude(y1 - y0) hull() { circle(r); translate([print_up * (r * sqrt(2) - eps), 0]) square(eps, center = true); }
+    translate([hinge_x, y0, hinge_z]) rotate([-90, 0, 0]) linear_extrude(y1 - y0) teardrop_2d(r, print_up);
 }
 module barrel(y0, y1) {
     translate([hinge_x, y0, hinge_z]) rotate([-90, 0, 0]) cylinder(d = barrel_d, h = y1 - y0);
@@ -423,12 +359,6 @@ module hinge_fin_cut(yc, clr = hinge_clr) {
 // ---- cosmetic ribbed panels: grooves cut into a face, inside an outline ----
 // children: the 2D panel outline in (y, z). Cuts print_up-facing? No: cuts the
 // OUTER face (x = vane_x + vane_t) of the +X vane.
-module grooves_2d(y0, y1) {
-    intersection() {
-        children();
-        for (y = [y0 + panel_pitch / 2 : panel_pitch : y1]) translate([y - panel_groove / 2, -100]) square([panel_groove, 200]);
-    }
-}
 module face_cut(depth) {   // extrude a (y,z) 2D shape into the outer face
     translate([vane_x + vane_t - depth, 0, 0]) rotate([90, 0, 90]) linear_extrude(depth + 1) children();
 }
@@ -462,7 +392,7 @@ module vane_fin() {
         }
         for (yc = hinge_pts) hinge_fin_cut(yc);
         for (f = fin_panels) { L = hinge_y1 - hinge_y0;
-            face_cut(panel_recess) grooves_2d(hinge_y0 + f[0] * L, hinge_y0 + f[1] * L) fin_panel_2d(f); }
+            face_cut(panel_recess) grooves_2d(hinge_y0 + f[0] * L, hinge_y0 + f[1] * L, panel_pitch, panel_groove) fin_panel_2d(f); }
     }
 }
 
@@ -482,7 +412,7 @@ module vane_root() {
         }
         for (y = slat_y) translate([vane_x - 1, y, slat_z]) rotate([0, 90, 0]) cylinder(d = slat_rod_d + 2 * slat_clr, h = vane_t + 2);
         for (f = bar_panels) { L = vane_top_r[0] - vane_top_l[0];
-            face_cut(panel_recess) grooves_2d(vane_top_l[0] + f[0] * L, vane_top_l[0] + f[1] * L) bar_panel_2d(f); }
+            face_cut(panel_recess) grooves_2d(vane_top_l[0] + f[0] * L, vane_top_l[0] + f[1] * L, panel_pitch, panel_groove) bar_panel_2d(f); }
     }
 }
 
@@ -493,7 +423,6 @@ tie_z  = hinge_z + fin_depth_bot - link_pin_inset;   // pin height
 function tie_path() = [        // centreline: eye, tab, 45 deg ramp, raised middle, ramp, tab, eye
     [-pin_x, tie_z], [-pin_x + tie_tab, tie_z], [-pin_x + tie_tab + tie_jog, tie_z + tie_jog],
     [ pin_x - tie_tab - tie_jog, tie_z + tie_jog], [pin_x - tie_tab, tie_z], [pin_x, tie_z]];
-module stroke_2d(pts, w) { for (i = [0 : len(pts) - 2]) hull() { translate(pts[i]) circle(d = w); translate(pts[i + 1]) circle(d = w); } }
 key_off = link_pin_d / 2 + tie_snap + tie_key_gap + link_pin_d / 2 + tie_eye_clr - 0.4;   // big hole centre, forward (-Z) of the working hole
 module tie_outline_2d() {
     stroke_2d(tie_path(), tie_w);
@@ -502,9 +431,7 @@ module tie_outline_2d() {
 // keyhole: bulb goes through the big hole, the bar shifts aft and the pin clicks
 // through a slightly narrow throat into the working hole
 module tie_keyhole_2d() {
-    circle(d = link_pin_d + 2 * tie_eye_clr);
-    translate([0, -key_off]) circle(d = link_pin_d + 2 * tie_snap + 2 * tie_key_gap);
-    translate([-(link_pin_d - tie_detent) / 2, -key_off]) square([link_pin_d - tie_detent, key_off]);
+    keyhole_2d(link_pin_d + 2 * tie_eye_clr, link_pin_d + 2 * tie_snap + 2 * tie_key_gap, key_off, link_pin_d - tie_detent);
 }
 module tie_sheet(y_from, depth) {   // map a (x, z) 2D child to a slab along +Y
     translate([0, y_from, 0]) rotate([-90, 0, 0]) linear_extrude(depth) mirror([0, 1, 0]) children();

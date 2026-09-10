@@ -1,5 +1,5 @@
 // Collision checks for the steering mechanism. Each `pair` should be EMPTY.
-//   pair: "fins-roots" | "fins-duct" | "roots-duct" | "tie-fins" | "fins-fins" | "tie-duct" | "slats-fins" | "slats-roots" | "slats-duct"
+//   pair: "fins-roots" | "fins-duct" | "roots-duct" | "tie-fins" | "fins-fins" | "tie-duct" | "slats-fins" | "slats-roots" | "slats-duct" | "strut-duct"
 // Run with -D steer=<deg>. An empty export (84-byte STL) means no collision.
 include <shroud.scad>
 show_ghost = false; show_shroud = false; show_strut = false; show_vanes = false;
