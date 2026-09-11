@@ -44,11 +44,17 @@ for (i = [0 : 2]) translate([i * 14 + 3, 2, 0]) linear_extrude(0.6) text(str(cle
 translate([0, 34, 0]) linear_extrude(0.6) text("pocket .10 .15 .20", size = 2.2);
 translate([0, 46, 0]) linear_extrude(0.6) text("eye .05 .10 .15", size = 2.2);
 
-// strut dovetail: a piece of the bore wall with its boss and slot (cut down to
-// 12 mm tall), and three tail stubs at three clearances, each standing on its
-// tip like the real bar prints. Slide each stub down the slot; it should run
-// freely to the floor without wobbling.
-tail_clrs = [0.10, 0.20, 0.30];
-translate([-36, 58, 0]) intersection() { duct(); translate([38, -8, -1]) cube([9, 16, 13]); }   // boss piece at x 2..11
-for (i = [0 : 2]) translate([17 + i * 14, 58, tail_tip_x(tail_clrs[i])]) rotate([0, 90, 0]) strut_tail(tail_clrs[i]);
-translate([0, 68, 0]) linear_extrude(0.6) text("strut dovetail .10 .20 .30", size = 2.2);
+// strut pockets: three pieces of the bore wall with a boss and pocket at three
+// clearances, and one bar end with its ear, standing on the ear's outer face
+// like the real bar prints. Slide the ear up each pocket: it should run freely
+// to the ceiling without wobbling.
+ear_clrs = [0.10, 0.20, 0.30];
+module boss_piece(clr) {
+    difference() {
+        intersection() { union() { duct_ring(); boss_pad(); } translate([39, -9, 0]) cube([8, 18, boss_top + 1]); }
+        pocket(clr);
+    }
+}
+for (i = [0 : 2]) translate([-36 + i * 12, 58, 0]) boss_piece(ear_clrs[i]);            // pieces at x 3..11, 15..23, 27..35
+translate([44, 58, duct_r_in]) rotate([0, 90, 0]) intersection() { strut(); translate([39, -9, -3]) cube([8, 18, 15]); }
+translate([0, 68, 0]) linear_extrude(0.6) text("strut pocket .10 .20 .30", size = 2.2);

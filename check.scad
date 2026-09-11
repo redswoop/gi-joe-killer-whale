@@ -4,9 +4,9 @@
 include <shroud.scad>
 show_ghost = false; show_shroud = false; show_strut = false; show_vanes = false;
 pair = "fins-roots";
-strut_dz = 0;       // strut pose: 0 = seated on the slot floor, >0 = lifted that far while sliding in
+strut_dz = 0;       // strut pose: 0 = seated against the pocket ceilings, >0 = pulled down that far while sliding in
 module A() {
-    if (pair == "strut-duct") translate([0, 0, strut_dz]) strut_placed();
+    if (pair == "strut-duct") translate([0, 0, -strut_dz]) strut();
     if (pair == "slats-fins" || pair == "slats-roots" || pair == "slats-duct") slats();
     if (pair == "fins-roots" || pair == "fins-duct" || pair == "fins-fins") vane_fins();
     if (pair == "roots-duct") vane_roots();

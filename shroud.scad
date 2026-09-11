@@ -135,22 +135,22 @@ tooth_extra  = 3;      // pegs extended this much deeper than the sketch (5 mm e
 tooth_nub_d  = 1.4;  tooth_nub_h = 0.35;  tooth_nub_clr = 0.15;   // nub sphere, its protrusion, dimple clearance
 tooth_nub_off = 2;     // nub position along the tooth from its centre, toward the outer end
 
-// strut-to-shroud: DOVETAIL SLIDES. A boss on the bore wall at each end carries
-// a dovetail slot running along Z, open at the rim and blind near the base. The
-// bar's ends are thickened into blocks that chamfer into matching tails: drop
-// the bar in from the top and slide it down until the tails land on the floor.
-// Nothing flexes. The flanks hold the bar radially and tangentially; the fan's
-// thrust pushes it onto the floor.
-boss_w     = 12;     // boss width along the wall (a chord), 3 mm of meat either side of the slot's wide end
-boss_r_in  = 40.5;   // boss's flat inner face (x at the +X end); 3.5 mm proud of the bore
-dt_neck    = 4;      // slot width at the boss's inner face: the narrow end of the dovetail
-dt_depth   = 2.5;    // slot depth, radial; leaves 1 mm of boss and the 2 mm wall behind the slot's bottom
-dt_angle   = 20;     // flank angle from radial: the slot widens by 2 * depth * tan(angle) toward the wall
-dt_floor   = 1.5;    // slot floor above the base: the tails land here
-dt_len     = 10;     // height of the tails along Z (engagement); the bore wall is 19 tall at the ends
-dt_clr     = 0.2;    // tail to slot, per face (coupon: 0.1 / 0.2 / 0.3)
-end_blk_x  = 36;     // the bar's end block starts here; it chamfers at 45 deg into the tail's neck so it prints standing on end
-strut_z    = dt_floor + strut_t / 2;   // the bar's plane lifted so the tails' bottoms sit on the floor (hub base flush with the shroud base)
+// strut-to-shroud: EARS IN POCKETS. The bar's ends bend up into curved ears
+// that hug the bore wall; a boss on the wall at each end has a pocket, open at
+// the base and blind halfway up the shroud. Slide the bar in from the base
+// side until the ears hit the pocket ceilings. On the toy the hull sits under
+// the bar and keeps it there. Nothing flexes.
+ear_top    = duct_h_mid / 2;   // ears reach half the shroud's height (9.5)
+ear_t      = strut_t;          // ear thickness, radial; same as the plate
+ear_r_in   = duct_r_in - ear_t;                                       // ear hugs the bore: r 42..44
+ear_w      = strut_w_center - 2 * strut_slope * (duct_r_in - 5);      // ear width = the bow-tie's width just short of the wall
+ear_clr = 0.2;              // ear to pocket, per face (coupon: 0.1 / 0.2 / 0.3)
+pocket_lip = 1.2;              // boss material inside the pocket (keeps the ear against the wall)
+pocket_side = 1.5;             // boss material beside the pocket
+pocket_lid = 1.5;              // boss material above the pocket (the ear's stop)
+boss_r_in  = ear_r_in - ear_clr - pocket_lip;                      // boss's inner face, x at the +X end (40.6)
+boss_w     = ear_w + 2 * ear_clr + 2 * pocket_side;
+boss_top   = ear_top + ear_clr + pocket_lid;
 
 // ---------- Fillet 01 / 02 / 03 ----------
 box_fillet_out   = 0.5;   // Fillet 01: convex rounds on the box's outer face edges
@@ -218,20 +218,23 @@ module duct_ring() {
 function tooth_nub_c(p) = let (yc = (p[0][0] + p[1][0]) / 2, sgn = yc > 0 ? 1 : -1)
     [vane_x + tooth_nub_d / 2 - tooth_nub_h, yc + tooth_nub_off * sgn, p[0][1] - tooth_extra + 2];
 
-// Dovetail slot profile at the +X end, plan view: a short lead-in inside the
-// boss's face, then the flanks widening toward the wall.
-function dt_wide_w() = dt_neck + 2 * dt_depth * tan(dt_angle);
-module dt_slot_2d() {
-    polygon([[boss_r_in - 1, -dt_neck / 2], [boss_r_in, -dt_neck / 2], [boss_r_in + dt_depth, -dt_wide_w() / 2],
-             [boss_r_in + dt_depth, dt_wide_w() / 2], [boss_r_in, dt_neck / 2], [boss_r_in - 1, dt_neck / 2]]);
+// Plan view of the +X ear: a strip of the bore wall's annulus. With clr it is
+// the pocket's plan view.
+module ear_2d(clr = 0) {
+    intersection() {
+        difference() { circle(r = duct_r_in + clr); circle(r = ear_r_in - clr); }
+        translate([ear_r_in - 5, -ear_w / 2 - clr]) square([10, ear_w + 2 * clr]);
+    }
 }
 // Boss pad on the bore wall at the +X end (rotate 180 for the other end); buried 1 mm into the wall
 module boss_pad() {
-    translate([boss_r_in, -boss_w / 2, 0]) cube([duct_r_in + 1 - boss_r_in, boss_w, duct_h_max]);
+    translate([boss_r_in, -boss_w / 2, 0]) cube([duct_r_in + 1 - boss_r_in, boss_w, boss_top]);
 }
-// The slot, cut from the floor up through the rim
-module dt_slot() {
-    translate([0, 0, dt_floor]) linear_extrude(duct_h_max) dt_slot_2d();
+// The pocket: the ear's strip from below the base up to the ceiling, plus a
+// notch through the lip at the bottom for the plate to pass.
+module pocket(clr = ear_clr) {
+    translate([0, 0, -1]) linear_extrude(1 + ear_top + clr) ear_2d(clr);
+    translate([boss_r_in - 1, -ear_w / 2 - clr, -1]) cube([ear_r_in - boss_r_in + 2, ear_w + 2 * clr, 1 + strut_t / 2 + clr]);
 }
 
 // Notches for the teeth, cut down from the rim; plus the dimples the nubs click into
@@ -251,7 +254,7 @@ module duct() {
             below_taper();
         }
         vane_slots();
-        for (a = [0, 180]) rotate([0, 0, a]) dt_slot();
+        for (a = [0, 180]) rotate([0, 0, a]) pocket();
     }
 }
 
@@ -276,22 +279,14 @@ module shroud() {
     tab();
 }
 
-// Plan view of the bar: the bow-tie, its ends chamfered at 45 deg into the
-// tails' necks. The chamfer is what lets the bar print standing on a tail tip
-// with nothing overhanging.
-module strut_plan_2d(clr = dt_clr) {
-    nx = boss_r_in - clr;  nw = dt_neck / 2 - clr;  L = 30;
-    intersection() {
-        strut_2d();
-        polygon([[-nx, -nw], [-nx + L - nw, -L], [nx - L + nw, -L], [nx, -nw],
-                 [ nx,  nw], [ nx - L + nw,  L], [-nx + L - nw, L], [-nx, nw]]);
-    }
-}
-
 module strut() {
     difference() {
         union() {
-            translate([0, 0, -strut_t / 2]) linear_extrude(strut_t) strut_plan_2d();   // plate
+            // plate, running to the bore wall
+            intersection() {
+                translate([0, 0, -strut_t / 2]) linear_extrude(strut_t) strut_2d();
+                cylinder(r = duct_r_in, h = 10, center = true);
+            }
             // hub core with six bites
             difference() {
                 cylinder(r = hub_core_r, h = hub_core_t, center = true);
@@ -304,32 +299,25 @@ module strut() {
                 cylinder(r = hub_ring_ro, h = hub_ring_t, center = true);
                 cylinder(r = hub_ring_ri, h = hub_ring_t + 2, center = true);
             }
-            // underside panels, three per side, clipped to the plate's outline
+            // underside panels, three per side
             intersection() {
                 for (s = [-1, 1], k = [0 : panel_n - 1])
                     mirror([s < 0 ? 1 : 0, 0, 0])
                         translate([0, 0, -strut_t / 2 + eps]) mirror([0, 0, 1])   // hang the pad off the underside, eps into the plate
                             rounded_pad(panel_t + eps, panel_fillet, fillet_fn)
                                 panel_2d(panel_x0 + k * (panel_len + panel_gap));
-                translate([0, 0, -5]) linear_extrude(10) strut_plan_2d();
+                cylinder(r = duct_r_in, h = 10, center = true);
             }
+            for (a = [0, 180]) rotate([0, 0, a]) ear();
         }
         cylinder(r = bore_r, h = 20, center = true);   // shaft bore
     }
-    for (a = [0, 180]) rotate([0, 0, a]) strut_tail();
 }
-module strut_placed() { translate([0, 0, strut_z]) strut(); }
 
-// End block + dovetail tail at the +X bow-tie end: the plate's end thickened
-// to dt_len tall from end_blk_x out, and the tail (the slot profile shrunk by
-// the clearance) beyond it.
-module strut_tail(clr = dt_clr) {
-    translate([0, 0, -strut_t / 2]) linear_extrude(dt_len) {
-        intersection() { strut_plan_2d(clr); translate([end_blk_x, -20]) square([20, 40]); }
-        offset(delta = -clr) dt_slot_2d();
-    }
+// Ear at the +X end: the plate's end turned up along the bore wall
+module ear() {
+    translate([0, 0, -strut_t / 2]) linear_extrude(strut_t / 2 + ear_top) ear_2d();
 }
-function tail_tip_x(clr = dt_clr) = boss_r_in + dt_depth - clr;   // the flat end face the bar stands on to print
 
 // vane bar profile in the YZ plane: the sketch outline traced as one polygon.
 // (A hull of corner circles was wrong here: the arcs are not tangent to the
@@ -526,7 +514,7 @@ module vanes() { vane_roots(); vane_fins(); tie_bar_placed(); slats(); }
 // =====================================================================
 if (show_ghost)  %import("Shroud.stl");
 if (show_shroud) color("SteelBlue") shroud();
-if (show_strut)  color("Goldenrod") strut_placed();
+if (show_strut)  color("Goldenrod") strut();
 if (show_vanes) {
     color("IndianRed")  vane_roots();
     color("Salmon")     vane_fins();
