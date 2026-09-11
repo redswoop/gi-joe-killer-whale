@@ -121,14 +121,20 @@ fin_z_low     = hinge_z - 0.5;   // plate's lower edge, just above the bar betwe
 
 link_pin_d    = 2.4;   // pin at the plate's bottom trailing corner, pointing +Y (down); flush with the outer face
 link_pin_len  = 7;     // long enough that the bulb sits past the tie bar and captures it
-link_pin_inset = 2.8;  // from the trailing edge to the pin axis
-bullet_d      = 4.5;   bullet_len = 2.5;   // bullet-shaped root reinforcing the pin, like the original (clipped flat at the outer face)
+link_pin_inset = 5.8;  // from the trailing edge to the pin axis. 2.8 put the mount at the plate's edge; Armen 2026-09-11: 'move
+                       // them downward about 3 mm', and the tie bar's raised middle is flush with the plate's edge (tie_jog)
+mount_d       = 4.5;   // the pin's root: a CANOE on the plate's mid-plane about the pin's axis ('these should also canoe up the
+mount_cyl     = 2;     // vane'): from the plate's end, a cylinder mount_cyl long, then a cone tail mount_tail long fading up
+mount_tail    = 6;     // the plate (-Y); outboard, a nose cone down to the pin diameter, ending mount_nose past the plate's end
+                       // (0.3 short of the tie bar, so the eye seats on the pin). Round, so it wraps the tapered corner on both faces.
 tie_snap      = 0.15;  // bulb on the pin end, oversize per side
 tie_eye_clr   = 0.2;   // working hole clearance per side on the pin
 tie_key_gap   = 0.1;   // keyhole: the bulb passes through the big hole freely by this much per side
 tie_detent    = 0.1;   // the throat between big hole and working hole is this much narrower than the pin, total
-tie_t         = 2;   tie_eye_d = 5.5;  tie_gap = 2.2;   // tie bar: thickness, eye OD, gap below the plates (clears the bullet)
-tie_w         = 3;   tie_tab = 6;  tie_jog = 3;         // hat-shaped link  _/----\_ : bar width, straight tab at each eye, raise of the middle (0 = straight bar)
+tie_t         = 2;   tie_eye_d = 5.5;  tie_gap = 2.2;   // tie bar: thickness, eye OD, gap below the plates (the mount nose ends 0.3 before it)
+tie_w         = 3;   tie_tab = 6;                       // hat-shaped link  _/----\_ : bar width, straight tab at each eye
+tie_jog       = link_pin_inset - tie_w / 2;           // raise of the middle: its outer edge lands flush with the plate's outer edge (4.3)
+mount_nose    = tie_gap - 0.3;                        // see mount_d
 tie_knurl     = [1.2, 0.4, 0.3];                      // cross-hatch on the outer face: pitch, groove width, depth
 link_len      = fin_depth_bot - link_pin_inset;      // crank length of the parallelogram
 
@@ -546,14 +552,13 @@ module vane_fin() {
         union() {
             plate_yz() fin_outline_2d();
             for (yc = hinge_pts) hinge_fin_knuckle(yc);
-            // linkage pin at the bottom trailing corner, pointing +Y (down): bullet root, pin, bulb, all on the
-            // plate's mid-plane. The bullet (4.5 dia) is the mount: it wraps the 1.26 mm plate at that corner
-            // on both faces, so the pin stays rooted however thin the taper gets. (It used to be clipped flat
-            // at the outer face for flat printing; the vane prints standing now.)
-            translate([pin_x, hinge_y1 - 1, hinge_z + fin_depth_bot - link_pin_inset]) rotate([-90, 0, 0]) {
-                cylinder(d = link_pin_d, h = link_pin_len + 1);
-                cylinder(d1 = bullet_d, d2 = link_pin_d, h = bullet_len + 1);
-                translate([0, 0, link_pin_len + 1 - (link_pin_d / 2 + tie_snap)]) sphere(d = link_pin_d + 2 * tie_snap);
+            // linkage pin near the bottom trailing corner, pointing +Y (down), on the plate's mid-plane: the canoe
+            // mount (tail cone up the plate, cylinder, nose cone to the pin at the plate's end), the pin, the bulb
+            translate([pin_x, hinge_y1, tie_z]) rotate([-90, 0, 0]) {   // local +z = +Y, local 0 = the plate's end
+                rotate_extrude($fn = 48) polygon([[0, -mount_cyl - mount_tail], [mount_d / 2, -mount_cyl], [mount_d / 2, 0],
+                                                  [link_pin_d / 2, mount_nose], [0, mount_nose]]);
+                translate([0, 0, -1]) cylinder(d = link_pin_d, h = link_pin_len + 1);
+                translate([0, 0, link_pin_len - (link_pin_d / 2 + tie_snap)]) sphere(d = link_pin_d + 2 * tie_snap);
             }
         }
         for (yc = hinge_pts) hinge_fin_cut(yc);
