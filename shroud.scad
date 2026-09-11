@@ -76,8 +76,8 @@ vane_top_l = [-45.72, 30.201];  vane_top_r = [47, 31];
 vane_end_l = [-45.72, 24.121];  vane_end_r = [47, 28];         // where the vertical ends meet the arcs
 vane_arc_l = [[-45.72, 24.121], [-42.111, 20.584], [-41.359, 24.961]];   // start, end, centre
 vane_arc_r = [[43.931, 25.813], [47, 28], [44.133, 28.777]];
-peg_a      = [[-38.438, 14.71], [-31.664, 22.5]];   // [y,z] min / max
-peg_b      = [[ 31.924, 19.065], [37.191, 26.5]];
+// Sketch 06 also had two 2 mm pegs under the bar (y -38.4..-31.7 and 31.9..37.2, 2 mm into the rim);
+// the fork teeth below replace them (git: 8ee9512 and before for the peg version).
 
 // ---------- vane mechanism (new design, from photos of the real MET-b52 vanes) ----------
 // Each vane = fixed root bar (your Sketch 06 body) + a trapezoidal plate hinged
@@ -91,8 +91,9 @@ animate      = false;  // true: steer and tilt sweep with $t (View > Animate in 
 
 barrel_d     = 4.2;    // hinge knuckle OD (pin + 2 clearances + 2 walls; about the floor)
 pin_d        = 1.4;    // hinge pin, round; the plate's hole is a teardrop so it prints flat
-hinge_clr    = 0.3;    // pin-to-hole clearance, per side. Coupon round 1: 0.35 and 0.45 good, 0.25 not;
-                       // printed vanes at 0.4 (2026-09-10): range good but too loose -> 0.3
+hinge_clr    = 0.15;   // pin-to-hole clearance, per side. Coupon round 1: 0.35 and 0.45 good, 0.25 not;
+                       // printed vanes at 0.4 (2026-09-10): range good but too loose -> 0.3;
+                       // 2026-09-11: Armen's tolerance tests say 0.15 -> 0.15 (coupon round 3 ladders 0.15 / 0.20 / 0.25)
 knuckle_gap  = 0.4;    // axial gap between neighbouring knuckles
 knuckle_l    = 4;      // length of one knuckle
 hinge_pts    = [-34, 36];     // Y centres of the two hinge nubs: 10 mm in from each plate end, over the teeth
@@ -126,21 +127,38 @@ link_len      = fin_depth_bot - link_pin_inset;      // crank length of the para
 
 slat_y        = [-34.6, 13.6];   // axle positions along the bar (holes in the bars), from the photo
 slat_z        = 26;              // axle height, mid-bar
-slat_len_rod  = 52;   slat_len_edge = 40;  slat_depth = 17;   // trapezoid: long at the rod, short at the trailing edge
-slat_t        = 2;    slat_rod_d = 2;  slat_clr = 0.2;        // rod = plate thickness so it prints flat; hole = rod + 2*clr
+slat_end_gap  = 0.3;             // plate end to the bar's inner face; the plate used to stop 1.5 short and the slat slid side to side
+slat_len_rod  = 2 * (vane_x - slat_end_gap);   // 54.4: the plate spans the bars less the end gaps (was a 52 photo estimate)
+slat_len_edge = 40;   slat_depth = 17;                        // trapezoid: long at the rod, short at the trailing edge
+slat_t        = 2;    slat_rod_d = 2;  slat_clr = 0.15;       // rod = plate thickness so it prints flat; hole = rod + 2*clr.
+                                                              // 0.2 printed loose (2026-09-11) -> 0.15; the slats need not swing freely
 
 panel_recess  = 0.4;  panel_pitch = 1.0;  panel_groove = 0.55;   // ribbed rectangular panels, cosmetic
 fin_panels    = [[0.22, 0.45], [0.67, 0.90]];   // along the plate, as fractions of its length
 bar_panels    = [[0.18, 0.40], [0.70, 0.92]];
 
-// root-to-shroud: each peg is a tooth that drops into a notch in the rim and
-// clicks in: a spherical nub on the tooth's inner face snaps into a dimple in
-// the notch wall. The nub sits at the end of the tooth where the oblique wall
-// crossing leaves solid material behind it.
-peg_clr      = 0.15;   // tooth to notch, per side
-tooth_extra  = 3;      // pegs extended this much deeper than the sketch (5 mm engagement instead of 2)
+// root-to-shroud: FORK TEETH (2026-09-11; the drop-in pegs before were a loose,
+// rocky fit). Each tooth is a fork in the bar's plane that straddles the duct
+// wall, like a clothes peg on a line:
+//   - the KEY in the middle drops tooth_key deep into a notch in the rim. It
+//     locates the vane along the rim and is the Z stop (key bottom on notch floor).
+//   - two PRONGS continue tooth_prong below the rim top on the inside and the
+//     outside face of the wall. They grip the wall and stop the vane rocking.
+// The slot between the prongs is the wall's own annulus offset by tooth_clr, so
+// it hugs the curve exactly even though the bar crosses the ring obliquely
+// (the wall band shifts 1.7 mm in y across the bar's 2 mm thickness).
+// A nub on the key's inside face still clicks into a dimple in the notch wall.
+tooth_w      = 9;      // tooth width along the bar (y): wall band 4.2 + clearances + ~2.2 mm of prong each side
+tooth_key    = 3;      // notch depth into the rim = key engagement
+tooth_prong  = 7;      // prongs reach this far below the rim top (both faces of the wall)
+tooth_clr    = 0.15;   // slot to wall, per face (radial). Untested: coupon round 3 ladders 0.10 / 0.15 / 0.20
+tooth_lead   = 0.6;    // chamfer on the slot mouth so the rim finds its way in
+peg_clr      = 0.15;   // key to notch, per side (along the rim and across the bar's thickness)
 tooth_nub_d  = 1.4;  tooth_nub_h = 0.35;  tooth_nub_clr = 0.15;   // nub sphere, its protrusion, dimple clearance
-tooth_nub_off = 2;     // nub position along the tooth from its centre, toward the outer end
+duct_r_mid   = (duct_r_in + duct_r_out) / 2;                                   // 45
+tooth_yc     = sqrt(duct_r_mid * duct_r_mid - pow(vane_x + vane_t / 2, 2));    // |y| where the bar's mid-plane crosses the wall's mid-radius (34.8)
+function rim_z(y) = duct_h_mid + y * tan(taper_deg);                            // rim top height at y (the taper plane)
+function tooth_key_z(sgn) = rim_z(sgn * tooth_yc) - tooth_key;                  // key bottom for the tooth on the +Y (sgn = 1) or -Y side
 
 // strut-to-shroud: EARS IN POCKETS. The bar's ends bend up into curved ears
 // that hug the bore wall; a boss on the wall at each end has a pocket, open at
@@ -222,9 +240,11 @@ module duct_ring() {
     }
 }
 
-// nub centre for a tooth (in the +X vane's frame): [x, y, z]
-function tooth_nub_c(p) = let (yc = (p[0][0] + p[1][0]) / 2, sgn = yc > 0 ? 1 : -1)
-    [vane_x + tooth_nub_d / 2 - tooth_nub_h, yc + tooth_nub_off * sgn, p[0][1] - tooth_extra + 2];
+// nub centre for the tooth on side sgn (in the +X vane's frame): on the key's
+// inside face (x = vane_x), where the wall's mid-radius crosses that face, half
+// way down the key, so the dimple lands in solid notch wall.
+function tooth_nub_c(sgn) =
+    [vane_x + tooth_nub_d / 2 - tooth_nub_h, sgn * sqrt(duct_r_mid * duct_r_mid - vane_x * vane_x), tooth_key_z(sgn) + tooth_key / 2];
 
 // Plan view of the +X ear: a strip of the bore wall's annulus. With clr it is
 // the pocket's plan view.
@@ -275,13 +295,13 @@ module pocket(clr = ear_clr) {
     translate([boss_r_in - 1, -ear_w / 2 - clr, -1]) cube([ear_r_in - boss_r_in + 2, ear_w + 2 * clr, 1 + strut_t / 2 + clr]);
 }
 
-// Notches for the teeth, cut down from the rim; plus the dimples the nubs click into
-module vane_slots() {
+// Notches for the keys, cut tooth_key down from the rim; plus the dimples the nubs click into
+module vane_slots(clr = peg_clr) {
     for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0])
-        for (p = [peg_a, peg_b]) {
-            translate([vane_x - peg_clr, p[0][0] - peg_clr, p[0][1] - tooth_extra - peg_clr])
-                cube([vane_t + 2 * peg_clr, p[1][0] - p[0][0] + 2 * peg_clr, 30]);
-            translate(tooth_nub_c(p)) sphere(d = tooth_nub_d + 2 * tooth_nub_clr, $fn = 32);
+        for (sgn = [-1, 1]) {
+            translate([vane_x - clr, sgn * tooth_yc - tooth_w / 2 - clr, tooth_key_z(sgn) - clr])
+                cube([vane_t + 2 * clr, tooth_w + 2 * clr, 30]);
+            translate(tooth_nub_c(sgn)) sphere(d = tooth_nub_d + 2 * tooth_nub_clr, $fn = 32);
         }
 }
 
@@ -362,7 +382,20 @@ module ear() {
 // vertical ends, so a hull bulges past the top line.)
 module vane_2d() {
     polygon(concat([vane_top_l, vane_end_l], arc_pts(vane_arc_l), arc_pts(vane_arc_r), [vane_end_r, vane_top_r]));
-    for (p = [peg_a, peg_b]) translate([p[0][0], p[0][1] - tooth_extra]) square([p[1][0] - p[0][0], p[1][1] - p[0][1] + tooth_extra]);
+}
+
+// One fork tooth on the +X bar, side sgn (+1 = the +Y end). A block hanging
+// from the bar, minus the wall's annulus (offset clr) from the prong tips up to
+// the key's bottom, with a chamfered mouth. The block's top is buried in the bar.
+module tooth_fork(sgn, clr = tooth_clr) {
+    yc = sgn * tooth_yc;  zk = tooth_key_z(sgn);  zb = zk - (tooth_prong - tooth_key);   // key bottom, prong tips
+    difference() {
+        translate([vane_x, yc - tooth_w / 2, zb]) cube([vane_t, tooth_w, bar_bot(yc) + 2 - zb]);
+        translate([0, 0, zb - 1]) linear_extrude(zk - zb + 1) annulus_2d(duct_r_in - clr, duct_r_out + clr);
+        rotate_extrude() polygon([[duct_r_in - clr - tooth_lead, zb - 1], [duct_r_out + clr + tooth_lead, zb - 1],
+                                  [duct_r_out + clr + tooth_lead, zb], [duct_r_out + clr, zb + tooth_lead],
+                                  [duct_r_in - clr, zb + tooth_lead], [duct_r_in - clr - tooth_lead, zb]]);
+    }
 }
 
 // ---- hinge pieces (all built for the +X vane; the -X vane is a mirror) ----
@@ -454,7 +487,7 @@ module vane_root() {
         union() {
             translate([vane_x, 0, 0]) rotate([90, 0, 90]) linear_extrude(vane_t) vane_2d();
             for (yc = hinge_pts) hinge_root(yc);
-            for (p = [peg_a, peg_b]) translate(tooth_nub_c(p)) sphere(d = tooth_nub_d, $fn = 32);   // click nubs
+            for (sgn = [-1, 1]) { tooth_fork(sgn); translate(tooth_nub_c(sgn)) sphere(d = tooth_nub_d, $fn = 32); }   // fork teeth + click nubs
         }
         for (y = slat_y) translate([vane_x - 1, y, slat_z]) rotate([0, 90, 0]) cylinder(d = slat_rod_d + 2 * slat_clr, h = vane_t + 2);
         for (f = bar_panels) { L = vane_top_r[0] - vane_top_l[0];
