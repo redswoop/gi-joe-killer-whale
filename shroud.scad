@@ -135,21 +135,22 @@ tooth_extra  = 3;      // pegs extended this much deeper than the sketch (5 mm e
 tooth_nub_d  = 1.4;  tooth_nub_h = 0.35;  tooth_nub_clr = 0.15;   // nub sphere, its protrusion, dimple clearance
 tooth_nub_off = 2;     // nub position along the tooth from its centre, toward the outer end
 
-// strut-to-shroud: a TWIST LOCK. Short arc ribs on the bore wall at each end;
-// the bar's ends carry shoes with a groove. Drop the bar in ~14 deg off square,
-// turn it square: the grooves slide over the ribs, a stop block ends the travel
-// and a detent clicks it there. Nothing flexes, so nothing pops out.
-rib_proud    = 1.0;    // rib stands this far into the bore
-rib_z0       = 1.25;   // rib underside (45 deg chamfer up from here), just above the bar's top face (z = 1)
-rib_z1       = 3.2;    // rib top: the shoe's lip rides over it
-rib_a        = [-3, 8];   // rib arc, degrees about the end direction; the bar turns from + toward 0
-rib_clr      = 0.15;   // groove to rib, per side
-stop_a       = [-8.6, -6.8];  stop_h = 4.6;   // stop block the shoe's leading edge lands on at 0 deg
-detent_a     = 4.5;   detent_d = 1.2;  detent_h = 0.15;   // bump on the rib top, dimple in the shoe's lip
-shoe_r_in    = 42.0;   // shoe's inner face (radius)
-shoe_top     = 4.3;    // shoe's top, above the rib
-shoe_x       = 43.55;  // shoe's flat end face (the bore's chord at the shoe's corners): a flat foot for printing
-strut_insert_a = 14;   // how far off square the bar goes in, for the assembly note and the checks
+// strut-to-shroud: DOVETAIL SLIDES. A boss on the bore wall at each end carries
+// a dovetail slot running along Z, open at the rim and blind near the base. The
+// bar's ends are thickened into blocks that chamfer into matching tails: drop
+// the bar in from the top and slide it down until the tails land on the floor.
+// Nothing flexes. The flanks hold the bar radially and tangentially; the fan's
+// thrust pushes it onto the floor.
+boss_w     = 12;     // boss width along the wall (a chord), 3 mm of meat either side of the slot's wide end
+boss_r_in  = 40.5;   // boss's flat inner face (x at the +X end); 3.5 mm proud of the bore
+dt_neck    = 4;      // slot width at the boss's inner face: the narrow end of the dovetail
+dt_depth   = 2.5;    // slot depth, radial; leaves 1 mm of boss and the 2 mm wall behind the slot's bottom
+dt_angle   = 20;     // flank angle from radial: the slot widens by 2 * depth * tan(angle) toward the wall
+dt_floor   = 1.5;    // slot floor above the base: the tails land here
+dt_len     = 10;     // height of the tails along Z (engagement); the bore wall is 19 tall at the ends
+dt_clr     = 0.2;    // tail to slot, per face (coupon: 0.1 / 0.2 / 0.3)
+end_blk_x  = 36;     // the bar's end block starts here; it chamfers at 45 deg into the tail's neck so it prints standing on end
+strut_z    = dt_floor + strut_t / 2;   // the bar's plane lifted so the tails' bottoms sit on the floor (hub base flush with the shroud base)
 
 // ---------- Fillet 01 / 02 / 03 ----------
 box_fillet_out   = 0.5;   // Fillet 01: convex rounds on the box's outer face edges
@@ -217,13 +218,20 @@ module duct_ring() {
 function tooth_nub_c(p) = let (yc = (p[0][0] + p[1][0]) / 2, sgn = yc > 0 ? 1 : -1)
     [vane_x + tooth_nub_d / 2 - tooth_nub_h, yc + tooth_nub_off * sgn, p[0][1] - tooth_extra + 2];
 
-// Twist-lock rib, stop and detent at the +X end (rotate 180 for the other end)
-module strut_rib() {
-    R = duct_r_in;
-    arc_sweep(rib_a[0], rib_a[1])
-        polygon([[R + 0.3, rib_z0], [R, rib_z0], [R - rib_proud, rib_z0 + rib_proud], [R - rib_proud, rib_z1], [R + 0.3, rib_z1]]);
-    arc_sweep(stop_a[0], stop_a[1]) polygon([[R + 0.3, 0], [R - rib_proud, 0], [R - rib_proud, stop_h], [R + 0.3, stop_h]]);
-    rotate([0, 0, detent_a]) translate([R - rib_proud / 2, 0, rib_z1 - detent_d / 2 + detent_h]) sphere(d = detent_d, $fn = 24);
+// Dovetail slot profile at the +X end, plan view: a short lead-in inside the
+// boss's face, then the flanks widening toward the wall.
+function dt_wide_w() = dt_neck + 2 * dt_depth * tan(dt_angle);
+module dt_slot_2d() {
+    polygon([[boss_r_in - 1, -dt_neck / 2], [boss_r_in, -dt_neck / 2], [boss_r_in + dt_depth, -dt_wide_w() / 2],
+             [boss_r_in + dt_depth, dt_wide_w() / 2], [boss_r_in, dt_neck / 2], [boss_r_in - 1, dt_neck / 2]]);
+}
+// Boss pad on the bore wall at the +X end (rotate 180 for the other end); buried 1 mm into the wall
+module boss_pad() {
+    translate([boss_r_in, -boss_w / 2, 0]) cube([duct_r_in + 1 - boss_r_in, boss_w, duct_h_max]);
+}
+// The slot, cut from the floor up through the rim
+module dt_slot() {
+    translate([0, 0, dt_floor]) linear_extrude(duct_h_max) dt_slot_2d();
 }
 
 // Notches for the teeth, cut down from the rim; plus the dimples the nubs click into
@@ -238,10 +246,13 @@ module vane_slots() {
 
 module duct() {
     difference() {
-        intersection() { duct_ring(); below_taper(); }
+        intersection() {
+            union() { duct_ring(); for (a = [0, 180]) rotate([0, 0, a]) boss_pad(); }
+            below_taper();
+        }
         vane_slots();
+        for (a = [0, 180]) rotate([0, 0, a]) dt_slot();
     }
-    for (a = [0, 180]) rotate([0, 0, a]) strut_rib();   // rotated, not mirrored: both ends turn the same way
 }
 
 module deco_boxes() {
@@ -265,14 +276,22 @@ module shroud() {
     tab();
 }
 
+// Plan view of the bar: the bow-tie, its ends chamfered at 45 deg into the
+// tails' necks. The chamfer is what lets the bar print standing on a tail tip
+// with nothing overhanging.
+module strut_plan_2d(clr = dt_clr) {
+    nx = boss_r_in - clr;  nw = dt_neck / 2 - clr;  L = 30;
+    intersection() {
+        strut_2d();
+        polygon([[-nx, -nw], [-nx + L - nw, -L], [nx - L + nw, -L], [nx, -nw],
+                 [ nx,  nw], [ nx - L + nw,  L], [-nx + L - nw, L], [-nx, nw]]);
+    }
+}
+
 module strut() {
     difference() {
         union() {
-            // plate, ending inside the shoes
-            intersection() {
-                translate([0, 0, -strut_t / 2]) linear_extrude(strut_t) strut_2d();
-                cylinder(r = shoe_x - 0.05, h = 10, center = true);
-            }
+            translate([0, 0, -strut_t / 2]) linear_extrude(strut_t) strut_plan_2d();   // plate
             // hub core with six bites
             difference() {
                 cylinder(r = hub_core_r, h = hub_core_t, center = true);
@@ -285,36 +304,32 @@ module strut() {
                 cylinder(r = hub_ring_ro, h = hub_ring_t, center = true);
                 cylinder(r = hub_ring_ri, h = hub_ring_t + 2, center = true);
             }
-            // underside panels, three per side (the outer one is clipped where the shoe's flat face is)
+            // underside panels, three per side, clipped to the plate's outline
             intersection() {
                 for (s = [-1, 1], k = [0 : panel_n - 1])
                     mirror([s < 0 ? 1 : 0, 0, 0])
                         translate([0, 0, -strut_t / 2 + eps]) mirror([0, 0, 1])   // hang the pad off the underside, eps into the plate
                             rounded_pad(panel_t + eps, panel_fillet, fillet_fn)
                                 panel_2d(panel_x0 + k * (panel_len + panel_gap));
-                cylinder(r = shoe_x - 0.05, h = 10, center = true);
+                translate([0, 0, -5]) linear_extrude(10) strut_plan_2d();
             }
         }
         cylinder(r = bore_r, h = 20, center = true);   // shaft bore
     }
-    for (a = [0, 180]) rotate([0, 0, a]) strut_shoe();
+    for (a = [0, 180]) rotate([0, 0, a]) strut_tail();
 }
+module strut_placed() { translate([0, 0, strut_z]) strut(); }
 
-// shoe at the +X bow-tie end: a block with a flat end face and a groove (open
-// toward the wall) that slides over the rib; a dimple in its lip takes the detent
-module strut_shoe() {
-    R = duct_r_in;
-    difference() {
-        translate([shoe_r_in, -strut_w_wall / 2, -strut_t / 2]) cube([shoe_x - shoe_r_in, strut_w_wall, shoe_top + strut_t / 2]);
-        // groove: from the rib's inner face (with clearance) out to the wall, rib height plus clearance
-        translate([0, 0, rib_z0 - rib_clr]) difference() {
-            cylinder(r = 50, h = rib_z1 - rib_z0 + 2 * rib_clr);
-            translate([0, 0, -1]) cylinder(r = R - rib_proud - rib_clr, h = 10);
-        }
-        rotate([0, 0, detent_a]) translate([R - rib_proud / 2, 0, rib_z1 + rib_clr - detent_d / 2 + detent_h])
-            sphere(d = detent_d + 2 * rib_clr, $fn = 24);
+// End block + dovetail tail at the +X bow-tie end: the plate's end thickened
+// to dt_len tall from end_blk_x out, and the tail (the slot profile shrunk by
+// the clearance) beyond it.
+module strut_tail(clr = dt_clr) {
+    translate([0, 0, -strut_t / 2]) linear_extrude(dt_len) {
+        intersection() { strut_plan_2d(clr); translate([end_blk_x, -20]) square([20, 40]); }
+        offset(delta = -clr) dt_slot_2d();
     }
 }
+function tail_tip_x(clr = dt_clr) = boss_r_in + dt_depth - clr;   // the flat end face the bar stands on to print
 
 // vane bar profile in the YZ plane: the sketch outline traced as one polygon.
 // (A hull of corner circles was wrong here: the arcs are not tangent to the
@@ -511,7 +526,7 @@ module vanes() { vane_roots(); vane_fins(); tie_bar_placed(); slats(); }
 // =====================================================================
 if (show_ghost)  %import("Shroud.stl");
 if (show_shroud) color("SteelBlue") shroud();
-if (show_strut)  color("Goldenrod") strut();
+if (show_strut)  color("Goldenrod") strut_placed();
 if (show_vanes) {
     color("IndianRed")  vane_roots();
     color("Salmon")     vane_fins();

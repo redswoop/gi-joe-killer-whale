@@ -15,4 +15,4 @@ if (part == "vane_left")  vane_print(-1);
 if (part == "tie_bar")    translate([0, 0, -tie_y0]) rotate([90, 0, 0]) tie_bar();          // flat, knurled face up, holes vertical
 if (part == "slat")       translate([0, 0, slat_t / 2]) rotate([-90, 0, 0]) slat();              // flat, rod along the bed
 if (part == "shroud")     { duct(); deco_boxes(); tab(); }
-if (part == "strut")      translate([0, 0, shoe_x]) rotate([0, -90, 0]) strut();   // standing on one shoe's flat face; no supports needed
+if (part == "strut")      translate([0, 0, tail_tip_x()]) rotate([0, -90, 0]) strut();   // standing on one tail's flat tip; no supports needed (brim)
