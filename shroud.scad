@@ -540,8 +540,10 @@ module fin_outline_2d() {   // (y, z)
     offset(r = fin_corner) offset(delta = -fin_corner)
         polygon([[hinge_y0, fin_z_low], [hinge_y1, fin_z_low],
                  [hinge_y1, hinge_z + fin_depth_bot], [hinge_y0, hinge_z + fin_depth_top]]);
-    // the -Y inner corner (toy's top, next to the bar's square corner) stays square to match it (Armen 2026-09-11)
+    // both inner corners (along the hinge, next to the bar's square end corners) stay square to match it
+    // (Armen 2026-09-11); the two outer corners keep fin_corner
     translate([hinge_y0, fin_z_low]) square([fin_corner, fin_corner]);
+    translate([hinge_y1 - fin_corner, fin_z_low]) square([fin_corner, fin_corner]);
 }
 module fin_panel_2d(f) {   // one ribbed panel outline, inset 3 mm, following the taper
     L = hinge_y1 - hinge_y0; y0 = hinge_y0 + f[0] * L; y1 = hinge_y0 + f[1] * L; m = 3;
