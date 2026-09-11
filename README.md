@@ -10,7 +10,7 @@ vane mechanism reconstructed from photos of the real MET-b52 parts.
 | `viewer.json` | Part list for the browser viewer (`../viewer`, `bun run dev`, open http://127.0.0.1:5180/). |
 | `print_layout.scad` | `-D part="..."`: each part laid flat/upright in its printing pose. |
 | `hinge_coupon.scad` | Tolerance test print: hinge x3, tooth notches x3, keyhole eyes x3, strut pockets x3 + one ear. |
-| `tab_coupon.scad` | Tab fit test print: four 108° arcs of the shroud (30 % of the ring, centred on the tab, `keep = 0.3`) with the L tab at `grips = [0.2, 0.5, 0.8, 1.1]`, labelled `g0.2` etc. on a tag. |
+| `tab_coupon.scad` | Tab fit test print: four 108° arcs of the shroud (30 % of the ring, centred on the tab, `keep = 0.3`) with tab `variants` = [grip, stem_extra] pairs, labelled on a tag. Round 1 laddered the grip; round 2 ladders the stem width at grip 0.7. |
 | `check.scad` | Collision pairs (`-D pair="..."`, `steer`, `tilt`, `strut_dz`). Run them all: `../tools/check.sh check.scad 'steer=0' 'steer=30' 'steer=-30 tilt=20' 'strut_dz=8'`. |
 | `compare.scad` | Volume diff against the Shapr3D export (`ref_bodies/` = the STL split per shell). Numeric version: `../tools/voxcmp.py stl/shroud.stl ref_bodies/shroud.stl`. |
 | `export.sh` | Regenerates every STL in `stl/`. Run after changing parameters. |
@@ -43,7 +43,7 @@ Print the **coupon** first and put the winning numbers into `hinge_clr`, `peg_cl
 - All plate/slat/pin dimensions are photo estimates scaled off the 92 mm bar; calipers on the real parts would firm them up.
 - Coupon round 3 not yet printed: ear-in-pocket fit (0.10 / 0.20 / 0.30), keyhole click, bullet-rooted pins.
 - Fallback if the keyhole/pins still misbehave: a separate reinforced peg that tabs into a slot in the plate.
-- Mounting tab: tab coupon printed 2026-09-10 (olive green): grip 0.8 held best, a tad tight; 0.5 and 0.2 too loose. `tab_grip = 0.7`. Holds down well; **some left/right play remains** (along X, the toy's width). Open: what the tab engages on the Whale, to add a feature that locates it in X.
+- Mounting tab: coupon round 1 (2026-09-10, olive green): grip 0.8 held best, a tad tight; 0.5 and 0.2 too loose -> `tab_grip = 0.7`. Holds down well but some left/right play remains. The Whale's opening is a square the 4 mm head passes through, then a channel the 2.6 mm stem slides along while the foot hooks behind; the channel is wider than the stem. **Print `stl/tab_coupon.stl` round 2 next**: stem widened toward the foot by 0.15 / 0.3 / 0.45 / 0.6 (`tab_stem_extra`, head unchanged, foot overhang 1.43 minus that). Put the winner into `tab_stem_extra`.
 - Fans and the spin box are out of scope so far.
 
 ## Gotchas learned

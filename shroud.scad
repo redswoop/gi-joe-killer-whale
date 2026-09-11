@@ -35,12 +35,16 @@ tab_h  = 5.2;
 tab_grip = 0.7;   // shorten the stem by this much: pulls the hook foot in toward the wall so it
                   // bites the Whale's lip (as sketched the gap was 2.442 and the shroud rocked / slid out).
                   // Tab coupon 2026-09-10: 0.8 held best but a tad tight, 0.5 too loose -> 0.7
+tab_stem_extra = 0;   // widen the stem by this much toward the foot (the head stays 4.03 wide, the foot's
+                      // overhang shrinks from 1.43 by the same amount). The Whale's opening is a square
+                      // for the head, then a channel the stem slides along; the channel is wider than
+                      // the 2.6 stem and the shroud shifts left/right. Coupon 2 (2026-09-10) ladders this.
 // plan-view outline, as sketched (x, y); inner points pushed to r=45 to fuse with the wall.
-// A function of the grip so tab_coupon.scad can print a ladder of slot widths.
-function tab_outline(grip = tab_grip) =
+// A function of the grip and stem width so tab_coupon.scad can print ladders.
+function tab_outline(grip = tab_grip, stem_extra = tab_stem_extra) =
     [[-0.687, 45], [-0.687, 49.778 - grip], [3.344, 49.778 - grip],
-     [3.344, 48.442 - grip], [1.916, 48.442 - grip], [1.916, 45]];
-tab_pts = tab_outline(tab_grip);
+     [3.344, 48.442 - grip], [1.916 + stem_extra, 48.442 - grip], [1.916 + stem_extra, 45]];
+tab_pts = tab_outline(tab_grip, tab_stem_extra);
 tab_slot = 48.442 - duct_r_out;   // slot between the wall and the hook foot before any grip (2.442)
 
 // ---------- Sketch 04 + Extrusion 06/08/09: strut plate and hub ----------
@@ -296,8 +300,8 @@ module deco_boxes() {
             rotate([0, 0, i * box_step]) deco_box();
 }
 
-module tab(grip = tab_grip) {
-    pts = tab_outline(grip);
+module tab(grip = tab_grip, stem_extra = tab_stem_extra) {
+    pts = tab_outline(grip, stem_extra);
     translate([0, 0, tab_z0]) linear_extrude(tab_h) polygon(pts);
     // Fillet 02 also blends the tab stem into the wall
     stem_x0 = pts[0][0]; stem_x1 = pts[4][0];
