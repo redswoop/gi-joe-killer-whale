@@ -71,7 +71,12 @@ panel_t      = 0.7;     // z -1 .. -1.7
 // ---------- Plane offset + Sketch 06 + Extrusion 11 + Mirror: vane bars ----------
 vane_x     = 27.5;      // inner face; 2 mm thick outward
 vane_t     = 2;
-vane_edge_r = 0.7;      // fillet on every edge of the bar and plate outlines, both faces (Armen 2026-09-11: 'they look too blocky')
+vane_edge_r = 0.5;      // fillet on every edge of the bar and plate outlines, both faces (Armen 2026-09-11: 'they look too blocky').
+                        // 0.7 at first; the taper's thin edge (vane_t_tip) must stay >= 2 * r
+vane_t_tip  = 1.2;      // TAPER (Armen 2026-09-11: 'the slightest taper, widest at the root where they attach to the duct, down to a thin
+                        // edge at the outside'): thickness vane_t at the bar's lowest edge (vane_z_root) thinning linearly with z to
+                        // vane_t_tip at the plate's farthest edge (hinge_z + fin_depth_bot, z 59), symmetric about the mid-plane.
+                        // Both bodies follow the same law, so the bar is 2.0 -> 1.8 and the plate 1.7 -> 1.2. Each face slopes 0.6 deg.
 // profile in the YZ plane (y, z), points straight from Sketch 06
 vane_top_l = [-45.72, 30.201];  vane_top_r = [47, 31];
 vane_end_l = [-45.72, 24.121];  vane_end_r = [47, 28];         // where the vertical ends meet the arcs
@@ -406,8 +411,35 @@ module ear() {
     translate([0, 0, -strut_t / 2]) linear_extrude(strut_t / 2 + ear_top) ear_2d();
 }
 
-// a 2D outline in (y, z) -> the plate x in [vane_x, vane_x + vane_t], every edge rounded vane_edge_r
-module plate_yz(r = vane_edge_r) { translate([vane_x, 0, 0]) rotate([90, 0, 90]) rounded_plate(vane_t, r, 16) children(); }
+// ---- tapered, edge-rounded plates ----
+vane_z_root = vane_arc_l[1][1];                                   // 20.584: the bar's lowest point, full thickness here and below
+function vane_z_tip() = hinge_z + fin_depth_bot;                  // the plate's farthest edge (a function: hinge_z is defined further down)
+function vane_thk(z) = let (f = min(max((z - vane_z_root) / (vane_z_tip() - vane_z_root), 0), 1)) vane_t + (vane_t_tip - vane_t) * f;
+function vane_face(z, side = 1) = vane_x + vane_t / 2 + side * vane_thk(z) / 2;   // x of the outer (+1) / inner (-1) face at height z
+// the slab between the two tapered faces, each pulled in by r, as a (x, z) polygon extruded along y
+module thk_wedge(r = 0) {
+    cx = vane_x + vane_t / 2;  z0 = vane_z_root;  z1 = vane_z_tip();  h0 = vane_t / 2 - r;  h1 = vane_t_tip / 2 - r;
+    rotate([90, 0, 0]) linear_extrude(200, center = true)
+        polygon([[cx - h0, -10], [cx + h0, -10], [cx + h0, z0], [cx + h1, z1], [cx + h1, 100], [cx - h1, 100], [cx - h1, z1], [cx - h0, z0]]);
+}
+// everything outboard of (outer face - depth): what a face_cut may remove
+module outer_beyond(depth) {
+    cx = vane_x + vane_t / 2;  z0 = vane_z_root;  z1 = vane_z_tip();  h0 = vane_t / 2 - depth;  h1 = vane_t_tip / 2 - depth;
+    rotate([90, 0, 0]) linear_extrude(200, center = true)
+        polygon([[cx + h0, -10], [cx + 20, -10], [cx + 20, 100], [cx + h1, 100], [cx + h1, z1], [cx + h0, z0]]);
+}
+// a 2D outline in (y, z) -> the tapered plate about x = vane_x + vane_t / 2, every edge rounded r: the outline
+// shrunk by r is extruded, cut to the wedge pulled in by r, then minkowski'd with a sphere (rounded_plate's
+// recipe, with the wedge in the middle). The sphere rolls along the sloping faces, so the fillets follow them.
+module plate_yz(r = vane_edge_r) {
+    minkowski() {
+        intersection() {
+            translate([vane_x - 1, 0, 0]) rotate([90, 0, 90]) linear_extrude(vane_t + 2) offset(r = -r) children();
+            thk_wedge(r);
+        }
+        sphere(r, $fn = 16);
+    }
+}
 
 // vane bar profile in the YZ plane: the sketch outline traced as one polygon.
 // (A hull of corner circles was wrong here: the arcs are not tangent to the
@@ -489,8 +521,11 @@ module hinge_fin_cut(yc, clr = hinge_clr) {
 // ---- cosmetic ribbed panels: grooves cut into a face, inside an outline ----
 // children: the 2D panel outline in (y, z). Cuts print_up-facing? No: cuts the
 // OUTER face (x = vane_x + vane_t) of the +X vane.
-module face_cut(depth) {   // extrude a (y,z) 2D shape into the outer face
-    translate([vane_x + vane_t - depth, 0, 0]) rotate([90, 0, 90]) linear_extrude(depth + 1) children();
+module face_cut(depth) {   // extrude a (y,z) 2D shape into the outer face, depth measured from the tapered face
+    intersection() {
+        translate([vane_x - 1, 0, 0]) rotate([90, 0, 90]) linear_extrude(vane_t + 5) children();
+        outer_beyond(depth);
+    }
 }
 
 // ---- the plate (fin): trapezoid in the YZ plane ----
@@ -499,6 +534,8 @@ module fin_outline_2d() {   // (y, z)
     offset(r = fin_corner) offset(delta = -fin_corner)
         polygon([[hinge_y0, fin_z_low], [hinge_y1, fin_z_low],
                  [hinge_y1, hinge_z + fin_depth_bot], [hinge_y0, hinge_z + fin_depth_top]]);
+    // the -Y inner corner (toy's top, next to the bar's square corner) stays square to match it (Armen 2026-09-11)
+    translate([hinge_y0, fin_z_low]) square([fin_corner, fin_corner]);
 }
 module fin_panel_2d(f) {   // one ribbed panel outline, inset 3 mm, following the taper
     L = hinge_y1 - hinge_y0; y0 = hinge_y0 + f[0] * L; y1 = hinge_y0 + f[1] * L; m = 3;
@@ -509,15 +546,14 @@ module vane_fin() {
         union() {
             plate_yz() fin_outline_2d();
             for (yc = hinge_pts) hinge_fin_knuckle(yc);
-            // linkage pin at the bottom trailing corner, pointing +Y (down): bullet root, pin, bulb.
-            // Everything is clipped flat at the outer face so the vane still prints on it.
-            intersection() {
-                translate([pin_x, hinge_y1 - 1, hinge_z + fin_depth_bot - link_pin_inset]) rotate([-90, 0, 0]) {
-                    cylinder(d = link_pin_d, h = link_pin_len + 1);
-                    cylinder(d1 = bullet_d, d2 = link_pin_d, h = bullet_len + 1);
-                    translate([0, 0, link_pin_len + 1 - (link_pin_d / 2 + tie_snap)]) sphere(d = link_pin_d + 2 * tie_snap);
-                }
-                translate([vane_x - 5, hinge_y0, 0]) cube([vane_t + 5, 200, 100]);
+            // linkage pin at the bottom trailing corner, pointing +Y (down): bullet root, pin, bulb, all on the
+            // plate's mid-plane. The bullet (4.5 dia) is the mount: it wraps the 1.26 mm plate at that corner
+            // on both faces, so the pin stays rooted however thin the taper gets. (It used to be clipped flat
+            // at the outer face for flat printing; the vane prints standing now.)
+            translate([pin_x, hinge_y1 - 1, hinge_z + fin_depth_bot - link_pin_inset]) rotate([-90, 0, 0]) {
+                cylinder(d = link_pin_d, h = link_pin_len + 1);
+                cylinder(d1 = bullet_d, d2 = link_pin_d, h = bullet_len + 1);
+                translate([0, 0, link_pin_len + 1 - (link_pin_d / 2 + tie_snap)]) sphere(d = link_pin_d + 2 * tie_snap);
             }
         }
         for (yc = hinge_pts) hinge_fin_cut(yc);
@@ -608,7 +644,7 @@ steer_eff = animate ? 30 * sin($t * 360) : steer;
 // pin_off outboard of its hinge axis and the left vane mirrors the right, so
 // the cranks mirror too. steer drives the right plate; the left plate's angle
 // is solved so the tie bar length stays constant (it ends up ~0.8 deg off at 30).
-pin_x   = vane_x + vane_t - link_pin_d / 2;   // the pin's x on the +X vane: flush with the outer face, so it prints flat
+pin_x   = vane_x + vane_t / 2;   // the pin's x on the +X vane: the plate's mid-plane (was flush with the outer face for flat printing)
 pin_off = pin_x - hinge_x;
 function pin_r(t) = [ hinge_x + pin_off * cos(t) + link_len * sin(t), hinge_z - pin_off * sin(t) + link_len * cos(t)];
 function pin_l(t) = [-hinge_x - pin_off * cos(t) + link_len * sin(t), hinge_z + pin_off * sin(t) + link_len * cos(t)];
