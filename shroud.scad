@@ -192,7 +192,7 @@ tooth_tail   = 6.5;    // cone tail length, fading to a point on the bar's face 
 tooth_key    = 3;      // notch depth into the rim = key engagement
 tooth_prong  = 11;     // the dart's tip is this far below the rim top: 3 of cylinder, then the nose. The prongs grip
                        // wherever the pod is fatter than the wall's half-band (1.15): about 9 mm of it
-tooth_clr    = 0.15;   // slot to wall, per face (radial). Untested: coupon round 3 ladders 0.10 / 0.15 / 0.20
+tooth_clr    = 0.10;   // slot to wall, per face (radial). Coupon round 3 (2026-09-12): 0.10 / 0.15 / 0.20 printed, 0.10 the best fit
 tooth_lead   = 0.6;    // chamfer on the slot mouth so the rim finds its way in
 tooth_box_clr = 0.3;   // the fork's outer prong keeps this clear of the deco boxes' faces and blends
 tooth_nub_d  = 1.4;  tooth_nub_h = 0.35;  tooth_nub_clr = 0.15;   // nub sphere, its protrusion, dimple clearance

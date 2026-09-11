@@ -30,7 +30,7 @@ Z = duct axis (airflow exits +Z). Y = the toy's vertical, **+Y (tab side) = the 
 4. **Slats** (`slat.stl` x2, flat). Spring the 59 mm rods into the holes in the two bars before the vanes go into the shroud. The plate now nearly spans the bars (0.3 mm end gaps), so they stay put sideways.
 5. **Tie bar** (`tie_bar.stl`, knurl up). Bulbs go through the big keyholes, slide the bar aft, pins click into the working holes.
 
-Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_clr`, `tooth_clr`, `tie_eye_clr`, `ear_clr`.
+Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_clr`, `tooth_clr` (settled: 0.10, round 3, 2026-09-12), `tie_eye_clr`, `ear_clr`.
 
 ## Print next (as of 2026-09-12)
 0. `stl/hinge_coupon_filpin.stl`: three standing hinge nubs with filament holes at 0.10 / 0.15 / 0.20. Push 1.75 filament
