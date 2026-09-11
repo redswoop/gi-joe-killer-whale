@@ -12,5 +12,8 @@ done
 printf '%-12s' coupon
 "$O" --backend Manifold --export-format binstl -o stl/hinge_coupon.stl hinge_coupon.scad 2>&1 | grep -iE "error|warning" | grep -v NoError || true
 echo "ok"
+printf '%-12s' tab_coupon
+"$O" --backend Manifold --export-format binstl -o stl/tab_coupon.stl tab_coupon.scad 2>&1 | grep -iE "error|warning" | grep -v NoError || true
+echo "ok"
 
 ../tools/stlinfo.py stl/*.stl
