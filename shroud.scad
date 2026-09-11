@@ -175,8 +175,9 @@ peg_y        = [31.924, 37.191];  peg_z = [19.065, 26.5];   // the +Y peg, strai
 peg_clr      = 0.15;   // peg / key to notch, per side. Coupon round 1 (2026-09-08): 'tooth fit 0.15 is fine'
 tooth_r      = 2.25;   // pod radius (3 was 'far too fat'); each prong is a D 3.9 wide and 1.1 thick beside the 2.3 mm slot
 tooth_nose   = 8;      // ogive nose length along the axis
-tooth_tail0  = 1;      // the cone tail starts this far above the rim top (the key stays full round)
-tooth_tail   = 6.5;    // cone tail length, fading to a point on the bar; ends just under the slat hole (y -34.6, z 26)
+tooth_over   = 1.5;    // the pod stays full round this far past the bar's bottom edge, then the tail cone fades out on the bar's
+                       // face (Armen 2026-09-11: the cone met the bar's edge 'as a single point, feels like a failure point')
+tooth_tail   = 6.5;    // cone tail length, fading to a point on the bar's face (the -Y one passes the slat hole at r ~1, a hair proud)
 tooth_key    = 3;      // notch depth into the rim = key engagement
 tooth_prong  = 11;     // the dart's tip is this far below the rim top: 3 of cylinder, then the nose. The prongs grip
                        // wherever the pod is fatter than the wall's half-band (1.15): about 9 mm of it
@@ -463,7 +464,7 @@ module peg() { translate([vane_x, peg_y[0], peg_z[0]]) cube([vane_t, peg_y[1] - 
 // half-profile of the pod in (radius, z): tangent-ogive nose (an arc of radius
 // rho through the tip, tangent to the cylinder), cylinder, cone tail
 module tooth_pod_profile_2d(sgn) {
-    zb = tooth_zb(sgn);  z0 = rim_z(sgn * tooth_ay) + tooth_tail0;
+    zb = tooth_zb(sgn);  z0 = bar_bot(sgn * tooth_ay) + tooth_over;   // full round to z0, then the tail
     R = tooth_r;  L = tooth_nose;  rho = (R * R + L * L) / (2 * R);
     polygon(concat([for (i = [0 : 16]) let (t = L * i / 16) [sqrt(rho * rho - (L - t) * (L - t)) + R - rho, zb + t]],
                    [[R, z0], [0, z0 + tooth_tail]]));
