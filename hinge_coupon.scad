@@ -68,11 +68,11 @@ translate([0, 68, 0]) linear_extrude(0.6) text("strut pocket .10 .20 .30", size 
 module tooth_sample(clr) {
     yc = tooth_yc;
     lay_flat(1) {
-        translate([vane_x, yc - 7, bar_bot(yc)]) cube([vane_t, 14, bar_top(yc) - bar_bot(yc)]);   // bar stub
+        translate([vane_x, yc - 10, bar_bot(yc)]) cube([vane_t, 20, bar_top(yc) - bar_bot(yc)]);   // bar stub, wider than the tooth and its fillets
         tooth_fork(1, clr);
         translate(tooth_nub_c(1)) sphere(d = tooth_nub_d, $fn = 32);
     }
 }
-for (i = [0 : 2]) translate([-8 + i * 20, 97 - tooth_yc, 0]) tooth_sample(tooth_clrs[i]);   // stubs at x 6..23, 26..43, 46..63, y 90..104
+for (i = [0 : 2]) translate([-8 + i * 20, 100 - tooth_yc, 0]) tooth_sample(tooth_clrs[i]);   // stubs at x 6..23, 26..43, 46..63, y 90..110
 translate([66 - 17, 90 - 22, 0]) intersection() { duct(); translate([17, 22, -1]) cube([23, 24, 30]); }   // rim piece with the notch, x 66..89
 translate([0, 86, 0]) linear_extrude(0.6) text("tooth .10 .15 .20", size = 2.2);

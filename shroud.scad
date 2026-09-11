@@ -148,7 +148,15 @@ bar_panels    = [[0.18, 0.40], [0.70, 0.92]];
 // it hugs the curve exactly even though the bar crosses the ring obliquely
 // (the wall band shifts 1.7 mm in y across the bar's 2 mm thickness).
 // A nub on the key's inside face still clicks into a dimple in the notch wall.
-tooth_w      = 9;      // tooth width along the bar (y): wall band 4.2 + clearances + ~2.2 mm of prong each side
+// Shape (Armen, 2026-09-11: "swoop into the duct, slightly conical, like the
+// lights on an art-deco wing"): in the bar's plane the tooth is a dart, tooth_w
+// wide where it leaves the bar with concave fillets, sides converging to a
+// round nose of radius tooth_tip_r; and its inside face thins from vane_t below
+// the key to tooth_tip_t at the nose.
+tooth_w      = 11;     // tooth width along the bar (y) where it meets the bar
+tooth_tip_r  = 3.5;    // nose radius: the tip is 7 wide, leaving ~1.2 mm of prong beside the slot at its thinnest corner
+tooth_fillet = 2.5;    // concave blend from the tooth's sides into the bar's bottom edge
+tooth_tip_t  = 1.0;    // thickness at the nose (the inside face slopes from the key's bottom down to it)
 tooth_key    = 3;      // notch depth into the rim = key engagement
 tooth_prong  = 7;      // prongs reach this far below the rim top (both faces of the wall)
 tooth_clr    = 0.15;   // slot to wall, per face (radial). Untested: coupon round 3 ladders 0.10 / 0.15 / 0.20
@@ -295,7 +303,12 @@ module pocket(clr = ear_clr) {
     translate([boss_r_in - 1, -ear_w / 2 - clr, -1]) cube([ear_r_in - boss_r_in + 2, ear_w + 2 * clr, 1 + strut_t / 2 + clr]);
 }
 
-// Notches for the keys, cut tooth_key down from the rim; plus the dimples the nubs click into
+// Notches for the keys, cut tooth_key down from the rim, plus the dimples the
+// nubs click into. The wall crosses the bar's plane obliquely, and the notch is
+// wider along the bar than the 4.4 mm band the wall occupies there, so the
+// notch is in effect a slot vane_t + 2 clr wide straight across the wall: its
+// two x faces locate the key; its y faces never meet wall material. (The key's
+// taper therefore plays no part in the fit; the prongs take care of radial play.)
 module vane_slots(clr = peg_clr) {
     for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0])
         for (sgn = [-1, 1]) {
@@ -384,13 +397,40 @@ module vane_2d() {
     polygon(concat([vane_top_l, vane_end_l], arc_pts(vane_arc_l), arc_pts(vane_arc_r), [vane_end_r, vane_top_r]));
 }
 
-// One fork tooth on the +X bar, side sgn (+1 = the +Y end). A block hanging
-// from the bar, minus the wall's annulus (offset clr) from the prong tips up to
-// the key's bottom, with a chamfered mouth. The block's top is buried in the bar.
+// One fork tooth on the +X bar, side sgn (+1 = the +Y end): the dart outline
+// below, extruded across the bar's thickness and thinned toward the nose, minus
+// the wall's annulus (offset clr) from the prong tips up to the key's bottom,
+// with a chamfered mouth.
+function tooth_zb(sgn) = tooth_key_z(sgn) - (tooth_prong - tooth_key);   // z of the nose (prong tips)
+// the dart in the bar's (y, z) frame: a flat top buried in the bar, hulled to the nose circle
+module tooth_dart_2d(sgn) {
+    yc = sgn * tooth_yc;  zb = tooth_zb(sgn);
+    hull() {
+        translate([yc - tooth_w / 2, bar_bot(yc)]) square([tooth_w, 1]);
+        translate([yc, zb + tooth_tip_r]) circle(r = tooth_tip_r);
+    }
+}
+// the dart plus concave fillets where its sides meet the bar's bottom edge:
+// offset(+f) then offset(-f) on "dart + bar" fills the two inside corners with
+// radius-f arcs (the boss_fade trick), and a box keeps only the neighbourhood,
+// so the rest of the bar outline is untouched. Includes a 3 mm strip of bar.
+module tooth_profile_2d(sgn) {
+    yc = sgn * tooth_yc;  zb = tooth_zb(sgn);  f = tooth_fillet;
+    intersection() {
+        offset(r = -f) offset(r = f) union() { vane_2d(); tooth_dart_2d(sgn); }
+        translate([yc - tooth_w / 2 - f - 1, zb - 1]) square([tooth_w + 2 * f + 2, bar_bot(yc) + 3 - (zb - 1)]);
+    }
+}
 module tooth_fork(sgn, clr = tooth_clr) {
-    yc = sgn * tooth_yc;  zk = tooth_key_z(sgn);  zb = zk - (tooth_prong - tooth_key);   // key bottom, prong tips
+    yc = sgn * tooth_yc;  zk = tooth_key_z(sgn);  zb = tooth_zb(sgn);   // key bottom, nose
     difference() {
-        translate([vane_x, yc - tooth_w / 2, zb]) cube([vane_t, tooth_w, bar_bot(yc) + 2 - zb]);
+        intersection() {
+            translate([vane_x, 0, 0]) rotate([90, 0, 90]) linear_extrude(vane_t) tooth_profile_2d(sgn);
+            // the inside face (x = vane_x) slopes in from full thickness at the key's bottom to tooth_tip_t at the nose
+            translate([0, yc, 0]) rotate([90, 0, 0]) linear_extrude(40, center = true)
+                polygon([[vane_x + vane_t - tooth_tip_t, zb - 1], [vane_x + vane_t + 1, zb - 1], [vane_x + vane_t + 1, 40],
+                         [vane_x - 1, 40], [vane_x - 1, zk], [vane_x, zk], [vane_x + vane_t - tooth_tip_t, zb]]);
+        }
         translate([0, 0, zb - 1]) linear_extrude(zk - zb + 1) annulus_2d(duct_r_in - clr, duct_r_out + clr);
         rotate_extrude() polygon([[duct_r_in - clr - tooth_lead, zb - 1], [duct_r_out + clr + tooth_lead, zb - 1],
                                   [duct_r_out + clr + tooth_lead, zb], [duct_r_out + clr, zb + tooth_lead],
