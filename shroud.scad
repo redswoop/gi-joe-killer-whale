@@ -32,8 +32,9 @@ box_skip     = [0, 1, 2, 22, 23];   // pattern instances deleted (centred on the
 // ---------- Extrusion 04: the L tab ----------
 tab_z0 = 1.75;
 tab_h  = 5.2;
-tab_grip = 0.2;   // shorten the stem by this much: pulls the hook foot in toward the wall so it
-                  // bites the Whale's lip (as sketched the gap was 2.442 and the shroud rocked / slid out)
+tab_grip = 0.7;   // shorten the stem by this much: pulls the hook foot in toward the wall so it
+                  // bites the Whale's lip (as sketched the gap was 2.442 and the shroud rocked / slid out).
+                  // Tab coupon 2026-09-10: 0.8 held best but a tad tight, 0.5 too loose -> 0.7
 // plan-view outline, as sketched (x, y); inner points pushed to r=45 to fuse with the wall.
 // A function of the grip so tab_coupon.scad can print a ladder of slot widths.
 function tab_outline(grip = tab_grip) =

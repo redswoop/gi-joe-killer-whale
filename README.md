@@ -43,7 +43,7 @@ Print the **coupon** first and put the winning numbers into `hinge_clr`, `peg_cl
 - All plate/slat/pin dimensions are photo estimates scaled off the 92 mm bar; calipers on the real parts would firm them up.
 - Coupon round 3 not yet printed: ear-in-pocket fit (0.10 / 0.20 / 0.30), keyhole click, bullet-rooted pins.
 - Fallback if the keyhole/pins still misbehave: a separate reinforced peg that tabs into a slot in the plate.
-- Mounting tab: as sketched the shroud rocked and slid off the Whale (slot 2.44 between wall and hook foot). `tab_grip` shortens the stem and narrows the slot. **Print `stl/tab_coupon.stl` next**: four 108° arcs at grip 0.2 / 0.5 / 0.8 / 1.1 (slot 2.24 / 1.94 / 1.64 / 1.34). Put the winner into `tab_grip`. If none holds, the next knobs are the foot length (`tab_pts[2][0]`) and tab height (`tab_h`), or a second tab.
+- Mounting tab: tab coupon printed 2026-09-10 (olive green): grip 0.8 held best, a tad tight; 0.5 and 0.2 too loose. `tab_grip = 0.7`. Holds down well; **some left/right play remains** (along X, the toy's width). Open: what the tab engages on the Whale, to add a feature that locates it in X.
 - Fans and the spin box are out of scope so far.
 
 ## Gotchas learned
