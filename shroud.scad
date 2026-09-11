@@ -77,8 +77,8 @@ vane_top_l = [-45.72, 30.201];  vane_top_r = [47, 31];
 vane_end_l = [-45.72, 24.121];  vane_end_r = [47, 28];         // where the vertical ends meet the arcs
 vane_arc_l = [[-45.72, 24.121], [-42.111, 20.584], [-41.359, 24.961]];   // start, end, centre
 vane_arc_r = [[43.931, 25.813], [47, 28], [44.133, 28.777]];
-// Sketch 06 also had two 2 mm pegs under the bar (y -38.4..-31.7 and 31.9..37.2, 2 mm into the rim);
-// the fork teeth below replace them (git: 8ee9512 and before for the peg version).
+// Sketch 06 also had two 2 mm pegs under the bar. The +Y one is kept exactly (peg_y / peg_z below:
+// it drops into a slot in the Whale's base); the -Y one became the fork dart.
 
 // ---------- vane mechanism (new design, from photos of the real MET-b52 vanes) ----------
 // Each vane = fixed root bar (your Sketch 06 body) + a trapezoidal plate hinged
@@ -101,7 +101,8 @@ hinge_pts    = [-34, 36];     // Y centres of the two hinge nubs: 10 mm in from 
 hinge_len    = 3 * knuckle_l + 2 * knuckle_gap;   // root-plate-root, 12.8 mm
 hinge_lift   = 0.6;    // barrel bottom above the bar's top edge; a printed barrel has a flat where it met the bed
 hinge_z      = 31 + hinge_lift + barrel_d / 2;
-hinge_y0     = -44;  hinge_y1 = 46;         // plate span along the bar
+hinge_y0     = vane_top_l[0];  hinge_y1 = 46;   // plate span along the bar. The -Y end is flush with the bar's end (was -44,
+                                                // a photo estimate) so both bodies stand on the bed when the vane prints vertically
 hinge_in     = true;   // barrel on the inside face (toward the fan), hidden between the vanes
 hinge_x      = hinge_in ? vane_x + vane_t - barrel_d / 2 : vane_x + barrel_d / 2;   // barrel tangent to one face
 print_face   = "outer";   // which face of the vane lies on the bed: "outer" (no supports; panels against the bed)
@@ -138,46 +139,46 @@ panel_recess  = 0.4;  panel_pitch = 1.0;  panel_groove = 0.55;   // ribbed recta
 fin_panels    = [[0.22, 0.45], [0.67, 0.90]];   // along the plate, as fractions of its length
 bar_panels    = [[0.18, 0.40], [0.70, 0.92]];
 
-// root-to-shroud: FORK TEETH (2026-09-11; the drop-in pegs before were a loose,
-// rocky fit). Each tooth is a fork that straddles the duct wall, like a clothes
-// peg on a line:
-//   - the KEY in the middle drops tooth_key deep into a notch in the rim. It
-//     locates the vane along the rim and is the Z stop (key bottom on notch floor).
-//   - two PRONGS continue tooth_prong below the rim top on the inside and the
-//     outside face of the wall. They grip the wall and stop the vane rocking.
-// The slot between the prongs is the wall's own annulus offset by tooth_clr.
-// A nub on the key clicks into a dimple in the notch wall.
-//
-// Shape: a CANOE FAIRING (Armen's reference, 2026-09-11: the flap-track pods
-// under an airliner's wing; "swoop into the duct"). The tooth is a bullet, a
-// body of revolution about an axis along Z (the airflow): elliptical nose
-// pointing into the duct, a cylinder through the rim, and a cone tail that
-// fades out up the bar's inside face. The axis sits on the wall's mid-radius,
-// so the wall splits the pod into two D-shaped prongs, at tooth_ang around the
-// ring: the middle of the 9 deg gap between the deco boxes at 45 and 60 deg,
-// because the -Y tooth's outer prong reaches down among the boxes. The pod is
-// clipped flat at the bar's OUTER face so the vane still prints flat (a loaf on
-// the bed; the flank leaves the bed at asin(d / r) = 45 deg from vertical at
-// worst), and the bulge is on the inside face with the hinge barrels. The rim
-// notch is the same D offset peg_clr.
-tooth_ang    = 52.5;   // pod axis angle around the ring from +X (deg); the pod spans +/- 3.7 deg at the boxes' radius
-tooth_r      = 3;      // pod radius; each prong is a D 5.5 wide and 1.85 thick beside the 2.3 mm slot. 3.25 grazed the 60 deg box's blend
-tooth_nose   = 8;      // nose length along the axis: a DART (Armen: 'extends towards the middle of the shroud and tapers'); = tooth_r would be a hemisphere
+// root-to-shroud, two different teeth per bar (2026-09-11):
+//   +Y (the toy's bottom) = the ORIGINAL PEG from Sketch 06. The Whale's base
+//   has a small slot this peg drops into, so it keeps the sketch's size exactly:
+//   the bar's thickness, 5.27 wide, 2.2 mm below the rim, sharp-edged (Armen:
+//   'we can't have them be wider than the original size... the slot is quite
+//   small, 1-2 mm depth max'). Weaker than a fork, but the base supports it.
+//   -Y (the toy's top) = a FORK DART that straddles the duct wall like a clothes
+//   peg on a line: the KEY drops tooth_key into a round notch in the rim
+//   (locates along the rim, Z stop); two PRONGS continue below the rim on both
+//   faces of the wall and grip it, stopping the vane rocking. The slot between
+//   the prongs is the wall's own annulus offset tooth_clr, mouth chamfered. A
+//   nub on the key clicks into a dimple in the notch wall.
+//   Shape: a slender body of revolution about an axis along Z (the airflow),
+//   centred on the bar's mid-plane so it is the same on both faces (the vane
+//   prints standing up; a flat-clipped pod 'looked weird'): tangent-ogive nose
+//   reaching toward the shroud's mid-height, a short cylinder through the rim,
+//   a cone tail fading up the bar. The wall splits the round pod into two D
+//   prongs whatever angle the bar crosses the ring at. At the mid-plane the pod
+//   sits 50.7 deg around the ring and its outer prong reaches down beside the
+//   deco box at 45 deg: deco_box_keepout() shaves the prong where it would
+//   touch that box's blend (a small flat, below the rim, among the boxes).
+peg_y        = [31.924, 37.191];  peg_z = [19.065, 26.5];   // the +Y peg, straight from Sketch 06: y span, z bottom .. top (buried in the bar)
+peg_clr      = 0.15;   // peg / key to notch, per side. Coupon round 1 (2026-09-08): 'tooth fit 0.15 is fine'
+tooth_r      = 2.25;   // pod radius (3 was 'far too fat'); each prong is a D 3.9 wide and 1.1 thick beside the 2.3 mm slot
+tooth_nose   = 8;      // ogive nose length along the axis
 tooth_tail0  = 1;      // the cone tail starts this far above the rim top (the key stays full round)
-tooth_tail   = 7;      // cone tail length, fading to a point on the bar's inside face (the -Y one ends just under the slat hole)
+tooth_tail   = 6.5;    // cone tail length, fading to a point on the bar; ends just under the slat hole (y -34.6, z 26)
 tooth_key    = 3;      // notch depth into the rim = key engagement
-tooth_prong  = 11;     // the dart's tip is this far below the rim top: 3 of cylinder, then the 8 mm nose. The prongs grip
-                       // wherever the pod is fatter than the wall's half-band (1.15): about 10 mm of it
+tooth_prong  = 11;     // the dart's tip is this far below the rim top: 3 of cylinder, then the nose. The prongs grip
+                       // wherever the pod is fatter than the wall's half-band (1.15): about 9 mm of it
 tooth_clr    = 0.15;   // slot to wall, per face (radial). Untested: coupon round 3 ladders 0.10 / 0.15 / 0.20
 tooth_lead   = 0.6;    // chamfer on the slot mouth so the rim finds its way in
-peg_clr      = 0.15;   // key to notch, per side
+tooth_box_clr = 0.3;   // the fork's outer prong keeps this clear of the deco boxes' faces and blends
 tooth_nub_d  = 1.4;  tooth_nub_h = 0.35;  tooth_nub_clr = 0.15;   // nub sphere, its protrusion, dimple clearance
 duct_r_mid   = (duct_r_in + duct_r_out) / 2;                                   // 45
-tooth_ax     = duct_r_mid * cos(tooth_ang);                                    // pod axis, on the wall's mid-radius: x 27.4 (2.1 inside the outer face), |y| 35.7
-tooth_ay     = duct_r_mid * sin(tooth_ang);
-tooth_tan    = [-tooth_ay, tooth_ax] / duct_r_mid;                             // unit tangent to the ring at the +Y axis, pointing to -x (the round side of the D)
+tooth_ax     = vane_x + vane_t / 2;                                            // pod axis: the bar's mid-plane (28.5) ...
+tooth_ay     = sqrt(duct_r_mid * duct_r_mid - tooth_ax * tooth_ax);            // ... where it crosses the wall's mid-radius (|y| 34.84, 50.7 deg)
+tooth_tan    = [-tooth_ay, tooth_ax] / duct_r_mid;                             // unit tangent to the ring at the +Y axis
 function rim_z(y) = duct_h_mid + y * tan(taper_deg);                            // rim top height at y (the taper plane)
-function tooth_key_z(sgn) = rim_z(sgn * tooth_ay) - tooth_key;                  // key bottom for the tooth on the +Y (sgn = 1) or -Y side
+function tooth_key_z(sgn) = rim_z(sgn * tooth_ay) - tooth_key;                  // key bottom for a fork on the +Y (sgn = 1) or -Y side
 function tooth_zb(sgn) = tooth_key_z(sgn) - (tooth_prong - tooth_key);          // z of the nose tip (prong tips)
 
 // strut-to-shroud: EARS IN POCKETS. The bar's ends bend up into curved ears
@@ -315,27 +316,22 @@ module pocket(clr = ear_clr) {
     translate([boss_r_in - 1, -ear_w / 2 - clr, -1]) cube([ear_r_in - boss_r_in + 2, ear_w + 2 * clr, 1 + strut_t / 2 + clr]);
 }
 
-// The pod's D section swept along Z: a round pod about the axis, hulled with
-// its mirror image across the bar's outer face and clipped back to that face.
-// children: the (r, z) half-profile to revolve. clr grows the radius.
-module tooth_d_sweep(sgn, clr = 0) {
-    x_face = vane_x + vane_t + clr;
-    intersection() {
-        hull() for (x = [tooth_ax, 2 * (vane_x + vane_t) - tooth_ax])
-            translate([x, sgn * tooth_ay, 0]) rotate_extrude($fn = 48)
-                intersection() { offset(delta = clr) children(); translate([0, -100]) square([100, 200]); }   // keep the grown profile off the axis
-        translate([-100, -100, -1]) cube([100 + x_face, 200, 100]);
-    }
+// The pod: a (r, z) half-profile (children) revolved about the tooth's axis.
+// clr grows the profile (the notch is the same profile offset clr).
+module tooth_sweep(sgn, clr = 0) {
+    translate([tooth_ax, sgn * tooth_ay, 0]) rotate_extrude($fn = 48)
+        intersection() { offset(delta = clr) children(); translate([0, -100]) square([100, 200]); }   // keep the grown profile off the axis
 }
-// Notches for the keys: the pod's D offset clr, cut tooth_key down from the rim
-// (the wall below stays solid for the prongs to grip); plus the dimples the nubs
-// click into. The notch's curved end walls locate the key along the rim.
+// Notches in the rim: the +Y peg's slot straight through the wall, and for
+// the -Y fork a round bite tooth_key deep (the wall below stays solid for the
+// prongs to grip; its curved end walls locate the key along the rim) with the
+// dimple its nub clicks into.
 module vane_slots(clr = peg_clr) {
-    for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0])
-        for (sgn = [-1, 1]) {
-            tooth_d_sweep(sgn, clr) translate([0, tooth_key_z(sgn)]) square([tooth_r, 30]);
-            translate(tooth_nub_c(sgn)) sphere(d = tooth_nub_d + 2 * tooth_nub_clr, $fn = 32);
-        }
+    for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0]) {
+        translate([vane_x - clr, peg_y[0] - clr, peg_z[0] - clr]) cube([vane_t + 2 * clr, peg_y[1] - peg_y[0] + 2 * clr, 30]);
+        tooth_sweep(-1, clr) translate([0, tooth_key_z(-1)]) square([tooth_r, 30]);
+        translate(tooth_nub_c(-1)) sphere(d = tooth_nub_d + 2 * tooth_nub_clr, $fn = 32);
+    }
 }
 
 module duct() {
@@ -420,24 +416,36 @@ module vane_2d() {
     polygon(concat([vane_top_l, vane_end_l], arc_pts(vane_arc_l), arc_pts(vane_arc_r), [vane_end_r, vane_top_r]));
 }
 
-// One fork tooth on the +X bar, side sgn (+1 = the +Y end): the canoe pod
-// swept along Z, minus the wall's annulus (offset clr) from the nose up to the
-// key's bottom, with a chamfered mouth.
-// half-profile of the pod in (radius, z): elliptical nose, cylinder, cone tail
+// The +Y peg: the sketch's rectangle, the bar's full thickness, sharp edges
+module peg() { translate([vane_x, peg_y[0], peg_z[0]]) cube([vane_t, peg_y[1] - peg_y[0], peg_z[1] - peg_z[0]]); }
+
+// The fork dart on the +X bar, side sgn (-1 = the -Y end): the pod revolved,
+// minus the wall's annulus (offset clr) from the nose up to the key's bottom,
+// the chamfered mouth, and the deco boxes' keep-out.
+// half-profile of the pod in (radius, z): tangent-ogive nose (an arc of radius
+// rho through the tip, tangent to the cylinder), cylinder, cone tail
 module tooth_pod_profile_2d(sgn) {
     zb = tooth_zb(sgn);  z0 = rim_z(sgn * tooth_ay) + tooth_tail0;
-    polygon(concat([[0, zb]],
-                   [for (a = [6 : 6 : 90]) [tooth_r * sin(a), zb + tooth_nose * (1 - cos(a))]],
-                   [[tooth_r, z0], [0, z0 + tooth_tail]]));
+    R = tooth_r;  L = tooth_nose;  rho = (R * R + L * L) / (2 * R);
+    polygon(concat([for (i = [0 : 16]) let (t = L * i / 16) [sqrt(rho * rho - (L - t) * (L - t)) + R - rho, zb + t]],
+                   [[R, z0], [0, z0 + tooth_tail]]));
+}
+// every deco box position (the skipped ones too, so both vanes see the same
+// thing), grown by the wall blend and clr: outside the wall only
+module deco_box_keepout(clr) {
+    w = box_w / 2 + wall_blend_r + clr;
+    for (i = [0 : box_n - 1]) rotate([0, 0, i * box_step])
+        translate([-w, duct_r_out - 0.5, -1]) cube([2 * w, 5, box_z0 + box_h + clr + 1]);
 }
 module tooth_fork(sgn, clr = tooth_clr) {
     zk = tooth_key_z(sgn);  zb = tooth_zb(sgn);   // key bottom, nose tip
     difference() {
-        tooth_d_sweep(sgn) tooth_pod_profile_2d(sgn);
+        tooth_sweep(sgn) tooth_pod_profile_2d(sgn);
         translate([0, 0, zb - 1]) linear_extrude(zk - zb + 1) annulus_2d(duct_r_in - clr, duct_r_out + clr);
         rotate_extrude() polygon([[duct_r_in - clr - tooth_lead, zb - 1], [duct_r_out + clr + tooth_lead, zb - 1],
                                   [duct_r_out + clr + tooth_lead, zb], [duct_r_out + clr, zb + tooth_lead],
                                   [duct_r_in - clr, zb + tooth_lead], [duct_r_in - clr - tooth_lead, zb]]);
+        deco_box_keepout(tooth_box_clr);
     }
 }
 
@@ -530,7 +538,8 @@ module vane_root() {
         union() {
             plate_yz() vane_2d();
             for (yc = hinge_pts) hinge_root(yc);
-            for (sgn = [-1, 1]) { tooth_fork(sgn); translate(tooth_nub_c(sgn)) sphere(d = tooth_nub_d, $fn = 32); }   // fork teeth + click nubs
+            peg();                                                                            // +Y: the sketch peg, into the base's slot
+            tooth_fork(-1); translate(tooth_nub_c(-1)) sphere(d = tooth_nub_d, $fn = 32);      // -Y: the fork dart + its click nub
         }
         for (y = slat_y) translate([vane_x - 8, y, slat_z]) rotate([0, 90, 0]) cylinder(d = slat_rod_d + 2 * slat_clr, h = vane_t + 9);   // long enough to pass any pod material on the inside face
         for (f = bar_panels) { L = vane_top_r[0] - vane_top_l[0];

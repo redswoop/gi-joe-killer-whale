@@ -1,5 +1,5 @@
 // Tolerance coupon: print this first, then put the winning numbers into
-// shroud.scad. Three hinge samples at three clearances, three slat axle holes,
+// shroud.scad. Three hinge samples at three clearances (standing, pins vertical), three slat axle holes,
 // three holes for the tie-bar peg, three strut pockets, and three fork teeth
 // with one piece of rim to try them on.  Everything prints flat.
 include <shroud.scad>
@@ -10,9 +10,10 @@ slat_clrs  = [0.10, 0.15, 0.20];   // slat axle hole clearance, per side (0.2 pr
 peg_hole_clr = [0.05, 0.10, 0.15]; // tie-bar eye clearance on the plate's link pin, per side
 tooth_clrs = [0.10, 0.15, 0.20];   // fork tooth slot to wall, per face
 
-// one hinge nub with a stub of bar and a stub of fin, laid on its inner face like the real part
+// one hinge nub with a stub of bar and a stub of fin, standing on its -Y end
+// with the pin vertical, like the real vane prints (2026-09-11: vertical)
 module hinge_sample(clr) {
-    lay_flat(1) {
+    translate([0, 0, hinge_len / 2]) rotate([90, 0, 0]) {
         translate([vane_x, -hinge_len / 2, 23]) cube([vane_t, hinge_len, 31 - 23]);   // bar stub, top edge at z = 31 like the real bar
         hinge_root(0);
         difference() {
@@ -24,7 +25,7 @@ module hinge_sample(clr) {
         }
     }
 }
-for (i = [0 : 2]) translate([i * 14 + 5, 8, 0]) hinge_sample(clearances[i]);
+for (i = [0 : 2]) translate([i * 14 - 22, 40, 0]) hinge_sample(clearances[i]);   // x 3..13, 17..27, 31..41; y 4..17
 
 // slat axle holes: a 2 mm plate with three vertical holes, exactly like the bar
 // prints (it lies on its face, so the holes stand up), and a 10 mm length of rod
@@ -42,7 +43,7 @@ translate([0, 37, 0]) difference() {
 translate([48, 40, 0]) { cylinder(d = link_pin_d, h = 5); translate([0, 0, 5 - link_pin_d / 2]) sphere(d = link_pin_d + 2 * tie_snap); }
 
 // labels
-for (i = [0 : 2]) translate([i * 14 + 30, 16, 0]) linear_extrude(0.6) text(str(clearances[i]), size = 2.5);   // above the samples, which sit at x 28.., 42.., 56.., y 1.6..14.4
+for (i = [0 : 2]) translate([i * 14 + 3, 18.5, 0]) linear_extrude(0.6) text(str(clearances[i]), size = 2.5);   // above the samples
 translate([0, 31, 0]) linear_extrude(0.6) text("slat .10 .15 .20", size = 2.2);
 translate([0, 46, 0]) linear_extrude(0.6) text("eye .05 .10 .15", size = 2.2);
 
@@ -61,18 +62,20 @@ for (i = [0 : 2]) translate([-36 + i * 12, 58, 0]) boss_piece(ear_clrs[i]);     
 translate([44, 58, duct_r_in]) rotate([0, 90, 0]) intersection() { strut(); translate([39, -9, -3]) cube([8, 18, 15]); }
 translate([0, 68, 0]) linear_extrude(0.6) text("strut pocket .10 .20 .30", size = 2.2);
 
-// fork teeth: three bar stubs with the +Y tooth at three slot clearances, lying
-// on the outer face like the real vane, and one piece of the rim around that
-// tooth's notch, base down. Push each tooth onto the rim: the key should seat
-// in the notch and the prongs should grip the wall without rocking.
+// fork darts: three stubs of bar with the -Y fork at three slot clearances,
+// standing on the stub's end like the real vane prints (on a thin foot), and
+// one piece of the rim around that tooth's notch, base down. Push each dart
+// onto the rim: the key should seat in the round notch and the prongs should
+// grip the wall without rocking.
 module tooth_sample(clr) {
-    yc = tooth_ay;
-    lay_flat(1) {
-        translate([vane_x, yc - 10, bar_bot(yc)]) cube([vane_t, 20, bar_top(yc) - bar_bot(yc)]);   // bar stub, wider than the tooth and its fillets
-        tooth_fork(1, clr);
-        translate(tooth_nub_c(1)) sphere(d = tooth_nub_d, $fn = 32);
+    yc = -tooth_ay;
+    translate([0, 0, -(yc - 10)]) rotate([90, 0, 0]) {
+        translate([vane_x, yc - 10, bar_bot(yc)]) cube([vane_t, 20, bar_top(yc) - bar_bot(yc)]);   // bar stub
+        tooth_fork(-1, clr);
+        translate(tooth_nub_c(-1)) sphere(d = tooth_nub_d, $fn = 32);
     }
+    translate([vane_x - 2, -bar_top(yc) - 1, 0]) cube([vane_t + 4, bar_top(yc) - bar_bot(yc) + 2, 0.8]);   // foot under the stub's end
 }
-for (i = [0 : 2]) translate([-8 + i * 22, 100 - tooth_ay, 0]) tooth_sample(tooth_clrs[i]);   // stubs at x 2..23, 24..45, 46..67, y 90..110
-translate([70 - 17, 90 - 22, 0]) intersection() { duct(); translate([17, 22, -1]) cube([23, 24, 30]); }   // rim piece with the notch, x 70..93
-translate([0, 86, 0]) linear_extrude(0.6) text("tooth .10 .15 .20", size = 2.2);
+for (i = [0 : 2]) translate([-25 + i * 14, 108, 0]) tooth_sample(tooth_clrs[i]);   // x 0..7, 14..21, 28..35; y 76..103
+translate([42 - 17, 68 + 46, 0]) intersection() { duct(); translate([17, -46, -1]) cube([23, 24, 30]); }   // rim piece with the -Y notch, x 42..65, y 68..92
+translate([0, 72, 0]) linear_extrude(0.6) text("tooth .10 .15 .20", size = 2.2);
