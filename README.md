@@ -1,6 +1,6 @@
 # Killer W.H.A.L.E. fan shroud + steering vanes (OpenSCAD)
 
-State as of 2026-09-10. Parametric port of Armen's Shapr3D shroud, plus a new print-in-place
+State as of 2026-09-11 (end of the 2026-09-10 session). Parametric port of Armen's Shapr3D shroud, plus a new print-in-place
 vane mechanism reconstructed from photos of the real MET-b52 parts.
 
 ## Files
@@ -30,6 +30,12 @@ Z = duct axis (airflow exits +Z). Y = the toy's vertical, **+Y (tab side) = the 
 5. **Tie bar** (`tie_bar.stl`, knurl up). Bulbs go through the big keyholes, slide the bar aft, pins click into the working holes.
 
 Print the **coupon** first and put the winning numbers into `hinge_clr`, `peg_clr`, `tie_eye_clr`.
+
+## Print next (as of 2026-09-11)
+1. `stl/hinge_coupon.stl`: hinge 0.25 / 0.30 / 0.35 (vanes at 0.4 were too loose), strut ear pockets 0.10 / 0.20 / 0.30, keyhole eyes, bullet pins.
+2. `stl/shroud.stl` with the settled tab (`tab_grip = 0.7`, `tab_stem_extra = 0.2`) and the new strut pockets.
+3. `stl/strut.stl` (ears in pockets, standing on an ear, brim) once the pocket clearance is known.
+4. Vanes at `hinge_clr = 0.3` once the coupon confirms it.
 
 ## Design notes
 - Hinge: two 13 mm nubs per vane at y = -34 / 36 (over the teeth), barrel 4.2, round pin 1.4, teardrop holes, barrels on the inside face. Printed vanes at `hinge_clr = 0.4` swung through the full range but were too loose (2026-09-10) -> 0.3; the coupon now ladders 0.25 / 0.30 / 0.35. `hinge_lift = 0.6` keeps the barrel off the bar's top edge (a printed barrel has a flat where it met the bed).
