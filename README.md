@@ -10,7 +10,7 @@ vane mechanism reconstructed from photos of the real MET-b52 parts.
 | `viewer.json` | Part list for the browser viewer (`../viewer`, `bun run dev`, open http://127.0.0.1:5180/). |
 | `print_layout.scad` | `-D part="..."`: each part laid flat/upright in its printing pose. |
 | `hinge_coupon.scad` | Tolerance test print: hinge x3, tooth notches x3, keyhole eyes x3, strut twist-lock sample. |
-| `tab_coupon.scad` | Tab fit test print: four lower halves of the shroud (the +Y half) with the L tab at `grips = [0.2, 0.5, 0.8, 1.1]`, labelled `g0.2` etc. on a tag. |
+| `tab_coupon.scad` | Tab fit test print: four 108° arcs of the shroud (30 % of the ring, centred on the tab, `keep = 0.3`) with the L tab at `grips = [0.2, 0.5, 0.8, 1.1]`, labelled `g0.2` etc. on a tag. |
 | `check.scad` | Collision pairs (`-D pair="..."`, `steer`, `tilt`, `strut_a`). Run them all: `../tools/check.sh check.scad 'steer=0' 'steer=30' 'steer=-30 tilt=20'`. |
 | `compare.scad` | Volume diff against the Shapr3D export (`ref_bodies/` = the STL split per shell). Numeric version: `../tools/voxcmp.py stl/shroud.stl ref_bodies/shroud.stl`. |
 | `export.sh` | Regenerates every STL in `stl/`. Run after changing parameters. |
@@ -42,7 +42,7 @@ Print the **coupon** first and put the winning numbers into `hinge_clr`, `peg_cl
 - All plate/slat/pin dimensions are photo estimates scaled off the 92 mm bar; calipers on the real parts would firm them up.
 - Coupon round 3 not yet printed: twist lock feel, keyhole click, bullet-rooted pins.
 - Fallback if the keyhole/pins still misbehave: a separate reinforced peg that tabs into a slot in the plate.
-- Mounting tab: as sketched the shroud rocked and slid off the Whale (slot 2.44 between wall and hook foot). `tab_grip` shortens the stem and narrows the slot. **Print `stl/tab_coupon.stl` next**: four half-shrouds at grip 0.2 / 0.5 / 0.8 / 1.1 (slot 2.24 / 1.94 / 1.64 / 1.34). Put the winner into `tab_grip`. If none holds, the next knobs are the foot length (`tab_pts[2][0]`) and tab height (`tab_h`), or a second tab.
+- Mounting tab: as sketched the shroud rocked and slid off the Whale (slot 2.44 between wall and hook foot). `tab_grip` shortens the stem and narrows the slot. **Print `stl/tab_coupon.stl` next**: four 108° arcs at grip 0.2 / 0.5 / 0.8 / 1.1 (slot 2.24 / 1.94 / 1.64 / 1.34). Put the winner into `tab_grip`. If none holds, the next knobs are the foot length (`tab_pts[2][0]`) and tab height (`tab_h`), or a second tab.
 - Fans and the spin box are out of scope so far.
 
 ## Gotchas learned
