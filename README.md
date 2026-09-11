@@ -1,6 +1,6 @@
 # Killer W.H.A.L.E. fan shroud + steering vanes (OpenSCAD)
 
-State as of 2026-09-11 (evening). Parametric port of Armen's Shapr3D shroud, plus a new print-in-place
+State as of 2026-09-11 (late evening). Parametric port of Armen's Shapr3D shroud, plus a new print-in-place
 vane mechanism reconstructed from photos of the real MET-b52 parts.
 
 ## Files
@@ -10,10 +10,11 @@ vane mechanism reconstructed from photos of the real MET-b52 parts.
 | `viewer.json` | Part list for the browser viewer (`../viewer`, `bun run dev`, open http://127.0.0.1:5180/). |
 | `print_layout.scad` | `-D part="..."`: each part in its printing pose. Vanes stand on their -Y end (`vane_pose = "vertical"`). |
 | `hinge_coupon.scad` | Tolerance test print: hinge x3 (standing, pins vertical), slat axle holes x3, keyhole eyes x3, strut pockets x3 + one ear, fork darts x3 (standing) + a piece of rim. |
+| `saddle_coupon.scad` | Fit test for the saddle-mount alternative: three rim pieces with receivers at `chan_clrs` = 0.05 / 0.10 / 0.15, plus a standing stub of the bar's -Y end with the wedge peg. |
 | `tab_coupon.scad` | Tab fit test print: four 108° arcs of the shroud (30 % of the ring, centred on the tab, `keep = 0.3`) with tab `variants` = [grip, stem_extra] pairs, labelled on a tag. Round 1 laddered the grip; round 2 ladders the stem width at grip 0.7. |
 | `check.scad` | Collision pairs (`-D pair="..."`, `steer`, `tilt`, `strut_dz`). Run them all: `../tools/check.sh check.scad 'steer=0' 'steer=30' 'steer=-30 tilt=20' 'strut_dz=8'`. |
 | `compare.scad` | Volume diff against the Shapr3D export (`ref_bodies/` = the STL split per shell). Numeric version: `../tools/voxcmp.py stl/shroud.stl ref_bodies/shroud.stl`. |
-| `export.sh` | Regenerates every STL in `stl/`. Run after changing parameters. |
+| `export.sh` | Regenerates every STL in `stl/`, including the saddle variants (`shroud_saddle.stl`, `vane_*_saddle.stl`, `saddle_coupon.stl`). Run after changing parameters. |
 | `render.sh` | Headless PNGs into `renders/`. |
 | `Shroud.shapr/.step/.stl` | Armen's originals. Read the .shapr with `../tools/shapr_dump.py Shroud.shapr`. |
 
@@ -31,11 +32,36 @@ Z = duct axis (airflow exits +Z). Y = the toy's vertical, **+Y (tab side) = the 
 
 Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_clr`, `tooth_clr`, `tie_eye_clr`, `ear_clr`.
 
-## Print next (as of 2026-09-11 evening)
+## Print next (as of 2026-09-11 late evening)
+0. `stl/saddle_coupon.stl` (103 x 39 mm, flat, no supports; the stub wants a brim): decide fork vs saddle. If saddle: put the
+   winning cheek clearance into `chan_clr`, then print `shroud_saddle.stl` and `vane_*_saddle.stl` instead of the fork files.
 1. `stl/hinge_coupon.stl` (89 x 109 mm): hinge 0.15 / 0.20 / 0.25, slat holes 0.10 / 0.15 / 0.20, fork teeth 0.10 / 0.15 / 0.20 on a piece of rim, strut ear pockets 0.10 / 0.20 / 0.30, keyhole eyes, bullet pins.
 2. `stl/shroud.stl`: settled tab, strut pockets, and the new shallow (3 mm) key notches.
 3. `stl/strut.stl` (ears in pockets, standing on an ear, brim) once the pocket clearance is known.
 4. Vanes and slats once the coupon confirms `hinge_clr`, `tooth_clr` and `slat_clr`.
+
+## -Y mount: two variants side by side (2026-09-11)
+`ny_mount = "fork"` (default, the current design) or `"saddle"` (the alternative). Flip it in the viewer's parameter
+panel to compare; on the CLI `-D 'ny_mount="saddle"'`. The fork variant's STLs are geometrically unchanged by the
+switch (same volume and area, zero `voxcmp` difference against the pre-switch export).
+
+**Why**: the fork darts (1.1 mm prongs on the vane, printed standing, with support) broke off during support removal.
+**Saddle**: the shroud grabs the vane instead. `receiver()` is a block on the rim at each -Y crossing, aligned with
+the bar and trimmed to r `recv_r_in` 41 .. `recv_r_out` 48, printed flat with the shroud so its layers run along its
+loads. `channel_cut()` runs the bar's tapered slab (grown `chan_clr`) through it from `chan_clr` under the bar's
+bottom line up: two 1.6 mm cheeks up to `recv_z_top` (24.5, half a millimetre under the slat rod) grip the bar's faces
+and stop it rocking; the mouth has a 0.6 mm lead-in. Below the bar, `peg2_pocket()` takes the sketch's own -Y peg
+(`peg2()`: y -38.44 .. -31.66, bottom z 14.71) with its -Y face sloped 45° (`peg2_slope`), so the standing vane prints
+it without support and it self-centres along the rim on the way in; the pocket's +Y wall and floor locate the vane.
+A nub on the inner (fan-side) cheek at `recv_nub_z` clicks into a dimple in the bar; the cheek, backed by the boss
+below the rim, is the flexing member (interference = `recv_nub_h` - `chan_clr` = 0.15). Below the rim the block fades
+into both faces of the wall with 2 mm concave fillets (`recv_plan_2d`, the strut boss's offset trick) and stands on
+45° chamfers: `recv_ok_in()` inside the bore from `recv_z_low` 12, `recv_ok_out()` outside from just under the rim,
+2.4 mm above the deco boxes. Top edges rounded `recv_top_r`. Both cheeks exist only where the bar is inside the
+annulus (the outer one for the +Y 6 mm of the block, the inner for the -Y 8 mm; both over the middle 3.6 mm).
+Collision table all clear at steer 0 / 30 / -30+tilt 20 / tilt -20 / strut_dz 8. The +Y peg and its base slot are
+untouched. Renders: `renders/saddle_receiver.png`, `saddle_vane_in.png`, `saddle_bore.png`, `saddle_peg.png`,
+`saddle_coupon.png`, `saddle_asm_iso.png`. Untested: `chan_clr` (coupon), the nub's click, how the block reads on the toy.
 
 ## Design notes
 - Hinge: two 13 mm nubs per vane at y = -34 / 36 (over the teeth), barrel 4.2, round pin 1.4, teardrop holes, barrels on the inside face. Printed vanes at `hinge_clr = 0.4` swung through the full range but were too loose (2026-09-10); Armen's own tolerance tests say 0.15 (2026-09-11) -> `hinge_clr = 0.15`. **Confirmed 2026-09-11 on a full vane printed at 45° with the pins near vertical: "perfect, almost feels oiled".** (Coupon round 1 called 0.25 stuck, but that was printed flat with horizontal pins; the number depends on the pin being vertical.) `hinge_lift = 0.6` keeps the barrel off the bar's top edge (a printed barrel has a flat where it met the bed).
@@ -56,7 +82,7 @@ Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_c
 ## Open items
 - All plate/slat/pin dimensions are photo estimates scaled off the 92 mm bar; calipers on the real parts would firm them up. Also unmeasured: the slot in the Whale's base that the +Y peg drops into (assumed to fit the sketch peg).
 - Vane print 2026-09-11 (Armen, 45°, forks toward the bed): hinge perfect; **the fork darts broke off during support removal** (1.1 mm prongs). Second print in progress lying on its side, hinges down, support PLA with 0 interface distance. Fork geometry needs strengthening or a support-free orientation; see the open item below.
-- Fork darts: too fragile for support removal at `tooth_r = 2.25`. Options on the table: fatter pod (r 2.6 gives 1.5 mm prongs), shorter dart, a teardrop section that prints self-supporting standing up, or a sacrificial bridge across the prong tips.
+- Fork darts: too fragile for support removal at `tooth_r = 2.25`. Options on the table: fatter pod (r 2.6 gives 1.5 mm prongs), shorter dart, a teardrop section that prints self-supporting standing up, or a sacrificial bridge across the prong tips. **Or the saddle variant above (`ny_mount = "saddle"`), which has no thin features on the vane at all.**
 - Coupon round 3 not yet printed: hinge 0.15 / 0.20 / 0.25, slat holes, fork teeth 0.10 / 0.15 / 0.20, ear-in-pocket fit (0.10 / 0.20 / 0.30), keyhole click, bullet-rooted pins.
 - Fallback if the keyhole/pins still misbehave: a separate reinforced peg that tabs into a slot in the plate.
 - Mounting tab: settled by two coupon rounds on 2026-09-10 (olive green). Round 1 grip 0.8 best but a tad tight, 0.5 loose -> `tab_grip = 0.7`. Round 2 stem width: +0.15 and +0.3 both good, +0.3 a tad much -> `tab_stem_extra = 0.2`. Not yet tested on a full shroud print.

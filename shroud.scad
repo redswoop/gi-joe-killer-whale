@@ -193,6 +193,35 @@ function rim_z(y) = duct_h_mid + y * tan(taper_deg);                            
 function tooth_key_z(sgn) = rim_z(sgn * tooth_ay) - tooth_key;                  // key bottom for a fork on the +Y (sgn = 1) or -Y side
 function tooth_zb(sgn) = tooth_key_z(sgn) - (tooth_prong - tooth_key);          // z of the nose tip (prong tips)
 
+// -Y mount variant (2026-09-11): "fork" = the fork dart above (current); "saddle" = the SHROUD GRABS THE VANE.
+//   The fork darts (1.1 mm prongs, printed standing with support) broke off during support removal. In the
+//   saddle variant the vane's -Y end has no thin features at all: a block on the rim at each -Y crossing,
+//   aligned with the bar and trimmed to r recv_r_in..recv_r_out, is printed flat with the shroud (layers along
+//   its loads). The bar's -Y end drops into a CHANNEL through the block: two cheeks up to recv_z_top grip the
+//   bar's faces (following the taper) and stop it rocking; below the bar a POCKET takes the sketch's -Y peg,
+//   whose -Y face is sloped peg2_slope so the standing vane prints it without support and so it self-centres
+//   along the rim as it seats. The pocket's +Y wall and the slope locate the vane along the rim; the pocket
+//   floor carries it. A nub on the inner cheek clicks into a dimple in the bar's inner face (the flexing
+//   member is the cheek, backed by the boss below the rim). Below the rim the block fades into the wall like
+//   the strut boss; above it the outer 2 mm sits on a 45 deg chamfer, clear of the deco boxes.
+ny_mount      = "fork";   // "fork" | "saddle". Flip in the viewer's panel or with -D 'ny_mount="saddle"'
+peg2_y        = [-38.4382, -31.6641];   // the sketch's -Y peg (Sketch 06 lines 17..26): y span ...
+peg2_z0       = 14.7098;                // ... and its bottom, 2.0 below the rim there
+peg2_slope    = 45;                     // its -Y face, degrees off the bar's bottom line (45 = printable standing)
+chan_clr      = 0.10;                   // cheek to bar face, per side. Untested: saddle coupon ladders 0.05 / 0.10 / 0.15
+cheek_t       = 1.6;                    // cheek thickness beside the channel
+recv_end_t    = 1.6;                    // block material beyond the pocket's ends, along the bar
+recv_r_in     = 41;                     // block's inner face in the bore (the strut boss reaches 40.6)
+recv_r_out    = 48;                     // block's outer face, 2 mm proud of the wall (above the deco boxes)
+recv_z_low    = 12;                     // bottom of the boss in the bore (pocket floor at 14.56), 45 deg chamfer below it
+recv_gap_slat = 0.5;                    // block top stays this far below the slat rod (which passes the bar at slat_z)
+recv_fade     = 2;                      // concave fillets blending the boss into the wall's faces, below the rim
+recv_nub_h    = 0.25;                   // nub protrusion into the channel; interference on the way in = recv_nub_h - chan_clr
+recv_nub_z    = 23;                     // nub height: mid-cheek, at the ring crossing where the inner cheek is full
+recv_top_r    = 0.8;                    // round on the block's top edges (rounded_pad; the r 41 arc is concave, hull adds 0.09 mm)
+chan_lead     = 0.6;                    // 45 deg lead-in on the channel mouth so the bar finds its way in
+recv_z_top    = slat_z - slat_rod_d / 2 - recv_gap_slat;   // 24.5
+
 // strut-to-shroud: EARS IN POCKETS. The bar's ends bend up into curved ears
 // that hug the bore wall; a boss on the wall at each end has a pocket, open at
 // the base and blind halfway up the shroud. Slide the bar in from the base
@@ -341,20 +370,27 @@ module tooth_sweep(sgn, clr = 0) {
 module vane_slots(clr = peg_clr) {
     for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0]) {
         translate([vane_x - clr, peg_y[0] - clr, peg_z[0] - clr]) cube([vane_t + 2 * clr, peg_y[1] - peg_y[0] + 2 * clr, 30]);
-        tooth_sweep(-1, clr) translate([0, tooth_key_z(-1)]) square([tooth_r, 30]);
-        translate(tooth_nub_c(-1)) sphere(d = tooth_nub_d + 2 * tooth_nub_clr, $fn = 32);
+        if (ny_mount == "fork") {
+            tooth_sweep(-1, clr) translate([0, tooth_key_z(-1)]) square([tooth_r, 30]);
+            translate(tooth_nub_c(-1)) sphere(d = tooth_nub_d + 2 * tooth_nub_clr, $fn = 32);
+        }
     }
 }
 
 module duct() {
     difference() {
-        intersection() {
-            union() { duct_ring(); for (a = [0, 180]) rotate([0, 0, a]) boss_pad(); }
-            below_taper();
+        union() {
+            intersection() {
+                union() { duct_ring(); for (a = [0, 180]) rotate([0, 0, a]) boss_pad(); }
+                below_taper();
+            }
+            if (ny_mount == "saddle") receivers();
         }
         vane_slots();
+        if (ny_mount == "saddle") for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0]) { channel_cut(); peg2_pocket(); }
         for (a = [0, 180]) rotate([0, 0, a]) pocket();
     }
+    if (ny_mount == "saddle") for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0]) translate(recv_nub_c()) sphere(d = tooth_nub_d, $fn = 32);
 }
 
 module deco_boxes() {
@@ -488,6 +524,66 @@ module tooth_fork(sgn, clr = tooth_clr) {
     }
 }
 
+// ---- saddle receiver (ny_mount == "saddle"), built for the +X vane's -Y end; mirror in X for the other ----
+// The wedge peg in (y, z): the sketch's -Y peg with its -Y face sloped peg2_slope, the slope passing through the
+// bar's bottom edge at peg2_y[0] and continued 1 mm up into the bar so the bodies fuse. clr grows it into the pocket.
+function peg2_run() = (bar_bot(peg2_y[0]) - peg2_z0) / tan(peg2_slope);   // y run of the sloped face below the bar
+module peg2_2d(clr = 0) {
+    offset(delta = clr)
+        polygon([[peg2_y[0] + peg2_run(), peg2_z0], [peg2_y[1], peg2_z0], [peg2_y[1], bar_bot(peg2_y[1]) + 1],
+                 [peg2_y[0] - 1 / tan(peg2_slope), bar_bot(peg2_y[0]) + 1]]);
+}
+module yz_extrude(x0, w) { translate([x0, 0, 0]) rotate([90, 0, 90]) linear_extrude(w) children(); }   // a (y, z) shape along +X
+module peg2()                    { yz_extrude(vane_x, vane_t) peg2_2d(); }
+module peg2_pocket(clr = peg_clr) { yz_extrude(vane_x - clr, vane_t + 2 * clr) peg2_2d(clr); }
+
+// the block's plan view, aligned with the bar: cheeks either side of the channel, ends beyond the pocket
+function recv_y0() = peg2_y[0] - peg_clr - recv_end_t;
+function recv_y1() = peg2_y[1] + peg_clr + recv_end_t;
+module recv_box_2d(clr = chan_clr) {
+    x0 = vane_x - clr - cheek_t;  x1 = vane_x + vane_t + clr + cheek_t;
+    translate([x0, recv_y0()]) square([x1 - x0, recv_y1() - recv_y0()]);
+}
+module recv_core_2d(clr = chan_clr) { intersection() { recv_box_2d(clr); annulus_2d(recv_r_in, recv_r_out); } }
+// the core plus concave fades where its sides meet the wall's two faces (the strut boss's offset trick)
+module recv_plan_2d(clr = chan_clr) {
+    f = recv_fade;
+    intersection() {
+        offset(r = -f) offset(r = f) union() { recv_core_2d(clr); annulus_2d(duct_r_in, duct_r_out); }
+        offset(delta = f + 1) recv_box_2d(clr);      // the neighbourhood: the wall strip beyond it is dropped
+        annulus_2d(recv_r_in, recv_r_out);
+    }
+}
+// printable undersides: outside the wall the block sits on a 45 deg chamfer from just below the lowest rim it
+// touches; inside the bore the boss starts at recv_z_low on a 45 deg chamfer. Both are bodies of revolution
+// that the block is intersected with.
+module recv_ok_out() { z0 = rim_z(recv_y0()); rotate_extrude($fn = 180) polygon([[0, -1], [duct_r_out, -1], [duct_r_out, z0], [duct_r_out + 60, z0 + 60], [0, z0 + 60]]); }
+module recv_ok_in()  { rotate_extrude($fn = 180) polygon([[duct_r_in, -1], [110, -1], [110, 200], [0, 200], [0, recv_z_low + duct_r_in], [duct_r_in, recv_z_low]]); }
+module receiver(clr = chan_clr) {   // solid; duct() cuts the channel and pocket and adds the nub
+    intersection() {
+        union() {
+            intersection() { linear_extrude(recv_z_top) recv_plan_2d(clr); below_taper(); }   // below the rim, with the fades
+            rounded_pad(recv_z_top, recv_top_r, fillet_fn) recv_core_2d(clr);               // the block, rim to top, top edges rounded
+        }
+        recv_ok_out();
+        recv_ok_in();
+    }
+}
+module receivers() { for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0]) receiver(); }
+// the channel: the bar's tapered slab grown clr, from clr under the bar's bottom line up, over the block's length
+module channel_cut(clr = chan_clr) {
+    y0 = recv_y0() - 1;  y1 = recv_y1() + 1;
+    intersection() {
+        thk_wedge(-clr);
+        yz_extrude(vane_x - 5, vane_t + 10) polygon([[y0, bar_bot(y0) - clr], [y1, bar_bot(y1) - clr], [y1, 100], [y0, 100]]);
+    }
+    // lead-in: the mouth flares chan_lead at 45 deg over the block's length
+    xl = vane_face(recv_z_top, -1) - clr;  xr = vane_face(recv_z_top, 1) + clr;  zt = recv_z_top;
+    translate([0, (y0 + y1) / 2, 0]) rotate([90, 0, 0]) linear_extrude(y1 - y0, center = true) polygon([[xl, zt - chan_lead], [xr, zt - chan_lead], [xr + chan_lead + 1, zt + 1], [xl - chan_lead - 1, zt + 1]]);
+}
+// nub centre: on the inner cheek's face at the ring crossing, sunk so it stands recv_nub_h proud
+function recv_nub_c() = [vane_face(recv_nub_z, -1) - chan_clr - (tooth_nub_d / 2 - recv_nub_h), -tooth_ay, recv_nub_z];
+
 // ---- hinge pieces (all built for the +X vane; the -X vane is a mirror) ----
 // Each nub: root knuckle, plate knuckle, root knuckle, on a short pin.
 function nub_y0(yc, i) = yc - hinge_len / 2 + i * (knuckle_l + knuckle_gap);
@@ -583,8 +679,10 @@ module vane_root() {
             plate_yz() vane_2d();
             for (yc = hinge_pts) hinge_root(yc);
             peg();                                                                            // +Y: the sketch peg, into the base's slot
-            tooth_fork(-1); translate(tooth_nub_c(-1)) sphere(d = tooth_nub_d, $fn = 32);      // -Y: the fork dart + its click nub
+            if (ny_mount == "fork") { tooth_fork(-1); translate(tooth_nub_c(-1)) sphere(d = tooth_nub_d, $fn = 32); }   // -Y: the fork dart + its click nub
+            else peg2();                                                                                                 // -Y: the wedge peg, into the receiver's pocket
         }
+        if (ny_mount == "saddle") translate(recv_nub_c()) sphere(d = tooth_nub_d + 2 * tooth_nub_clr, $fn = 32);       // dimple for the receiver's nub
         for (y = slat_y) translate([vane_x - 8, y, slat_z]) rotate([0, 90, 0]) cylinder(d = slat_rod_d + 2 * slat_clr, h = vane_t + 9);   // long enough to pass any pod material on the inside face
         for (f = bar_panels) { L = vane_top_r[0] - vane_top_l[0];
             face_cut(panel_recess) grooves_2d(vane_top_l[0] + f[0] * L, vane_top_l[0] + f[1] * L, panel_pitch, panel_groove) bar_panel_2d(f); }
