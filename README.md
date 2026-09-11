@@ -33,9 +33,8 @@ Z = duct axis (airflow exits +Z). Y = the toy's vertical, **+Y (tab side) = the 
 Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_clr`, `tooth_clr` (settled: 0.10, round 3, 2026-09-12), `tie_eye_clr`, `ear_clr`.
 
 ## Print next (as of 2026-09-12)
-0. `stl/hinge_coupon_filpin.stl`: three standing hinge nubs with filament holes at 0.10 / 0.15 / 0.20. Push 1.75 filament
-   through each; the winner goes into `fil_clr`. Then the vanes print as `vane_*_filpin.stl` (or `_saddle_filpin` if the
-   saddle wins below) and the printed-pin files stay for reference.
+0. Filament hinge settled (`fil_clr = 0.15`) and fork dart settled (`tooth_clr = 0.10`): the vanes can print now as
+   `vane_right_filpin.stl` + `vane_left_filpin.stl` (fork mount), or `_saddle_filpin` if the saddle wins below.
 0. `stl/saddle_coupon.stl` (103 x 39 mm, flat, no supports; the stub wants a brim): decide fork vs saddle. If saddle: put the
    winning cheek clearance into `chan_clr`, then print `shroud_saddle.stl` and `vane_*_saddle.stl` instead of the fork files.
 1. `stl/hinge_coupon.stl` (89 x 109 mm): hinge 0.15 / 0.20 / 0.25, slat holes 0.10 / 0.15 / 0.20, fork teeth 0.10 / 0.15 / 0.20 on a piece of rim, strut ear pockets 0.10 / 0.20 / 0.30, keyhole eyes, bullet pins.
@@ -52,8 +51,8 @@ ends, the barrel grows to `barrel_fil_d` 4.6 for 1.28 mm walls (the hinge line r
 still all clear, with either mount), and the teardrop is gone since the vertical holes print round. Root and plate
 still print together in place, knuckles aligned. **Assembly**: cut 15 mm of 1.75 filament per nub (`hinge_len` 12.8 +
 2 x `fil_proud`), push it through, trim 1 mm proud each end, mushroom the ends with a lighter or soldering iron. No
-freeing step, and `hinge_clr` no longer matters. Untested: `fil_clr` (`hinge_coupon_filpin.stl`), how a mushroomed
-end looks on the inside face. Renders: `renders/filpin_hinge.png`, `filpin_end.png`, `filpin_coupon.png`.
+freeing step, and `hinge_clr` no longer matters. `fil_clr = 0.15` confirmed on the filament coupon (2026-09-12: 0.10 / 0.15 / 0.20
+printed, 0.15 best). Untested: how a mushroomed end looks on the inside face. Renders: `renders/filpin_hinge.png`, `filpin_end.png`, `filpin_coupon.png`.
 
 ## -Y mount: two variants side by side (2026-09-11)
 `ny_mount = "fork"` (default, the current design) or `"saddle"` (the alternative). Flip it in the viewer's parameter

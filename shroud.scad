@@ -102,7 +102,7 @@ animate      = false;  // true: steer and tilt sweep with $t (View > Animate in 
 //   out round without a teardrop. Root and plate still print together, in place, knuckles aligned.
 hinge_pin    = "printed";   // "printed" | "filament". Flip in the viewer's panel or with -D 'hinge_pin="filament"'
 fil_d        = 1.75;   // filament pin diameter
-fil_clr      = 0.15;   // hole clearance on the filament, per side (untested: hinge coupon ladders 0.10 / 0.15 / 0.20 in filament mode)
+fil_clr      = 0.15;   // hole clearance on the filament, per side. Coupon (2026-09-12): 0.10 / 0.15 / 0.20 printed, 0.15 the best fit
 fil_proud    = 1;      // pin length = hinge_len + 2 * fil_proud, for the mushroomed ends
 barrel_print_d = 4.2;  // hinge knuckle OD with the printed pin (pin + 2 clearances + 2 walls; about the floor)
 barrel_fil_d = 4.6;    // ... and with the filament pin: 2.05 hole + 1.28 walls (4.2 would leave 1.08)
