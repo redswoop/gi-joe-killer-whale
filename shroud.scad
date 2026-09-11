@@ -151,6 +151,7 @@ pocket_lid = 1.5;              // boss material above the pocket (the ear's stop
 boss_r_in  = ear_r_in - ear_clr - pocket_lip;                      // boss's inner face, x at the +X end (40.6)
 boss_w     = ear_w + 2 * ear_clr + 2 * pocket_side;
 boss_top   = ear_top + ear_clr + pocket_lid;
+boss_fade  = 3;                // concave fillet radius blending the boss into the bore wall, both sides and the top (max 3.4: the boss's proudness)
 
 // ---------- Fillet 01 / 02 / 03 ----------
 box_fillet_out   = 0.5;   // Fillet 01: convex rounds on the box's outer face edges
@@ -226,10 +227,40 @@ module ear_2d(clr = 0) {
         translate([ear_r_in - 5, -ear_w / 2 - clr]) square([10, ear_w + 2 * clr]);
     }
 }
-// Boss pad on the bore wall at the +X end (rotate 180 for the other end); buried 1 mm into the wall
-module boss_pad() {
-    translate([boss_r_in, -boss_w / 2, 0]) cube([duct_r_in + 1 - boss_r_in, boss_w, boss_top]);
+// Boss on the bore wall at the +X end (rotate 180 for the other end), fading
+// into the wall with concave fillets of radius boss_fade on its two sides and
+// its top. Each view is the 2D shape of "boss + a strip of wall" run through
+// offset(r = +f) then offset(r = -f): growing the shape by f and shrinking it
+// back fills every inside corner with a radius-f fillet and leaves convex
+// corners sharp. The plan view is extruded up, the side view across, and the
+// boss is their intersection.
+function polar(r, a) = r * [cos(a), sin(a)];
+module boss_plan_2d() {
+    R = duct_r_in;  f = boss_fade;
+    th_w = asin((boss_w / 2) / boss_r_in);     // half-angle of the radial side faces (boss_w wide at the inner face)
+    intersection() {
+        offset(r = -f) offset(r = f) union() {
+            intersection() { circle(r = R + 1.5); polygon([[0, 0], polar(60, -th_w), polar(60, th_w)]); }   // the boss's sector, 1.5 mm into the wall
+            difference() { circle(r = R + 1.5); circle(r = R); }                                             // a strip of wall for the fillets to land on
+        }
+        polygon([[0, 0], polar(60, -th_w - 30), polar(60, th_w + 30)]);   // keep the neighbourhood; the wall strip beyond is dropped
+        difference() { circle(r = R + 1.5); circle(r = boss_r_in); }      // the boss's inner face (concentric with the bore)
+    }
 }
+module boss_roof_2d() {                        // side view (x radial, y up): boss slab + wall strip, top corner filleted
+    R = duct_r_in;  f = boss_fade;
+    offset(r = -f) offset(r = f) union() {
+        translate([boss_r_in - 1, 0]) square([R + 2 - boss_r_in + 1, boss_top]);
+        translate([R, 0]) square([2, boss_top + f + 5]);
+    }
+}
+module boss_pad() {
+    intersection() {
+        linear_extrude(boss_top + boss_fade + 1) boss_plan_2d();
+        rotate([90, 0, 0]) linear_extrude(60, center = true) boss_roof_2d();
+    }
+}
+
 // The pocket: the ear's strip from below the base up to the ceiling, plus a
 // notch through the lip at the bottom for the plate to pass.
 module pocket(clr = ear_clr) {
