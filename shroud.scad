@@ -95,8 +95,19 @@ steer        = 0;      // deg, +/-30: pose of the plates and tie bar in the asse
 tilt         = 0;      // deg: pose of the slats
 animate      = false;  // true: steer and tilt sweep with $t (View > Animate in the GUI)
 
-barrel_d     = 4.2;    // hinge knuckle OD (pin + 2 clearances + 2 walls; about the floor)
-pin_d        = 1.4;    // hinge pin, round; the plate's hole is a teardrop so it prints flat
+// hinge pin (2026-09-11): "printed" = print-in-place pin (current); "filament" = the knuckles get a plain round
+//   hole and a length of 1.75 mm filament is pushed through after printing, ends trimmed 1 mm proud and mushroomed
+//   with a lighter or iron. Standing, the printed pin is a stack of 1.4 mm discs held by layer adhesion only and
+//   snapped as soon as the plate was freed; a filament pin is a continuous strand, and the vertical holes come
+//   out round without a teardrop. Root and plate still print together, in place, knuckles aligned.
+hinge_pin    = "printed";   // "printed" | "filament". Flip in the viewer's panel or with -D 'hinge_pin="filament"'
+fil_d        = 1.75;   // filament pin diameter
+fil_clr      = 0.15;   // hole clearance on the filament, per side (untested: hinge coupon ladders 0.10 / 0.15 / 0.20 in filament mode)
+fil_proud    = 1;      // pin length = hinge_len + 2 * fil_proud, for the mushroomed ends
+barrel_print_d = 4.2;  // hinge knuckle OD with the printed pin (pin + 2 clearances + 2 walls; about the floor)
+barrel_fil_d = 4.6;    // ... and with the filament pin: 2.05 hole + 1.28 walls (4.2 would leave 1.08)
+barrel_d     = hinge_pin == "filament" ? barrel_fil_d : barrel_print_d;
+pin_d        = 1.4;    // printed hinge pin, round; the plate's hole is a teardrop so it prints flat
 hinge_clr    = 0.15;   // pin-to-hole clearance, per side. Coupon round 1: 0.35 and 0.45 good, 0.25 not;
                        // printed vanes at 0.4 (2026-09-10): range good but too loose -> 0.3;
                        // 2026-09-11: Armen's tolerance tests say 0.15 -> 0.15 (coupon round 3 ladders 0.15 / 0.20 / 0.25)
@@ -604,18 +615,25 @@ module barrel(y0, y1) {
 module web(y0, y1, z0, z1) {   // 2 mm plate joining a knuckle to the bar
     translate([vane_x, y0, z0]) cube([vane_t, y1 - y0, z1 - z0]);
 }
-// root side of one nub: two outer knuckles webbed to the bar, and the pin
-module hinge_root(yc) {
-    for (i = [0, 2]) { y0 = nub_y0(yc, i); barrel(y0, y0 + knuckle_l); web(y0, y0 + knuckle_l, 29, hinge_z); }
-    pin_prism(pin_d, yc - hinge_len / 2, yc + hinge_len / 2);
+// the filament pin's hole, straight through the whole nub and out both ends
+module fil_hole(yc, clr = fil_clr) { pin_prism(fil_d + 2 * clr, yc - hinge_len / 2 - 1, yc + hinge_len / 2 + 1); }
+// root side of one nub: two outer knuckles webbed to the bar, and the pin (or the hole for the filament pin).
+// clr is the hole clearance in filament mode; the printed pin has none of its own (the plate's hole carries it)
+module hinge_root(yc, clr = fil_clr) {
+    difference() {
+        for (i = [0, 2]) { y0 = nub_y0(yc, i); barrel(y0, y0 + knuckle_l); web(y0, y0 + knuckle_l, 29, hinge_z); }
+        if (hinge_pin == "filament") fil_hole(yc, clr);
+    }
+    if (hinge_pin == "printed") pin_prism(pin_d, yc - hinge_len / 2, yc + hinge_len / 2);
 }
 // plate side of one nub: the middle knuckle (solid; the hole is cut afterwards)
 module hinge_fin_knuckle(yc) { y0 = nub_y0(yc, 1); barrel(y0, y0 + knuckle_l); }
-// what to subtract from the plate around one nub: the pin hole, and notches so
-// the plate clears the root knuckles
-module hinge_fin_cut(yc, clr = hinge_clr) {
+// what to subtract from the plate around one nub: the pin hole (teardrop on the printed pin, round on the
+// filament), and notches so the plate clears the root knuckles
+module hinge_fin_cut(yc, clr = hinge_pin == "filament" ? fil_clr : hinge_clr) {
     y0 = nub_y0(yc, 1);
-    teardrop_prism(pin_d / 2 + clr, y0 - 1, y0 + knuckle_l + 1);
+    if (hinge_pin == "filament") fil_hole(yc, clr);
+    else teardrop_prism(pin_d / 2 + clr, y0 - 1, y0 + knuckle_l + 1);
     for (i = [0, 2])
         translate([min(hinge_x - barrel_d / 2, vane_x) - 1, nub_y0(yc, i) - knuckle_gap, fin_z_low - 1])
             cube([barrel_d + vane_t + 2, knuckle_l + 2 * knuckle_gap, hinge_z + barrel_d / 2 + knuckle_gap - fin_z_low + 1]);

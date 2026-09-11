@@ -1,6 +1,6 @@
 # Killer W.H.A.L.E. fan shroud + steering vanes (OpenSCAD)
 
-State as of 2026-09-11 (late evening). Parametric port of Armen's Shapr3D shroud, plus a new print-in-place
+State as of 2026-09-12. Parametric port of Armen's Shapr3D shroud, plus a new print-in-place
 vane mechanism reconstructed from photos of the real MET-b52 parts.
 
 ## Files
@@ -9,12 +9,12 @@ vane mechanism reconstructed from photos of the real MET-b52 parts.
 | `shroud.scad` | The whole model. Parameters at the top, one section per Shapr3D operation, then the vane mechanism. |
 | `viewer.json` | Part list for the browser viewer (`../viewer`, `bun run dev`, open http://127.0.0.1:5180/). |
 | `print_layout.scad` | `-D part="..."`: each part in its printing pose. Vanes stand on their -Y end (`vane_pose = "vertical"`). |
-| `hinge_coupon.scad` | Tolerance test print: hinge x3 (standing, pins vertical), slat axle holes x3, keyhole eyes x3, strut pockets x3 + one ear, fork darts x3 (standing) + a piece of rim. |
+| `hinge_coupon.scad` | Tolerance test print: hinge x3 (standing, pins vertical; `-D 'hinge_pin="filament"'` ladders the filament hole 0.10 / 0.15 / 0.20 instead), slat axle holes x3, keyhole eyes x3, strut pockets x3 + one ear, fork darts x3 (standing) + a piece of rim. |
 | `saddle_coupon.scad` | Fit test for the saddle-mount alternative: three rim pieces with receivers at `chan_clrs` = 0.05 / 0.10 / 0.15, plus a standing stub of the bar's -Y end with the wedge peg. |
 | `tab_coupon.scad` | Tab fit test print: four 108° arcs of the shroud (30 % of the ring, centred on the tab, `keep = 0.3`) with tab `variants` = [grip, stem_extra] pairs, labelled on a tag. Round 1 laddered the grip; round 2 ladders the stem width at grip 0.7. |
 | `check.scad` | Collision pairs (`-D pair="..."`, `steer`, `tilt`, `strut_dz`). Run them all: `../tools/check.sh check.scad 'steer=0' 'steer=30' 'steer=-30 tilt=20' 'strut_dz=8'`. |
 | `compare.scad` | Volume diff against the Shapr3D export (`ref_bodies/` = the STL split per shell). Numeric version: `../tools/voxcmp.py stl/shroud.stl ref_bodies/shroud.stl`. |
-| `export.sh` | Regenerates every STL in `stl/`, including the saddle variants (`shroud_saddle.stl`, `vane_*_saddle.stl`, `saddle_coupon.stl`). Run after changing parameters. |
+| `export.sh` | Regenerates every STL in `stl/` in parallel. Plain names are the defaults; `_saddle`, `_filpin` and `_saddle_filpin` are the alternates, plus `saddle_coupon.stl` and `hinge_coupon_filpin.stl`. Run after changing parameters. |
 | `render.sh` | Headless PNGs into `renders/`. |
 | `Shroud.shapr/.step/.stl` | Armen's originals. Read the .shapr with `../tools/shapr_dump.py Shroud.shapr`. |
 
@@ -32,13 +32,28 @@ Z = duct axis (airflow exits +Z). Y = the toy's vertical, **+Y (tab side) = the 
 
 Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_clr`, `tooth_clr`, `tie_eye_clr`, `ear_clr`.
 
-## Print next (as of 2026-09-11 late evening)
+## Print next (as of 2026-09-12)
+0. `stl/hinge_coupon_filpin.stl`: three standing hinge nubs with filament holes at 0.10 / 0.15 / 0.20. Push 1.75 filament
+   through each; the winner goes into `fil_clr`. Then the vanes print as `vane_*_filpin.stl` (or `_saddle_filpin` if the
+   saddle wins below) and the printed-pin files stay for reference.
 0. `stl/saddle_coupon.stl` (103 x 39 mm, flat, no supports; the stub wants a brim): decide fork vs saddle. If saddle: put the
    winning cheek clearance into `chan_clr`, then print `shroud_saddle.stl` and `vane_*_saddle.stl` instead of the fork files.
 1. `stl/hinge_coupon.stl` (89 x 109 mm): hinge 0.15 / 0.20 / 0.25, slat holes 0.10 / 0.15 / 0.20, fork teeth 0.10 / 0.15 / 0.20 on a piece of rim, strut ear pockets 0.10 / 0.20 / 0.30, keyhole eyes, bullet pins.
 2. `stl/shroud.stl`: settled tab, strut pockets, and the new shallow (3 mm) key notches.
 3. `stl/strut.stl` (ears in pockets, standing on an ear, brim) once the pocket clearance is known.
 4. Vanes and slats once the coupon confirms `hinge_clr`, `tooth_clr` and `slat_clr`.
+
+## Hinge pin: printed or filament (2026-09-12)
+`hinge_pin = "printed"` (default, the print-in-place pin) or `"filament"`. **Why**: the vertical vane print
+(2026-09-11) came out beautifully, then the hinges snapped as soon as the plates were freed. Standing, the 1.4 mm pin
+is printed along its axis: a stack of discs held by layer adhesion, sheared by the first twist. **Filament**: the
+knuckles get a plain round hole (`fil_d` 1.75 + 2 x `fil_clr` 0.15 = 2.05) straight through the nub and out both
+ends, the barrel grows to `barrel_fil_d` 4.6 for 1.28 mm walls (the hinge line rises 0.2 with it; collision table
+still all clear, with either mount), and the teardrop is gone since the vertical holes print round. Root and plate
+still print together in place, knuckles aligned. **Assembly**: cut 15 mm of 1.75 filament per nub (`hinge_len` 12.8 +
+2 x `fil_proud`), push it through, trim 1 mm proud each end, mushroom the ends with a lighter or soldering iron. No
+freeing step, and `hinge_clr` no longer matters. Untested: `fil_clr` (`hinge_coupon_filpin.stl`), how a mushroomed
+end looks on the inside face. Renders: `renders/filpin_hinge.png`, `filpin_end.png`, `filpin_coupon.png`.
 
 ## -Y mount: two variants side by side (2026-09-11)
 `ny_mount = "fork"` (default, the current design) or `"saddle"` (the alternative). Flip it in the viewer's parameter
@@ -64,7 +79,7 @@ untouched. Renders: `renders/saddle_receiver.png`, `saddle_vane_in.png`, `saddle
 `saddle_coupon.png`, `saddle_asm_iso.png`. Untested: `chan_clr` (coupon), the nub's click, how the block reads on the toy.
 
 ## Design notes
-- Hinge: two 13 mm nubs per vane at y = -34 / 36 (over the teeth), barrel 4.2, round pin 1.4, teardrop holes, barrels on the inside face. Printed vanes at `hinge_clr = 0.4` swung through the full range but were too loose (2026-09-10); Armen's own tolerance tests say 0.15 (2026-09-11) -> `hinge_clr = 0.15`. **Confirmed 2026-09-11 on a full vane printed at 45° with the pins near vertical: "perfect, almost feels oiled".** (Coupon round 1 called 0.25 stuck, but that was printed flat with horizontal pins; the number depends on the pin being vertical.) `hinge_lift = 0.6` keeps the barrel off the bar's top edge (a printed barrel has a flat where it met the bed).
+- Hinge (printed pin): two 13 mm nubs per vane at y = -34 / 36 (over the teeth), barrel 4.2, round pin 1.4, teardrop holes, barrels on the inside face. Printed vanes at `hinge_clr = 0.4` swung through the full range but were too loose (2026-09-10); Armen's own tolerance tests say 0.15 (2026-09-11) -> `hinge_clr = 0.15`. **Confirmed 2026-09-11 on a full vane printed at 45° with the pins near vertical: "perfect, almost feels oiled".** (Coupon round 1 called 0.25 stuck, but that was printed flat with horizontal pins; the number depends on the pin being vertical.) `hinge_lift = 0.6` keeps the barrel off the bar's top edge (a printed barrel has a flat where it met the bed).
 - **Teeth** (2026-09-11). The two ends of each bar differ:
   - **+Y (toy's bottom): the original Sketch 06 peg**, `peg()`: the bar's thickness, 5.27 wide (y 31.9..37.2), 2.2 mm below the rim (z 19.065), sharp-edged, no nub. It drops into a small slot in the Whale's base, so it must keep the sketch's size exactly ("the slot is quite small, 1-2 mm depth max"). Weak on its own; the base supports it. The rim slot is the peg + `peg_clr`.
   - **-Y (toy's top): a fork dart**, `tooth_fork(-1)`: a slender body of revolution about an axis along Z on the bar's mid-plane, so it is the same on both faces. Tangent-ogive nose `tooth_nose = 8` reaching `tooth_prong = 11` below the rim (tip near the shroud's mid-height), cylinder `tooth_r = 2.25` through the rim (3 was "far too fat") and on past the bar's bottom edge by `tooth_over = 1.5`, so the pod straddles the edge at full width (the cone used to meet the edge at a point, "feels like a failure point"), then cone tail `tooth_tail = 6.5` fading up the bar's face; it runs into the slat hole, where it is only a hair proud of the bar. The wall's annulus (offset `tooth_clr`) splits it into two D prongs 3.9 wide and 1.1 thick that grip the wall; the key drops `tooth_key = 3` into a round bite in the rim whose curved end walls locate it along the rim; a nub on the key clicks into a dimple. At the mid-plane the pod sits 50.7° around the ring, and its outer prong reaches down beside the deco box at 45°: `deco_box_keepout()` shaves a small flat off that side (`tooth_box_clr = 0.3` from the box and its blend), below the rim, among the boxes. History: flat dart with fillets (49ceeaa, "ugly"), fat canoe pod clipped flat on the outer face (506b449, "looks weird"), then this.

@@ -5,17 +5,19 @@
 include <shroud.scad>
 show_ghost = false; show_shroud = false; show_strut = false; show_vanes = false;
 
-clearances = [0.15, 0.20, 0.25];   // hinge pin clearance, per side (round 3: 0.4 printed loose, Armen's tests say 0.15)
+clearances = hinge_pin == "filament" ? [0.10, 0.15, 0.20]    // filament pin: hole clearance on the 1.75 filament, per side
+                                     : [0.15, 0.20, 0.25];   // printed pin, per side (round 3: 0.4 printed loose, Armen's tests say 0.15)
 slat_clrs  = [0.10, 0.15, 0.20];   // slat axle hole clearance, per side (0.2 printed loose)
 peg_hole_clr = [0.05, 0.10, 0.15]; // tie-bar eye clearance on the plate's link pin, per side
 tooth_clrs = [0.10, 0.15, 0.20];   // fork tooth slot to wall, per face
 
 // one hinge nub with a stub of bar and a stub of fin, standing on its -Y end
-// with the pin vertical, like the real vane prints (2026-09-11: vertical)
+// with the pin vertical, like the real vane prints (2026-09-11: vertical).
+// -D 'hinge_pin="filament"' ladders the filament hole instead: push a 15 mm piece of 1.75 through each.
 module hinge_sample(clr) {
     translate([0, 0, hinge_len / 2]) rotate([90, 0, 0]) {
         translate([vane_x, -hinge_len / 2, 23]) cube([vane_t, hinge_len, 31 - 23]);   // bar stub, top edge at z = 31 like the real bar
-        hinge_root(0);
+        hinge_root(0, clr);
         difference() {
             union() {
                 translate([vane_x, -hinge_len / 2, fin_z_low]) cube([vane_t, hinge_len, 8]);             // fin stub
