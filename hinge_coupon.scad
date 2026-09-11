@@ -73,6 +73,6 @@ module tooth_sample(clr) {
         translate(tooth_nub_c(1)) sphere(d = tooth_nub_d, $fn = 32);
     }
 }
-for (i = [0 : 2]) translate([-8 + i * 20, 100 - tooth_ay, 0]) tooth_sample(tooth_clrs[i]);   // stubs at x 6..23, 26..43, 46..63, y 90..110
-translate([66 - 17, 90 - 22, 0]) intersection() { duct(); translate([17, 22, -1]) cube([23, 24, 30]); }   // rim piece with the notch, x 66..89
+for (i = [0 : 2]) translate([-8 + i * 22, 100 - tooth_ay, 0]) tooth_sample(tooth_clrs[i]);   // stubs at x 2..23, 24..45, 46..67, y 90..110
+translate([70 - 17, 90 - 22, 0]) intersection() { duct(); translate([17, 22, -1]) cube([23, 24, 30]); }   // rim piece with the notch, x 70..93
 translate([0, 86, 0]) linear_extrude(0.6) text("tooth .10 .15 .20", size = 2.2);

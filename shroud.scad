@@ -71,6 +71,7 @@ panel_t      = 0.7;     // z -1 .. -1.7
 // ---------- Plane offset + Sketch 06 + Extrusion 11 + Mirror: vane bars ----------
 vane_x     = 27.5;      // inner face; 2 mm thick outward
 vane_t     = 2;
+vane_edge_r = 0.7;      // fillet on every edge of the bar and plate outlines, both faces (Armen 2026-09-11: 'they look too blocky')
 // profile in the YZ plane (y, z), points straight from Sketch 06
 vane_top_l = [-45.72, 30.201];  vane_top_r = [47, 31];
 vane_end_l = [-45.72, 24.121];  vane_end_r = [47, 28];         // where the vertical ends meet the arcs
@@ -161,11 +162,12 @@ bar_panels    = [[0.18, 0.40], [0.70, 0.92]];
 // notch is the same D offset peg_clr.
 tooth_ang    = 52.5;   // pod axis angle around the ring from +X (deg); the pod spans +/- 3.7 deg at the boxes' radius
 tooth_r      = 3;      // pod radius; each prong is a D 5.5 wide and 1.85 thick beside the 2.3 mm slot. 3.25 grazed the 60 deg box's blend
-tooth_nose   = 3;      // nose length along the axis (= tooth_r for a hemisphere; longer is more pointed)
+tooth_nose   = 8;      // nose length along the axis: a DART (Armen: 'extends towards the middle of the shroud and tapers'); = tooth_r would be a hemisphere
 tooth_tail0  = 1;      // the cone tail starts this far above the rim top (the key stays full round)
 tooth_tail   = 7;      // cone tail length, fading to a point on the bar's inside face (the -Y one ends just under the slat hole)
 tooth_key    = 3;      // notch depth into the rim = key engagement
-tooth_prong  = 7;      // prongs reach this far below the rim top (both faces of the wall)
+tooth_prong  = 11;     // the dart's tip is this far below the rim top: 3 of cylinder, then the 8 mm nose. The prongs grip
+                       // wherever the pod is fatter than the wall's half-band (1.15): about 10 mm of it
 tooth_clr    = 0.15;   // slot to wall, per face (radial). Untested: coupon round 3 ladders 0.10 / 0.15 / 0.20
 tooth_lead   = 0.6;    // chamfer on the slot mouth so the rim finds its way in
 peg_clr      = 0.15;   // key to notch, per side
@@ -205,7 +207,7 @@ fillet_fn        = 24;    // facets on fillet arcs (19 boxes x several fillets, 
 $fn = 120;
 eps = 0.01;
 
-use <../lib/shape.scad>   // rounded_pad, annulus_2d, wall_blend, arc_sweep, arc_pts, stroke_2d, grooves_2d
+use <../lib/shape.scad>   // rounded_pad, rounded_plate, annulus_2d, wall_blend, arc_sweep, arc_pts, stroke_2d, grooves_2d
 use <../lib/fit.scad>     // teardrop_2d, keyhole_2d
 
 // =====================================================================
@@ -408,6 +410,9 @@ module ear() {
     translate([0, 0, -strut_t / 2]) linear_extrude(strut_t / 2 + ear_top) ear_2d();
 }
 
+// a 2D outline in (y, z) -> the plate x in [vane_x, vane_x + vane_t], every edge rounded vane_edge_r
+module plate_yz(r = vane_edge_r) { translate([vane_x, 0, 0]) rotate([90, 0, 90]) rounded_plate(vane_t, r, 16) children(); }
+
 // vane bar profile in the YZ plane: the sketch outline traced as one polygon.
 // (A hull of corner circles was wrong here: the arcs are not tangent to the
 // vertical ends, so a hull bulges past the top line.)
@@ -494,7 +499,7 @@ module fin_panel_2d(f) {   // one ribbed panel outline, inset 3 mm, following th
 module vane_fin() {
     difference() {
         union() {
-            translate([vane_x, 0, 0]) rotate([90, 0, 90]) linear_extrude(vane_t) fin_outline_2d();
+            plate_yz() fin_outline_2d();
             for (yc = hinge_pts) hinge_fin_knuckle(yc);
             // linkage pin at the bottom trailing corner, pointing +Y (down): bullet root, pin, bulb.
             // Everything is clipped flat at the outer face so the vane still prints on it.
@@ -523,7 +528,7 @@ module bar_panel_2d(f) {
 module vane_root() {
     difference() {
         union() {
-            translate([vane_x, 0, 0]) rotate([90, 0, 90]) linear_extrude(vane_t) vane_2d();
+            plate_yz() vane_2d();
             for (yc = hinge_pts) hinge_root(yc);
             for (sgn = [-1, 1]) { tooth_fork(sgn); translate(tooth_nub_c(sgn)) sphere(d = tooth_nub_d, $fn = 32); }   // fork teeth + click nubs
         }
