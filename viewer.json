@@ -1,7 +1,8 @@
 {
   "file": "whale_hatch.scad",
-  "defines": { "show_ghost": false, "show_all": false },
+  "defines": { "show_ghost": false, "show_all": false, "show_hull": false },
   "parts": [
-    { "name": "body", "call": "body();", "color": "#4682b4" }
+    { "name": "hatch",    "call": "hatch();",    "color": "#6b8e23" },
+    { "name": "bay_mock", "call": "bay_mock();", "color": "#696969" }
   ]
 }

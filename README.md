@@ -1,6 +1,6 @@
 # Killer W.H.A.L.E. front landing hatch (bow ramp) with replacement hinge
 
-State as of 2026-09-11. Folder stamped, no geometry yet: waiting on photos and calipers of Armen's hatch and the hull's bow.
+State as of 2026-09-11. Parametric skeleton in place (arc plate + hinge eyes + bay mock); every plate number except the width is a photo estimate. Waiting on calipers/tracing of the real plate and close-ups of the hull's hinge points.
 
 ## What the part is
 The bow ramp of the 1984 Killer W.H.A.L.E. (part "landing ramp" / "sled launch ramp door"). A large curved plate
@@ -30,8 +30,20 @@ plate gets remodelled to the same curve with a new hinge that mounts to the exis
 | `export.sh` / `render.sh` | STLs into `stl/`, PNGs into `renders/`. |
 
 ## Coordinate frame
-To be set once the plate's curve is known. Plan: X across the bow (port/starboard), hinge axis along X at
-the origin, Z up when the ramp is closed.
+Hinge axis = X at the origin, +Y aft toward the cabin, +Z up. The plate is modelled closed: hinge edge at
+y = 0, top edge at (hatch_len, hatch_rise), arching hatch_sag above that chord. `open_deg` swings it down
+over the nose.
+
+## What the 2026-09-11 photos showed (Armen's hull, ruler in cm)
+- The bay is an open-topped box between two fenders, cabin at the back, black treaded floor. The closed ramp
+  is a shallow arched lid over it, flush with the fenders' curved top edges, hinged at the front lip;
+  lowered, it folds forward over the nose to the ground.
+- Bay width at the cabin end ~100.5 (ruler across); lip to the fender corner at the cabin ~102 (ruler along).
+  Ramp width 93.3 (measurements.md) leaves ~3.5 per side for the side rails / channel seen along the floor edges.
+- The round "nub" at each front fender corner is a fender rivet: the same ring-and-stub repeats all over both
+  fenders. Not a hinge remnant. The hull-side hinge points are still unidentified.
+- Left side of the bay has a black channel with slots along the floor edge; right side a rail with three
+  rectangular notches. Purpose unknown (sled guide? ramp latch?).
 
 ## Needed from Armen before modelling
 1. Photos: hatch outside face, inside face, and edge-on along the hinge axis (shows the curve); the bow
