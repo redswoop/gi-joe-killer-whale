@@ -4,7 +4,7 @@
 include <shroud.scad>
 show_ghost = false; show_shroud = false; show_strut = false; show_vanes = false;
 
-clearances = [0.25, 0.35, 0.45];   // hinge pin clearance, per side
+clearances = [0.25, 0.30, 0.35];   // hinge pin clearance, per side (round 3: bracketing 0.3 after 0.4 printed loose)
 pocket_clr = [0.10, 0.15, 0.20];   // root peg pocket clearance, per side
 peg_hole_clr = [0.05, 0.10, 0.15]; // tie-bar eye clearance on the plate's link pin, per side
 

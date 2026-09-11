@@ -91,7 +91,8 @@ animate      = false;  // true: steer and tilt sweep with $t (View > Animate in 
 
 barrel_d     = 4.2;    // hinge knuckle OD (pin + 2 clearances + 2 walls; about the floor)
 pin_d        = 1.4;    // hinge pin, round; the plate's hole is a teardrop so it prints flat
-hinge_clr    = 0.4;    // pin-to-hole clearance, per side (coupon: 0.35 and 0.45 both good, 0.25 not)
+hinge_clr    = 0.3;    // pin-to-hole clearance, per side. Coupon round 1: 0.35 and 0.45 good, 0.25 not;
+                       // printed vanes at 0.4 (2026-09-10): range good but too loose -> 0.3
 knuckle_gap  = 0.4;    // axial gap between neighbouring knuckles
 knuckle_l    = 4;      // length of one knuckle
 hinge_pts    = [-34, 36];     // Y centres of the two hinge nubs: 10 mm in from each plate end, over the teeth
