@@ -35,10 +35,11 @@ tab_h  = 5.2;
 tab_grip = 0.7;   // shorten the stem by this much: pulls the hook foot in toward the wall so it
                   // bites the Whale's lip (as sketched the gap was 2.442 and the shroud rocked / slid out).
                   // Tab coupon 2026-09-10: 0.8 held best but a tad tight, 0.5 too loose -> 0.7
-tab_stem_extra = 0;   // widen the stem by this much toward the foot (the head stays 4.03 wide, the foot's
+tab_stem_extra = 0.2;   // widen the stem by this much toward the foot (the head stays 4.03 wide, the foot's
                       // overhang shrinks from 1.43 by the same amount). The Whale's opening is a square
                       // for the head, then a channel the stem slides along; the channel is wider than
-                      // the 2.6 stem and the shroud shifts left/right. Coupon 2 (2026-09-10) ladders this.
+                      // the 2.6 stem and the shroud shifts left/right. Coupon round 2 (2026-09-10): 0.15 and
+                      // 0.3 both good, 0.3 a tad much -> 0.2
 // plan-view outline, as sketched (x, y); inner points pushed to r=45 to fuse with the wall.
 // A function of the grip and stem width so tab_coupon.scad can print ladders.
 function tab_outline(grip = tab_grip, stem_extra = tab_stem_extra) =

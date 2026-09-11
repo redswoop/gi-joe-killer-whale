@@ -43,7 +43,7 @@ Print the **coupon** first and put the winning numbers into `hinge_clr`, `peg_cl
 - All plate/slat/pin dimensions are photo estimates scaled off the 92 mm bar; calipers on the real parts would firm them up.
 - Coupon round 3 not yet printed: ear-in-pocket fit (0.10 / 0.20 / 0.30), keyhole click, bullet-rooted pins.
 - Fallback if the keyhole/pins still misbehave: a separate reinforced peg that tabs into a slot in the plate.
-- Mounting tab: coupon round 1 (2026-09-10, olive green): grip 0.8 held best, a tad tight; 0.5 and 0.2 too loose -> `tab_grip = 0.7`. Holds down well but some left/right play remains. The Whale's opening is a square the 4 mm head passes through, then a channel the 2.6 mm stem slides along while the foot hooks behind; the channel is wider than the stem. **Print `stl/tab_coupon.stl` round 2 next**: stem widened toward the foot by 0.15 / 0.3 / 0.45 / 0.6 (`tab_stem_extra`, head unchanged, foot overhang 1.43 minus that). Put the winner into `tab_stem_extra`.
+- Mounting tab: settled by two coupon rounds on 2026-09-10 (olive green). Round 1 grip 0.8 best but a tad tight, 0.5 loose -> `tab_grip = 0.7`. Round 2 stem width: +0.15 and +0.3 both good, +0.3 a tad much -> `tab_stem_extra = 0.2`. Not yet tested on a full shroud print.
 - Fans and the spin box are out of scope so far.
 
 ## Gotchas learned
