@@ -35,7 +35,7 @@ Z = duct axis (airflow exits +Z). Y = the toy's vertical, **+Y (tab side) = the 
 Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_clr`, `tooth_clr` (settled: 0.10, round 3, 2026-09-12), `tie_eye_clr`, `ear_clr`.
 
 ## Print next (as of 2026-09-12)
-0. **Fan + shaft** (new, unprinted): `stl/fan.stl` (80 mm, flat) and `stl/shaft.stl` (73.5 mm, on its flat). Check the socket fit
+0. **Fan + shaft** (new, unprinted): `stl/fan.stl` (80 mm, flat) and `stl/shaft.stl` (75.5 mm, on its flat). Check the socket fit
    (`shaft_clr`), which way the gearbox turns (`blade_hand`), and how much longer the shaft must be (`shaft_extra`).
 0. **Fused variant** (Armen's idea, 2026-09-12, see below): `stl/shroud_fused.stl` (base down, 36 mm tall; the two bars bridge the bore
    about 20 mm up, so enable supports under them: support PLA, 0 interface distance, as the vane reprint used), `stl/fin_right_fused.stl` +
@@ -77,10 +77,16 @@ shaft can print horizontally.
 - **Shaft** (`shaft()`, prints lying on its flat): D section, `shaft_d` 3.5 (the reference's; the strut's bore is 5)
   with a `shaft_flat` 0.5 flat, which is the bed face and keys the torque into the hub's D socket (`shaft_clr` 0.10
   per side, untested). `shaft_len` = socket depth + `shaft_reach` 65 (the reference) + `shaft_extra` (0: Armen says
-  the reference is too short, number TBD). Tip tab `tab_w` 1.6 x `tab_t` 1.2 x `tab_len` 3.0 (mesh: 0.6 long; Armen: 'we need the tab to be longer').
-  The tab sits 0.65 above the bed at the tip: a 1 mm overhang, printable.
+  the reference is too short, number TBD). **Gearbox end** (Armen got the gear out, 2026-09-12: 13-ish teeth, about 14 mm, a
+  boss with a socket whose walls slope and whose floor has a keyed slot): the shaft's end is a BLADE that keys into the
+  slot, `tab_w` 2.8 x `tab_t` 1.2 x `tab_len` 3.0 (placeholders until the slot is measured; the mesh's 1.6 x 1.2 x 0.6
+  pin was a guess), end corners rounded `tab_end_r`, and the shoulders where the round shank becomes the blade are
+  convex rounded ramps `tab_ramp` 2.0 long in both directions, which seat on the socket's slopes ('the shaft should have
+  rounded ramps to meet with the ramps in the socket'). Like a screwdriver tip ground from round bar; `shaft_tip()` is
+  the intersection of the two side-view profiles, the shank cylinder and the D prism. Lying on the flat, the blade's
+  underside is 0.65 off the bed for 3 mm: printable.
 - Collision pairs `fan-duct`, `fan-strut`, `fan-roots`, `shaft-strut` all clear (teeth and fused, strut seated and
-  pulled down 8). Renders: `renders/fan_iso.png`, `fan_top.png`, `fan_close.png`, `fan_hub.png`, `fan_asm.png`, `fan_on_strut.png`, `shaft_print.png`;
+  pulled down 8). Renders: `renders/fan_iso.png`, `fan_top.png`, `fan_close.png`, `fan_hub.png`, `fan_asm.png`, `fan_on_strut.png`, `shaft_print.png`, `shaft_tip.png`, `shaft_tip_under.png`;
   `renders/fan_planforms.png` compares four outline candidates (A first spline, B scimitar, C paddle, D hook).
 - Not modelled: any bearing between the hub and the strut (the reference had a 30 mm disc under the blades that may
   have ridden on the strut's ring), the gearbox end of the shaft beyond the tab.
@@ -174,7 +180,7 @@ untouched. Renders: `renders/saddle_receiver.png`, `saddle_vane_in.png`, `saddle
 - Coupon round 3 not yet printed: hinge 0.15 / 0.20 / 0.25, slat holes, fork teeth 0.10 / 0.15 / 0.20, ear-in-pocket fit (0.10 / 0.20 / 0.30), keyhole click, bullet-rooted pins.
 - Fallback if the keyhole/pins still misbehave: a separate reinforced peg that tabs into a slot in the plate.
 - Mounting tab: settled by two coupon rounds on 2026-09-10 (olive green). Round 1 grip 0.8 best but a tad tight, 0.5 loose -> `tab_grip = 0.7`. Round 2 stem width: +0.15 and +0.3 both good, +0.3 a tad much -> `tab_stem_extra = 0.2`. Not yet tested on a full shroud print.
-- Fan and shaft (2026-09-12): unprinted. Open: `blade_hand` (gearbox direction), `shaft_extra` (how much longer), `shaft_clr`
+- Fan and shaft (2026-09-12): unprinted. Open: the gear's slot (length, width, depth) and its slope angle for the blade and ramps, `blade_hand` (gearbox direction), `shaft_extra` (how much longer), `shaft_clr`
   (socket fit), whether the blades want more pitch or a thinner section (a thin twisted plate would need support or an
   on-edge print). The spin box itself is still out of scope.
 - Fused variant (2026-09-12): unprinted. See its section above for what to watch.

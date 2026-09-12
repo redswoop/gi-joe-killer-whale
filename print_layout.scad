@@ -38,5 +38,5 @@ if (part == "tie_bar")    translate([0, 0, -tie_y0]) rotate([90, 0, 0]) tie_bar(
 if (part == "slat")       translate([0, 0, fused ? slat_barrel_d / 2 : slat_t / 2]) rotate([-90, 0, 0]) slat();   // flat, rod (fused: the barrel's flush face) on the bed
 if (part == "shroud")     { duct(); deco_boxes(); tab(); if (fused) vane_roots(); }   // fused: the root bars are part of the shroud
 if (part == "fan")        fan();                                                                        // flat, hub bottom and blade undersides on the bed, no supports
-if (part == "shaft")      translate([0, 0, shaft_d / 2 - shaft_flat]) rotate([0, -90, 0]) shaft();          // lying on its D flat, tab at -X (tip 0.65 off the bed: a 1 mm overhang)
+if (part == "shaft")      translate([0, 0, shaft_d / 2 - shaft_flat]) rotate([0, -90, 0]) shaft();          // lying on its D flat, blade at x = 0 (its underside 0.65 off the bed: a short overhang)
 if (part == "strut")      translate([0, 0, duct_r_in]) rotate([0, -90, 0]) strut();   // standing on one ear's outer face (0.3 mm of curve across it; brim); no supports

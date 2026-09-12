@@ -327,8 +327,16 @@ socket_depth = fan_hub_h - 1.5;                  // blind socket up from the hub
 shaft_reach  = 65;                               // hub bottom to the tab's base, as the reference
 shaft_extra  = 0;                                // Armen: the reference is too short; add this much (TBD from the print)
 shaft_len    = socket_depth + shaft_reach + shaft_extra;
-tab_w        = 1.6;  tab_t = 1.2;  tab_len = 3.0;   // the gearbox tab: across the flat's direction, along it, length (mesh: 1.6 x 1.2 x 0.6;
-                                                    // Armen 2026-09-12: 'we need the tab to be longer')
+// The gearbox end (Armen 2026-09-12, gear out of the hull, photos + sketch): the gear's boss has a socket with sloped
+// walls and a keyed SLOT in its floor; the shaft's end is a BLADE that keys into the slot, and the shoulders where the
+// round shank becomes the blade are ROUNDED RAMPS that seat on the socket's slopes ('the shaft should have rounded ramps
+// to meet with the ramps in the socket'). Like a screwdriver tip ground from round bar. Slot numbers are placeholders
+// until measured; the old mesh's 1.6 x 1.2 x 0.6 pin was somebody's guess.
+tab_w        = 2.8;    // blade width (along the flat), the slot's length
+tab_t        = 1.2;    // blade thickness (across the flat), the slot's width
+tab_len      = 3.0;    // blade length beyond the ramps, the slot's depth
+tab_ramp     = 2.0;    // length of the rounded shoulders, shank diameter down to the blade
+tab_end_r    = tab_t / 2;   // round on the blade's end corners, in plan, so it finds the slot
 
 // ---------- Fillet 01 / 02 / 03 ----------
 box_fillet_out   = 0.5;   // Fillet 01: convex rounds on the box's outer face edges
@@ -972,13 +980,37 @@ module fan() {
         translate([0, 0, -1]) linear_extrude(1 + socket_depth) offset(delta = shaft_clr) shaft_2d();
     }
 }
-// shaft in its own frame: axis Z, tab at the bottom (z 0 .. tab_len), body up to tab_len + shaft_len; the flat faces -X
+// shaft in its own frame: axis Z, blade at the bottom (z 0 .. tab_len), ramps above it (to tab_len + tab_ramp), the D shank
+// on up to tab_len + tab_ramp + shaft_len; the flat faces -X, the blade's thickness is across it (X), its width along it (Y)
 module shaft() {
-    translate([0, 0, tab_len - eps]) linear_extrude(shaft_len + eps) shaft_2d();
-    translate([-tab_t / 2, -tab_w / 2, 0]) cube([tab_t, tab_w, tab_len + eps]);
+    z0 = tab_len + tab_ramp;
+    translate([0, 0, z0 - eps]) linear_extrude(shaft_len + eps) shaft_2d();
+    shaft_tip();
+}
+// the blade and its rounded shoulders. Shoulders: the shank's section (r shaft_d/2) shrinking to the blade's over tab_ramp,
+// each side view a convex quarter-ellipse (a rounded bump, like a bullet nose ground flat): the thickness direction from
+// shaft_d down to tab_t, the width direction from shaft_d down to tab_w with the blade's end corners rounded tab_end_r.
+// Built as the intersection of the two side-view prisms, the shank cylinder and the D prism (the flat runs through).
+module shaft_tip() {
+    R = shaft_d / 2;
+    module ramp_2d(half, r_end = 0) {   // (across, z): blade half-width from z = 0 (end corners rounded r_end) to tab_len, shoulder to R at tab_len + tab_ramp
+        n = 12;
+        polygon(concat(
+            [for (i = [0 : n]) let (a = 180 + 90 * i / n) [-half + r_end + r_end * cos(a), r_end + r_end * sin(a)]],          // left end corner
+            [for (i = [0 : n]) let (a = 270 + 90 * i / n) [ half - r_end + r_end * cos(a), r_end + r_end * sin(a)]],          // right end corner
+            [for (i = [0 : n]) let (a = 90 * i / n) [half + (R - half) * sin(a), tab_len + tab_ramp * (1 - cos(a))]],         // right shoulder, convex
+            [[R, tab_len + tab_ramp + 1], [-R, tab_len + tab_ramp + 1]],
+            [for (i = [n : -1 : 0]) let (a = 90 * i / n) [-(half + (R - half) * sin(a)), tab_len + tab_ramp * (1 - cos(a))]]));   // left shoulder
+    }
+    intersection() {
+        rotate([90, 0, 0])  linear_extrude(2 * R + 2, center = true) ramp_2d(tab_t / 2);                  // thickness profile (x, z), through y
+        rotate([90, 0, 90]) linear_extrude(2 * R + 2, center = true) ramp_2d(tab_w / 2, tab_end_r);       // width profile (y, z), through x
+        cylinder(r = R, h = tab_len + tab_ramp + 1);
+        translate([0, 0, -1]) linear_extrude(tab_len + tab_ramp + 3) shaft_2d();                          // the D flat runs on through the shoulders (the bed face)
+    }
 }
 module fan_placed()   { translate([0, 0, fan_z0]) fan(); }
-module shaft_placed() { translate([0, 0, fan_z0 + socket_depth - tab_len - shaft_len]) shaft(); }
+module shaft_placed() { translate([0, 0, fan_z0 + socket_depth - tab_len - tab_ramp - shaft_len]) shaft(); }
 
 // =====================================================================
 //  assembly
