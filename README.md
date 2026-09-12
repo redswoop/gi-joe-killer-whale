@@ -12,7 +12,7 @@ vane mechanism reconstructed from photos of the real MET-b52 parts.
 | `hinge_coupon.scad` | Tolerance test print: hinge x3 (standing, pins vertical; `-D 'hinge_pin="filament"'` ladders the filament hole 0.10 / 0.15 / 0.20 instead), slat axle holes x3, keyhole eyes x3, strut pockets x3 + one ear, fork darts x3 (standing) + a piece of rim. |
 | `saddle_coupon.scad` | Fit test for the saddle-mount alternative: three rim pieces with receivers at `chan_clrs` = 0.05 / 0.10 / 0.15, plus a standing stub of the bar's -Y end with the wedge peg. |
 | `tab_coupon.scad` | Tab fit test print: four 108° arcs of the shroud (30 % of the ring, centred on the tab, `keep = 0.3`) with tab `variants` = [grip, stem_extra] pairs, labelled on a tag. Round 1 laddered the grip; round 2 ladders the stem width at grip 0.7. |
-| `check.scad` | Collision pairs (`-D pair="..."`, `steer`, `tilt`, `strut_dz`). Run them all: `../tools/check.sh check.scad 'steer=0' 'steer=30' 'steer=-30 tilt=20' 'strut_dz=8'`. Every argument is a pose, so the fused table is `'vane_mount="fused"' 'vane_mount="fused" steer=30' ...` (there `roots-duct` is skipped: one body by design). |
+| `check.scad` | Collision pairs (`-D pair="..."`, `steer`, `tilt`, `strut_dz`), including `fan-duct`, `fan-strut`, `fan-roots`, `shaft-strut`. Run them all: `../tools/check.sh check.scad 'steer=0' 'steer=30' 'steer=-30 tilt=20' 'strut_dz=8'`. Every argument is a pose, so the fused table is `'vane_mount="fused"' 'vane_mount="fused" steer=30' ...` (there `roots-duct` is skipped: one body by design). |
 | `compare.scad` | Volume diff against the Shapr3D export (`ref_bodies/` = the STL split per shell). Numeric version: `../tools/voxcmp.py stl/shroud.stl ref_bodies/shroud.stl`. |
 | `export.sh` | Regenerates every STL in `stl/` in parallel. Plain names are the defaults; `_saddle`, `_filpin` and `_saddle_filpin` are the alternates, `_fused` is the fused variant (`shroud_fused`, `fin_right_fused`, `fin_left_fused`, `slat_fused`), plus `saddle_coupon.stl` and `hinge_coupon_filpin.stl`. Run after changing parameters. |
 | `render.sh` | Headless PNGs into `renders/`. |
@@ -29,10 +29,14 @@ Z = duct axis (airflow exits +Z). Y = the toy's vertical, **+Y (tab side) = the 
 3. **Vanes** (`vane_right.stl`, `vane_left.stl`, standing on the -Y end, 99 mm tall, brim; the dart's underside may want a little support). Armen's call (2026-09-11): vertical prints the ribbed panels as wall detail and puts the hinge pins vertical. Print-in-place hinge: free each plate by working it back and forth. The +Y peg drops through the rim slot into the slot in the Whale's base; the -Y fork dart pushes down over the rim: key into the round notch, prongs straddling the wall, nub clicks.
 4. **Slats** (`slat.stl` x2, flat). Spring the 59 mm rods into the holes in the two bars before the vanes go into the shroud. The plate now nearly spans the bars (0.3 mm end gaps), so they stay put sideways.
 5. **Tie bar** (`tie_bar.stl`, knurl up). Bulbs go through the big keyholes, slide the bar aft, pins click into the working holes.
+6. **Fan** (`fan.stl`, flat, no supports) and **shaft** (`shaft.stl`, lying on its D flat). Push the shaft's plain end into the
+   blind D socket under the fan's hub; the tab end goes down through the strut's bore into the hull's push-button gearbox.
 
 Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_clr`, `tooth_clr` (settled: 0.10, round 3, 2026-09-12), `tie_eye_clr`, `ear_clr`.
 
 ## Print next (as of 2026-09-12)
+0. **Fan + shaft** (new, unprinted): `stl/fan.stl` (80 mm, flat) and `stl/shaft.stl` (71.5 mm, on its flat). Check the socket fit
+   (`shaft_clr`), which way the gearbox turns (`blade_hand`), and how much longer the shaft must be (`shaft_extra`).
 0. **Fused variant** (Armen's idea, 2026-09-12, see below): `stl/shroud_fused.stl` (base down, 36 mm tall; the two bars bridge the bore
    about 20 mm up, so enable supports under them: support PLA, 0 interface distance, as the vane reprint used), `stl/fin_right_fused.stl` +
    `stl/fin_left_fused.stl` (standing on the long outer edge, knuckles up, no support), `stl/slat_fused.stl` x2 (flat), `stl/tie_bar.stl`, plus 2 x 15 mm and
@@ -45,6 +49,31 @@ Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_c
 2. `stl/shroud.stl`: settled tab, strut pockets, and the new shallow (3 mm) key notches.
 3. `stl/strut.stl` (ears in pockets, standing on an ear, brim) once the pocket clearance is known.
 4. Vanes and slats once the coupon confirms `hinge_clr`, `tooth_clr` and `slat_clr`.
+
+## Fan and shaft (2026-09-12)
+Replaces `../GI_Joe_Killer_Whale_Blade.stl`, an old mesh off the web that prints badly (thin twisted blades that are all
+overhang, a 3.5 mm shaft 65 mm long printed on end). Measured from that mesh: 3 blades, tip r 42.6, blades about 5.7 mm
+deep along the axis and pitched roughly 16 deg at mid-span with a straight radial edge and a curved swept edge, a 3.5 mm
+shaft tapering to 2.7, and a 1.6 x 1.2 x 0.6 tab on its tip. Armen: the hull has a push-button spin mechanism with (he
+thinks) a gear with a slot the tab goes into; the tab engages but the shaft is too short; it should be two parts so the
+shaft can print horizontally.
+- **Fan** (`fan()`, prints flat, hub bottom on the bed, no supports): hub `fan_hub_d` 10 x `fan_hub_h` 7 with a blind
+  D socket `socket_depth` 5.5 deep from the bottom; `fan_n` 3 blades as polyhedra (`blade()`): the reference planform
+  (`blade_plan`, chord vs radius normalised to the tip, straight trailing edge, swept leading edge, elliptical tip from
+  `blade_tip_f`), as a **wedge**: flat bottom on the bed, top face sloping `blade_pitch` 12 deg across the chord from
+  `blade_t` 1.2 at the leading edge, so nothing overhangs (3.5 mm thick at the root's trailing edge, thinner outboard).
+  `blade_hand` flips the leading edge to the other side once we know which way the gearbox turns.
+  **Tip radius**: the strut's pocket bosses reach in to r 40.6, so the reference's 42.6 does not fit this shroud;
+  `fan_r = boss_r_in - fan_tip_clr` = 39.6. The fan sits `fan_gap` 0.5 above the strut's hub core (`fan_z0` 3).
+- **Shaft** (`shaft()`, prints lying on its flat): D section, `shaft_d` 3.5 (the reference's; the strut's bore is 5)
+  with a `shaft_flat` 0.5 flat, which is the bed face and keys the torque into the hub's D socket (`shaft_clr` 0.10
+  per side, untested). `shaft_len` = socket depth + `shaft_reach` 65 (the reference) + `shaft_extra` (0: Armen says
+  the reference is too short, number TBD). Tip tab `tab_w` 1.6 x `tab_t` 1.2 x `tab_len` 1.0 (mesh: 0.6 long).
+  The tab sits 0.65 above the bed at the tip: a 1 mm overhang, printable.
+- Collision pairs `fan-duct`, `fan-strut`, `fan-roots`, `shaft-strut` all clear (teeth and fused, strut seated and
+  pulled down 8). Renders: `renders/fan_iso.png`, `fan_top.png`, `fan_asm.png`, `fan_on_strut.png`, `shaft_print.png`.
+- Not modelled: any bearing between the hub and the strut (the reference had a 30 mm disc under the blades that may
+  have ridden on the strut's ring), the gearbox end of the shaft beyond the tab.
 
 ## Fused variant: bars part of the shroud (2026-09-12)
 `vane_mount = "fused"` (the default `"teeth"` is everything above; `-D 'vane_mount="fused"'` or the viewer panel).
@@ -135,9 +164,9 @@ untouched. Renders: `renders/saddle_receiver.png`, `saddle_vane_in.png`, `saddle
 - Coupon round 3 not yet printed: hinge 0.15 / 0.20 / 0.25, slat holes, fork teeth 0.10 / 0.15 / 0.20, ear-in-pocket fit (0.10 / 0.20 / 0.30), keyhole click, bullet-rooted pins.
 - Fallback if the keyhole/pins still misbehave: a separate reinforced peg that tabs into a slot in the plate.
 - Mounting tab: settled by two coupon rounds on 2026-09-10 (olive green). Round 1 grip 0.8 best but a tad tight, 0.5 loose -> `tab_grip = 0.7`. Round 2 stem width: +0.15 and +0.3 both good, +0.3 a tad much -> `tab_stem_extra = 0.2`. Not yet tested on a full shroud print.
-- Fans and the spin box are out of scope so far. The strut is removable, so a fan on its hub goes in from the base side
-  whatever the vane mount; in the fused variant the bars start about 20 mm up the bore and cannot move, so a fan's blade
-  tips and downstream edge must stay below that with the strut seated (a `check.scad` pair once the fan is sketched).
+- Fan and shaft (2026-09-12): unprinted. Open: `blade_hand` (gearbox direction), `shaft_extra` (how much longer), `shaft_clr`
+  (socket fit), whether the blades want more pitch or a thinner section (a thin twisted plate would need support or an
+  on-edge print). The spin box itself is still out of scope.
 - Fused variant (2026-09-12): unprinted. See its section above for what to watch.
 
 ## Gotchas learned

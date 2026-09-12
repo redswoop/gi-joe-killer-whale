@@ -11,6 +11,7 @@ show_ghost  = true;    // overlay Armen's STL as a translucent reference
 show_shroud = true;
 show_strut  = true;
 show_vanes  = true;
+show_fan    = true;
 
 // ---------- Sketch 01 / 02 + Extrusion 01 + Split: the duct ----------
 duct_r_in   = 44;
@@ -277,6 +278,42 @@ boss_r_in  = ear_r_in - ear_clr - pocket_lip;                      // boss's inn
 boss_w     = ear_w + 2 * ear_clr + 2 * pocket_side;
 boss_top   = ear_top + ear_clr + pocket_lid;
 boss_fade  = 3;                // concave fillet radius blending the boss into the bore wall, both sides and the top (max 3.4: the boss's proudness)
+
+// ---------- fan and shaft (2026-09-12, from GI_Joe_Killer_Whale_Blade.stl in ../, an old mesh off the web) ----------
+// Two parts. The FAN prints flat, hub bottom on the bed: hub + fan_n wedge blades whose bottom face is the bed and whose
+// top face slopes blade_pitch across the chord (thin at the leading edge, thick at the trailing edge), so nothing
+// overhangs. The reference's blades are thin twisted sheets pitched about 16 deg (they print as pure overhang) with a
+// straight radial trailing edge and a curved, swept leading edge; that planform is kept (blade_plan, read off the mesh
+// per radius band, normalised to the tip radius) with an elliptical tip. The SHAFT is a separate D-section rod printed
+// lying on its flat (Armen: 'so that the shaft can be printed horizontally for strength'): its top slots into a blind
+// D socket in the hub (torque through the flat), its tip carries the little tab that engages the hull's push-button
+// gearbox (1.6 x 1.2, from the mesh). The reference shaft is 3.5 mm and 65 long below the blades; Armen: the tab
+// engages but the shaft is too short -> shaft_extra. The fan sits just above the strut's hub on the shaft, which runs
+// down through the strut's 5 mm bore. Tip radius: the strut's pocket bosses reach in to boss_r_in (40.6), so the
+// reference's 42.6 does not fit; the tip follows the boss less fan_tip_clr.
+fan_n        = 3;
+fan_tip_clr  = 1.0;                              // blade tip to the boss's inner face
+fan_r        = boss_r_in - fan_tip_clr;          // 39.6 (the reference was 42.6 in the same 88 mm bore)
+fan_gap      = 0.5;                              // hub bottom above the strut's hub core
+fan_z0       = hub_core_t / 2 + fan_gap;         // 3: the fan's own z=0 (hub bottom) in the assembly
+fan_hub_d    = 10;   fan_hub_h = 7;   fan_hub_ch = 0.8;     // hub: diameter, height, top chamfer
+blade_r0     = fan_hub_d / 2 - 1;                // blade root, buried 1 mm in the hub
+blade_t      = 1.2;                              // thickness at the leading (thin) edge
+blade_pitch  = 12;                               // deg, slope of the top face across the chord (the reference is about 16 at mid-span)
+blade_hand   = 1;                                // +1: leading edge on the counter-clockwise side seen from +Z (the exit); -1 mirrors.
+                                                 // The fan pushes air +Z when it turns toward its leading edges. Unknown which way the gearbox turns.
+blade_plan   = [[0.13, 0.13], [0.20, 0.13], [0.34, 0.26], [0.41, 0.29], [0.48, 0.30], [0.55, 0.31], [0.62, 0.30],
+                [0.69, 0.29], [0.76, 0.28], [0.83, 0.25], [0.90, 0.22], [0.95, 0.20]];   // [r / tip, chord / tip] from the mesh
+blade_tip_f  = 0.95;                             // from here to the tip the chord falls on a quarter ellipse
+blade_nr     = 36;  blade_nt = 8;                // polyhedron grid: radial steps, chordwise steps
+shaft_d      = 3.5;                              // the reference's (it fits the hull); the strut's bore is 5
+shaft_flat   = 0.5;                              // depth of the D flat (the bed face when printing; keys the hub)
+shaft_clr    = 0.10;                             // socket clearance on the shaft, per side (untested)
+socket_depth = fan_hub_h - 1.5;                  // blind socket up from the hub's bottom, 1.5 roof
+shaft_reach  = 65;                               // hub bottom to the tab's base, as the reference
+shaft_extra  = 0;                                // Armen: the reference is too short; add this much (TBD from the print)
+shaft_len    = socket_depth + shaft_reach + shaft_extra;
+tab_w        = 1.6;  tab_t = 1.2;  tab_len = 1.0;   // the gearbox tab: across the flat's direction, along it, length (mesh: 1.6 x 1.2 x 0.6)
 
 // ---------- Fillet 01 / 02 / 03 ----------
 box_fillet_out   = 0.5;   // Fillet 01: convex rounds on the box's outer face edges
@@ -866,6 +903,49 @@ module tie_bar_placed() {
 }
 module vanes() { vane_roots(); vane_fins(); tie_bar_placed(); slats(); }
 
+// ---- fan: hub + polyhedron blades, in its own frame (hub bottom at z = 0, axis Z) ----
+function blade_chord(r) = let (f = r / fan_r)
+    fan_r * (f <= blade_tip_f ? lookup(f, blade_plan)
+                              : max(0.3 / fan_r, lookup(blade_tip_f, blade_plan) * sqrt(max(0, 1 - pow((f - blade_tip_f) / (1 - blade_tip_f), 2)))));
+// grid point (i radial, j chordwise, k 0 bottom / 1 top): the trailing edge is the straight radial line at angle 0,
+// the leading edge at angle chord / r (radians); the top face falls from blade_t + chord * tan(pitch) at the trailing
+// edge to blade_t at the leading edge, linearly across the chord
+function blade_pt(i, j, k) = let (r = blade_r0 + (fan_r - blade_r0) * i / blade_nr, c = blade_chord(r),
+                                  a = blade_hand * (c / r) * (j / blade_nt) * 180 / PI,
+                                  z = k == 0 ? 0 : blade_t + tan(blade_pitch) * c * (1 - j / blade_nt))
+    [r * cos(a), r * sin(a), z];
+function blade_idx(i, j, k) = ((i * (blade_nt + 1)) + j) * 2 + k;
+module blade() {
+    nr = blade_nr;  nt = blade_nt;
+    pts = [for (i = [0 : nr], j = [0 : nt], k = [0, 1]) blade_pt(i, j, k)];
+    faces = concat(
+        [for (i = [0 : nr - 1], j = [0 : nt - 1]) [blade_idx(i, j, 1), blade_idx(i, j + 1, 1), blade_idx(i + 1, j + 1, 1), blade_idx(i + 1, j, 1)]],   // top
+        [for (i = [0 : nr - 1], j = [0 : nt - 1]) [blade_idx(i, j, 0), blade_idx(i + 1, j, 0), blade_idx(i + 1, j + 1, 0), blade_idx(i, j + 1, 0)]],   // bottom
+        [for (i = [0 : nr - 1]) [blade_idx(i, 0, 0), blade_idx(i, 0, 1), blade_idx(i + 1, 0, 1), blade_idx(i + 1, 0, 0)]],                              // trailing edge wall
+        [for (i = [0 : nr - 1]) [blade_idx(i, nt, 0), blade_idx(i + 1, nt, 0), blade_idx(i + 1, nt, 1), blade_idx(i, nt, 1)]],                          // leading edge wall
+        [for (j = [0 : nt - 1]) [blade_idx(0, j, 0), blade_idx(0, j + 1, 0), blade_idx(0, j + 1, 1), blade_idx(0, j, 1)]],                              // root cap (in the hub)
+        [for (j = [0 : nt - 1]) [blade_idx(nr, j, 0), blade_idx(nr, j, 1), blade_idx(nr, j + 1, 1), blade_idx(nr, j + 1, 0)]]);                         // tip cap
+    polyhedron(points = pts, faces = faces, convexity = 4);
+}
+module shaft_2d() { intersection() { circle(d = shaft_d); translate([-(shaft_d / 2 - shaft_flat), -shaft_d]) square(2 * shaft_d); } }   // D: the flat faces -X
+module fan() {
+    difference() {
+        union() {
+            cylinder(d = fan_hub_d, h = fan_hub_h - fan_hub_ch);
+            translate([0, 0, fan_hub_h - fan_hub_ch]) cylinder(d1 = fan_hub_d, d2 = fan_hub_d - 2 * fan_hub_ch, h = fan_hub_ch);
+            for (i = [0 : fan_n - 1]) rotate([0, 0, i * 360 / fan_n]) blade();
+        }
+        translate([0, 0, -1]) linear_extrude(1 + socket_depth) offset(delta = shaft_clr) shaft_2d();
+    }
+}
+// shaft in its own frame: axis Z, tab at the bottom (z 0 .. tab_len), body up to tab_len + shaft_len; the flat faces -X
+module shaft() {
+    translate([0, 0, tab_len - eps]) linear_extrude(shaft_len + eps) shaft_2d();
+    translate([-tab_t / 2, -tab_w / 2, 0]) cube([tab_t, tab_w, tab_len + eps]);
+}
+module fan_placed()   { translate([0, 0, fan_z0]) fan(); }
+module shaft_placed() { translate([0, 0, fan_z0 + socket_depth - tab_len - shaft_len]) shaft(); }
+
 // =====================================================================
 //  assembly
 // =====================================================================
@@ -877,6 +957,10 @@ if (show_vanes) {
     color("Salmon")     vane_fins();
     color("LightCoral") tie_bar_placed();
     color("Peru")       slats();
+}
+if (show_fan) {
+    color("DarkSeaGreen") fan_placed();
+    color("Olive")        shaft_placed();
 }
 
 

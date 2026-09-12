@@ -14,7 +14,7 @@ job() {   # job NAME OUT.stl FILE.scad [-D ...]
   n=$((n + 1))
   { printf '%q ' "$O" --backend Manifold --export-format binstl "$@" -o "$out" "$f"; printf '> %q 2>&1; printf "%%-24s ok\\n" %q\n' "$tmp/$n.log" "$name"; } > "$tmp/$n.sh"
 }
-for p in vane_right vane_left tie_bar slat shroud strut; do job "$p" "stl/$p.stl" print_layout.scad -D "part=\"$p\""; done
+for p in vane_right vane_left tie_bar slat shroud strut fan shaft; do job "$p" "stl/$p.stl" print_layout.scad -D "part=\"$p\""; done
 for p in shroud vane_right vane_left; do job "${p}_saddle" "stl/${p}_saddle.stl" print_layout.scad -D "part=\"$p\"" -D 'ny_mount="saddle"'; done
 for p in vane_right vane_left; do
   job "${p}_filpin"        "stl/${p}_filpin.stl"        print_layout.scad -D "part=\"$p\"" -D 'hinge_pin="filament"'

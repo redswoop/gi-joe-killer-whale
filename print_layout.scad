@@ -1,5 +1,5 @@
 // Print layouts: each part laid on the bed (z=0) in its printing pose.
-//   part = "vane_right" | "vane_left" | "tie_bar" | "slat" | "shroud" | "strut" | "fin_right" | "fin_left"
+//   part = "vane_right" | "vane_left" | "tie_bar" | "slat" | "shroud" | "strut" | "fin_right" | "fin_left" | "fan" | "shaft"
 // vane_mount = "fused" (-D 'vane_mount="fused"'): "shroud" carries the root bars (base down; the bars bridge the bore, slicer
 // supports under them), "fin_*" is the plate alone standing on its -Y end, "slat" has its axle barrel flush on the bed.
 // The vane prints STANDING on its -Y end (the toy's top): the hinge pins are
@@ -10,7 +10,7 @@
 // outer face, kept for reference; the round dart no longer lies flat.
 // The tie bar prints face down with its pegs up.
 include <shroud.scad>
-show_ghost = false; show_shroud = false; show_strut = false; show_vanes = false;
+show_ghost = false; show_shroud = false; show_strut = false; show_vanes = false; show_fan = false;
 part = "vane_right";
 vane_pose = "vertical";
 
@@ -37,4 +37,6 @@ if (part == "fin_left")   fin_print(-1);
 if (part == "tie_bar")    translate([0, 0, -tie_y0]) rotate([90, 0, 0]) tie_bar();          // flat, knurled face up, holes vertical
 if (part == "slat")       translate([0, 0, fused ? slat_barrel_d / 2 : slat_t / 2]) rotate([-90, 0, 0]) slat();   // flat, rod (fused: the barrel's flush face) on the bed
 if (part == "shroud")     { duct(); deco_boxes(); tab(); if (fused) vane_roots(); }   // fused: the root bars are part of the shroud
+if (part == "fan")        fan();                                                                        // flat, hub bottom and blade undersides on the bed, no supports
+if (part == "shaft")      translate([0, 0, shaft_d / 2 - shaft_flat]) rotate([0, -90, 0]) shaft();          // lying on its D flat, tab at -X (tip 0.65 off the bed: a 1 mm overhang)
 if (part == "strut")      translate([0, 0, duct_r_in]) rotate([0, -90, 0]) strut();   // standing on one ear's outer face (0.3 mm of curve across it; brim); no supports
