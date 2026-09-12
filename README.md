@@ -35,7 +35,7 @@ Z = duct axis (airflow exits +Z). Y = the toy's vertical, **+Y (tab side) = the 
 Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_clr`, `tooth_clr` (settled: 0.10, round 3, 2026-09-12), `tie_eye_clr`, `ear_clr`.
 
 ## Print next (as of 2026-09-12)
-0. **Fan + shaft** (new, unprinted): `stl/fan.stl` (80 mm, flat) and `stl/shaft.stl` (71.5 mm, on its flat). Check the socket fit
+0. **Fan + shaft** (new, unprinted): `stl/fan.stl` (80 mm, flat) and `stl/shaft.stl` (73.5 mm, on its flat). Check the socket fit
    (`shaft_clr`), which way the gearbox turns (`blade_hand`), and how much longer the shaft must be (`shaft_extra`).
 0. **Fused variant** (Armen's idea, 2026-09-12, see below): `stl/shroud_fused.stl` (base down, 36 mm tall; the two bars bridge the bore
    about 20 mm up, so enable supports under them: support PLA, 0 interface distance, as the vane reprint used), `stl/fin_right_fused.stl` +
@@ -58,20 +58,27 @@ shaft tapering to 2.7, and a 1.6 x 1.2 x 0.6 tab on its tip. Armen: the hull has
 thinks) a gear with a slot the tab goes into; the tab engages but the shaft is too short; it should be two parts so the
 shaft can print horizontally.
 - **Fan** (`fan()`, prints flat, hub bottom on the bed, no supports): hub `fan_hub_d` 10 x `fan_hub_h` 7 with a blind
-  D socket `socket_depth` 5.5 deep from the bottom; `fan_n` 3 blades as polyhedra (`blade()`): the reference planform
-  (`blade_plan`, chord vs radius normalised to the tip, straight trailing edge, swept leading edge, elliptical tip from
-  `blade_tip_f`), as a **wedge**: flat bottom on the bed, top face sloping `blade_pitch` 12 deg across the chord from
-  `blade_t` 1.2 at the leading edge, so nothing overhangs (3.5 mm thick at the root's trailing edge, thinner outboard).
-  `blade_hand` flips the leading edge to the other side once we know which way the gearbox turns.
+  D socket `socket_depth` 5.5 deep from the bottom; `fan_n` 3 blades as lofted polyhedra (`blade()`). **Planform** (Armen: 'a smooth swoopy
+  spline as their edge ... built between 2 smooth splines'): each edge is a cubic Bezier in a unit frame (`blade_te_c`,
+  `blade_le_c` inner control points, `blade_root_c` root chord), both arriving at `blade_tip` along `blade_tip_dir`
+  from opposite sides so the tip is a smooth round of size `blade_tip_k`; the outline is scaled so its farthest point is
+  at `fan_r`. A broad paddle leaning a little to the trailing side (the first version, a table of chords off the mesh,
+  was 'very blocky and fat'). **Section** (`blade_profile()`): flat bottom on the bed, a full round nose of diameter
+  `blade_t` 1.4 at the leading edge, the top on a cosine from there up to the trailing edge's thickness (blade_t +
+  chord x tan `blade_pitch` 12 deg), rounds `blade_r_top` 0.8 / `blade_r_bot` 0.4 on the trailing corners; the rounds
+  shrink with the chord toward the tip. So nothing overhangs beyond the 0.4 bottom round, and no edge is sharp. The
+  sections are lofted over `blade_nr` 40 stations to an apex at the tip. `blade_hand` mirrors the blade once we know
+  which way the gearbox turns.
   **Tip radius**: the strut's pocket bosses reach in to r 40.6, so the reference's 42.6 does not fit this shroud;
   `fan_r = boss_r_in - fan_tip_clr` = 39.6. The fan sits `fan_gap` 0.5 above the strut's hub core (`fan_z0` 3).
 - **Shaft** (`shaft()`, prints lying on its flat): D section, `shaft_d` 3.5 (the reference's; the strut's bore is 5)
   with a `shaft_flat` 0.5 flat, which is the bed face and keys the torque into the hub's D socket (`shaft_clr` 0.10
   per side, untested). `shaft_len` = socket depth + `shaft_reach` 65 (the reference) + `shaft_extra` (0: Armen says
-  the reference is too short, number TBD). Tip tab `tab_w` 1.6 x `tab_t` 1.2 x `tab_len` 1.0 (mesh: 0.6 long).
+  the reference is too short, number TBD). Tip tab `tab_w` 1.6 x `tab_t` 1.2 x `tab_len` 3.0 (mesh: 0.6 long; Armen: 'we need the tab to be longer').
   The tab sits 0.65 above the bed at the tip: a 1 mm overhang, printable.
 - Collision pairs `fan-duct`, `fan-strut`, `fan-roots`, `shaft-strut` all clear (teeth and fused, strut seated and
-  pulled down 8). Renders: `renders/fan_iso.png`, `fan_top.png`, `fan_asm.png`, `fan_on_strut.png`, `shaft_print.png`.
+  pulled down 8). Renders: `renders/fan_iso.png`, `fan_top.png`, `fan_close.png`, `fan_asm.png`, `fan_on_strut.png`, `shaft_print.png`;
+  `renders/fan_planforms.png` compares four outline candidates (A first spline, B scimitar, C paddle, D hook).
 - Not modelled: any bearing between the hub and the strut (the reference had a 30 mm disc under the blades that may
   have ridden on the strut's ring), the gearbox end of the shaft beyond the tab.
 
