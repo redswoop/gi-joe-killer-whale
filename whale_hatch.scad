@@ -31,11 +31,20 @@ hatch_len  = 90;       // traced 2026-09-11: x-extent of the fender edge, cabin 
 hatch_rise = 18;       // traced: the hinge end sits 18 below the flat end (drops 0 / 4 / 18 at x = 0 / 50 / 90)
 hatch_sag  = 5.9;      // circle through the three traced points: R 180.7, chord 91.8, sagitta 5.93
 hatch_t    = 1.5;      // Armen 2026-09-11: same as the rest of the shell (the hatch itself is missing)
-cabin_tuck = 5;        // the plate continues past the traced 90 under the cabin lip (eBay photo: plate
-                       // ~97 long on the 93.3 width). Set 0 if the print hits the cabin.
+plate_extra = 0;       // full-thickness plate past the traced 90 (the cabin face). Tune on the print.
 top_bevel  = 0;        // angle of the cabin end face from the radial (square) cut; + makes the OUTER
                        // surface the long one. 0 after the eBay photo of the real part (square edge).
-top_chamfer = 10;      // 45 deg corner cuts at the cabin end, in plan (photo: ~10 mm legs)
+top_edge_w = 68.85;    // width of the cabin end after the 45 deg corner cuts = the wide end of the
+                       // top-hatch opening (WHALE/measurements.md "wider opening"). Photo of the real
+                       // part scales to ~69 too.
+top_chamfer = (hatch_w - top_edge_w) / 2;   // 12.2: leg of each 45 deg corner cut, in plan
+
+// ---------- cabin-end lip: a ledge that tucks under the top hatch ----------
+top_hatch_t = 2.5;     // Armen's top hatch (WHALE/Whale Hatch.3mf) is a 2.5 plate at that edge
+lip_clr    = 0.2;      // gap between the top hatch's underside and the ledge
+lip_drop   = top_hatch_t + lip_clr;          // ledge's top surface below the outer surface
+lip_t      = 1.5;      // ledge thickness
+lip_len    = 5;        // ledge reach past the plate's end, under the top hatch (eBay photo ~5-6)
 
 // ---------- tray rim (inside face; PHOTO ESTIMATES) ----------
 rim_h      = 3;        // rim height above the plate's inner face (photo: shallow tray)
@@ -59,7 +68,7 @@ slide_clr  = 0.15;     // tongue-to-slot clearance per face (coupon)
 bar_floor  = 2.0;      // bar material beyond the tongue tip
 bar_in     = 5.0;      // bar reach into the tray (from the outer surface), i.e. the inner wall's outside
 bar_out    = 0.6;      // lip over the outer surface at the hinge edge (keeps the bar from lifting inward)
-lip_len    = 2.5;      // that lip's reach along the plate
+bar_lip_len = 2.5;     // that lip's reach along the plate
 bar_reach  = 5.5;      // inner wall's reach along the plate (> tongue_len so it grips the plain plate)
 
 // ---------- bay mock (photo estimates, viewer only) ----------
@@ -91,7 +100,8 @@ arc_cen  = [chord_c / 2 * cos(chord_a), chord_c / 2 * sin(chord_a)]
 a_hinge  = atan2(0 - arc_cen[1], 0 - arc_cen[0]);
 a_top    = atan2(hatch_rise - arc_cen[1], hatch_len - arc_cen[0]);
 a_dir    = sign(a_top - a_hinge);                     // which way the angle runs, hinge -> cabin
-a_end    = a_top + a_dir * cabin_tuck / arc_R * 180 / PI;
+a_end    = a_top + a_dir * plate_extra / arc_R * 180 / PI;
+a_lip    = a_end + a_dir * lip_len / arc_R * 180 / PI;    // where the ledge ends
 end_pt   = arc_cen + arc_R * [cos(a_end), sin(a_end)];   // outer corner at the cabin end
 in_sign  = -a_dir;                                    // local-frame sign: +Y into the plate
 
@@ -124,6 +134,15 @@ module plan_clip(inset = 0) { translate([0, 0, -100]) linear_extrude(300) plan_2
 // =====================================================================
 module hatch_plate() {                              // the 1.5 skin alone
     intersection() { across(hatch_w) band_2d(arc_R, arc_R - hatch_t); plan_clip(); }
+}
+
+// Ledge under the top hatch: a band lip_t thick, its top lip_drop below the outer surface,
+// from just inside the rim's end wall (so they fuse) to lip_len past the plate's end.
+module cabin_lip() {
+    a0 = a_end - a_dir * (rim_t + eps) / arc_R * 180 / PI;
+    across(top_edge_w) polygon(concat(
+        arc_seg(arc_R - lip_drop,         a0,    a_lip, 16),
+        arc_seg(arc_R - lip_drop - lip_t, a_lip, a0,    16)));
 }
 
 module hatch_tray() {                               // skin + rim: a thicker plate minus the pocket
@@ -185,7 +204,7 @@ module slide_bar_local() {
         union() {
             // channel body: floor + outer lip (full depth to lip_len), inner wall up to bar_reach
             translate([-L / 2, 0, 0]) mirror([0, in_sign < 0 ? 1 : 0, 0]) {
-                translate([0, -bar_out, -bar_floor - c]) cube([L, bar_out + bar_in, bar_floor + c + lip_len]);
+                translate([0, -bar_out, -bar_floor - c]) cube([L, bar_out + bar_in, bar_floor + c + bar_lip_len]);
                 translate([0, 0, -bar_floor - c])        cube([L, bar_in, bar_floor + c + bar_reach]);
             }
             // ear lobes, flat on the far side so the bar prints on its back
@@ -209,7 +228,7 @@ module slide_bar_local() {
 module slide_bar() { hinge_frame() slide_bar_local(); }   // in the assembly frame
 
 module hatch() {              // the printed hatch, closed pose
-    if (show_rim) hatch_tray(); else hatch_plate();
+    if (show_rim) { hatch_tray(); cabin_lip(); } else hatch_plate();
     if (hinge_style == "pins") hinge_bar();
     if (hinge_style == "slide") hinge_tongue();
 }

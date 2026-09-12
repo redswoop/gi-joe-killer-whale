@@ -63,8 +63,10 @@ over the nose.
 - Hinge: a round bar across the whole hinge edge on the inside, lobed ears at both ends, short pins (~2.6 dia,
   ~3.5-4.5 long) pointing outward into holes in the fenders. Width 93.3 + 2 x 3.5 pins = 100.3, which matches
   the ~100.5 measured between the fenders.
-- Cabin end: square edge with 45 deg corner cuts in plan (~10 mm legs). The plate scales to ~97 long on the
-  photo vs the 90 traced lip-to-cabin, so `cabin_tuck = 5` continues the arc under the cabin lip.
+- Cabin end: square edge with 45 deg corner cuts in plan bringing the edge to `top_edge_w 68.85`, the wide
+  end of the top-hatch opening. A ledge (`lip_drop 2.7` below the outer surface, `lip_t 1.5`, `lip_len 5`)
+  tucks under Armen's 2.5 top hatch; it is the step visible on the inside of the real part. The plate
+  scales to ~97 long on the photo vs the 90 traced lip-to-cabin, which is that ledge.
 - Four small latch hooks on the side edges (two per side, ~14 % and ~48 % of the length from the cabin end),
   engaging the notched rails on the fenders. Not modelled yet.
 - Outer face: two perforated vent grilles near the cabin end, seven ribbed panels, "PANEL REMOVAL" /
@@ -74,7 +76,7 @@ over the nose.
 ## separate flat print)
 - The hatch's hinge edge carries a dovetail tongue on the inside (`tongue_t 3.0` at the edge tapering to the
   1.5 plate over `tongue_len 4`). The bar is a channel with the matching slot (`slide_clr 0.15` per face,
-  coupon), an outer lip (`bar_out 0.6` proud of the outer surface over `lip_len 2.5`) so it cannot lift
+  coupon), an outer lip (`bar_out 0.6` proud of the outer surface over `bar_lip_len 2.5`) so it cannot lift
   inward, and an inner wall reaching `bar_reach 5.5` up the plate. It slides on along X; once the pins are in
   the fender holes the hull locks it. Rigid, no snap (shroud lesson: springs failed, locks held).
 - The side rims stop `bar_reach + clr` short of the hinge edge so the channel seats. `check.scad` pair
@@ -86,7 +88,7 @@ over the nose.
 - `stl/bar.stl` flat on its back, slot up, pins lying on the bed (`pin_back -0.85` puts their underside at
   z = 0). 100.3 long.
 - Fit checks: curve flush with the fender edges; bar slides on and pins reach the fender holes; cabin end
-  under the lip (zero `cabin_tuck` if it hits); width between the rails.
+  under the lip (`plate_extra`, `lip_len` if it hits); width between the rails.
 
 ## Open items
 - Everything above. Coupon not yet printed.
