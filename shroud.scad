@@ -189,6 +189,13 @@ bar_panels    = [[0.18, 0.40], [0.70, 0.92]];
 //   touch that box's blend (a small flat, below the rim, among the boxes).
 peg_y        = [31.924, 37.191];  peg_z = [19.065, 26.5];   // the +Y peg, straight from Sketch 06: y span, z bottom .. top (buried in the bar)
 peg_clr      = 0.15;   // peg / key to notch, per side. Coupon round 1 (2026-09-08): 'tooth fit 0.15 is fine'
+peg_pod_r    = 2.75;   // canoe around the peg's root (Armen 2026-09-12: 'a bit of a canoe... just the upper half, so it doesn't
+peg_pod_clr  = 0.5;    // collide with that cut', then 'a half-canoe on the inner surface of the duct too'): a cylinder of peg_pod_r
+peg_pod_tail = 5;      // (just over the peg's half-width, 2.64) on the bar's mid-plane, full round to tooth_over past the bar's
+peg_pod_prong = 8;     // edge, then a cone tail peg_pod_tail long fading into the bar (its tip hides in the bar and the hinge web).
+peg_pod_nose = 6;      // Below peg_pod_clr above the rim, only the part INSIDE the bore survives (r < duct_r_in - tooth_clr): a
+                       // half-canoe hugging the bore wall, ogive nose peg_pod_nose long, tip peg_pod_prong below the rim top. The
+                       // outside stays clear of the rim notch and the base's slot; the peg itself still goes through both.
 peg_fillet   = 3;      // concave fillets flaring the peg into the bar's bottom edge, both sides, in the bar's plane. The
                        // printed vane snapped here (2026-09-12: sharp inside corner on a 2 x 5.27 root). They use the
                        // 4 mm between the bar's bottom edge and the rim top and stop ~1 mm above the rim
@@ -608,6 +615,21 @@ module peg_2d() {   // (y, z)
     }
 }
 module peg() { translate([vane_x, 0, 0]) rotate([90, 0, 90]) linear_extrude(vane_t) peg_2d(); }
+// the canoe: revolved about the peg's centre line (along Z); below z_flat (just above the rim) everything outside the
+// bore face is cut away, leaving the half inside the duct to run down the wall as a half-canoe with an ogive nose
+module peg_pod() {
+    yc = (peg_y[0] + peg_y[1]) / 2;
+    z_flat = rim_z(yc + peg_pod_r) + peg_pod_clr;       // above the rim's highest point under the pod (the rim rises toward +Y)
+    z0 = bar_bot(yc) + tooth_over;
+    zb = rim_z(yc) - peg_pod_prong;                     // nose tip
+    R = peg_pod_r;  L = peg_pod_nose;  rho = (R * R + L * L) / (2 * R);
+    difference() {
+        translate([tooth_ax, yc, 0]) rotate_extrude($fn = 48)
+            polygon(concat([for (i = [0 : 16]) let (t = L * i / 16) [sqrt(rho * rho - (L - t) * (L - t)) + R - rho, zb + t]],
+                           [[R, z0], [0, z0 + peg_pod_tail]]));
+        translate([0, 0, zb - 1]) linear_extrude(z_flat - zb + 1) difference() { circle(100); circle(duct_r_in - tooth_clr); }
+    }
+}
 
 // FUSED: the post on side sgn of the +X bar: the bar's slab where it crosses the wall, from post_bury below the
 // rim top up 1 mm into the bar, trimmed to the wall's annulus at every height (the bar crosses the ring
@@ -823,13 +845,15 @@ module bar_panel_2d(f) {
     polygon([[y0, bar_bot(y0) + m], [y1, bar_bot(y1) + m], [y1, bar_top(y1) - m], [y0, bar_top(y0) - m]]);
 }
 module vane_root() {
+    // the peg's canoe is added after the panel grooves are cut, so its tail rides smoothly over the ribbed panel
+    if (!fused) peg_pod();
     difference() {
         union() {
             plate_yz() vane_2d();
             for (yc = hinge_pts) hinge_root(yc);
             if (fused) { post(1); post(-1); }                                                                            // fused: posts onto the rim at both crossings
             else {
-                peg();                                                                            // +Y: the sketch peg, into the base's slot
+                peg();                                                                            // +Y: the sketch peg, into the base's slot (its half-canoe is above)
                 if (ny_mount == "fork") { tooth_fork(-1); translate(tooth_nub_c(-1)) sphere(d = tooth_nub_d, $fn = 32); }   // -Y: the fork dart + its click nub
                 else peg2();                                                                                                 // -Y: the wedge peg, into the receiver's pocket
             }
