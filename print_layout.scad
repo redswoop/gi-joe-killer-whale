@@ -22,8 +22,18 @@ module vane_print(side) {
 }
 if (part == "vane_right") vane_print(1);
 if (part == "vane_left")  vane_print(-1);
-if (part == "fin_right")  translate([0, 0, -hinge_y0]) rotate([90, 0, 0]) vane_fin();                    // plate alone, standing on its -Y end (fused: goes on with a filament pin)
-if (part == "fin_left")   translate([0, 0, -hinge_y0]) rotate([90, 0, 0]) mirror([1, 0, 0]) vane_fin();
+// The plate alone (fused: goes on with a filament pin). fin_print = "edge": upside down, standing on its long outer edge
+// with the knuckles up; that edge is the trapezoid's slanted side, so after the flip it is levelled by rotating about X
+// by fin_slant (6.5 deg) and lifted so the edge sits on the bed. "vertical": on its -Y end like the whole vane.
+fin_slant = atan((fin_depth_bot - fin_depth_top) / (hinge_y1 - hinge_y0));
+module fin_print(side) {
+    if (fin_print == "edge")
+        translate([0, 0, (hinge_z + fin_depth_top) * cos(fin_slant) - hinge_y0 * sin(fin_slant)])
+            rotate([fin_slant, 0, 0]) rotate([0, 180, 0]) mirror([side < 0 ? 1 : 0, 0, 0]) vane_fin();
+    else translate([0, 0, -hinge_y0]) rotate([90, 0, 0]) mirror([side < 0 ? 1 : 0, 0, 0]) vane_fin();
+}
+if (part == "fin_right")  fin_print(1);
+if (part == "fin_left")   fin_print(-1);
 if (part == "tie_bar")    translate([0, 0, -tie_y0]) rotate([90, 0, 0]) tie_bar();          // flat, knurled face up, holes vertical
 if (part == "slat")       translate([0, 0, fused ? slat_barrel_d / 2 : slat_t / 2]) rotate([-90, 0, 0]) slat();   // flat, rod (fused: the barrel's flush face) on the bed
 if (part == "shroud")     { duct(); deco_boxes(); tab(); if (fused) vane_roots(); }   // fused: the root bars are part of the shroud

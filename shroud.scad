@@ -252,6 +252,9 @@ recv_z_top    = slat_z - slat_rod_d / 2 - recv_gap_slat;   // 24.5
 //   The switch itself (vane_mount, fused, hinge_pin_eff) sits up in the hinge pin block: barrel_d needs it first.
 post_bury     = 2;         // the post runs this far down into the wall below the rim top
 post_fillet   = 1;         // concave fillet radius where the bar's faces meet the rim top, along the wall crossing
+fin_print     = "edge";    // how the separate plate prints: "edge" = standing on its long outer edge (the one opposite the hinge),
+                           // knuckles up (Armen 2026-09-12: 'experiments show ... the best result'); its hinge hole then prints
+                           // horizontal, so it is a teardrop with the roof toward the hinge side. "vertical" = on its -Y end, round hole.
 slat_fil_clr  = 0.10;      // slat barrel hole clearance on the filament axle, per side (snugger than the bar's fil_clr:
                            // the slats 'need not swing freely'; untested)
 slat_wall     = 0.75;      // barrel wall around the axle hole
@@ -661,12 +664,12 @@ module barrel(y0, y1) {
 module web(y0, y1, z0, z1) {   // 2 mm plate joining a knuckle to the bar
     translate([vane_x, y0, z0]) cube([vane_t, y1 - y0, z1 - z0]);
 }
-// the filament pin's hole, straight through the whole nub and out both ends. roof = 1: a teardrop with its point
-// up (+Z) for a hole printed lying down; 0: round, for a hole printed vertical
+// the filament pin's hole, straight through the whole nub and out both ends. roof = +1 / -1: a teardrop with its
+// point toward +Z / -Z (whichever is up on the printer) for a hole printed lying down; 0: round, printed vertical
 module fil_hole(yc, clr = fil_clr, roof = 0) {
     y0 = yc - hinge_len / 2 - 1;  y1 = yc + hinge_len / 2 + 1;
     if (roof == 0) pin_prism(fil_d + 2 * clr, y0, y1);
-    else translate([hinge_x, y0, hinge_z]) rotate([-90, 0, 0]) linear_extrude(y1 - y0) rotate(-90) teardrop_2d(fil_d / 2 + clr, 1);
+    else translate([hinge_x, y0, hinge_z]) rotate([-90, 0, 0]) linear_extrude(y1 - y0) rotate(-90 * roof) teardrop_2d(fil_d / 2 + clr, 1);
 }
 // root side of one nub: two outer knuckles webbed to the bar, and the pin (or the hole for the filament pin).
 // clr is the hole clearance in filament mode; the printed pin has none of its own (the plate's hole carries it)
@@ -683,7 +686,7 @@ module hinge_fin_knuckle(yc) { y0 = nub_y0(yc, 1); barrel(y0, y0 + knuckle_l); }
 // filament), and notches so the plate clears the root knuckles
 module hinge_fin_cut(yc, clr = hinge_pin_eff == "filament" ? fil_clr : hinge_clr) {
     y0 = nub_y0(yc, 1);
-    if (hinge_pin_eff == "filament") fil_hole(yc, clr);
+    if (hinge_pin_eff == "filament") fil_hole(yc, clr, fused && fin_print == "edge" ? -1 : 0);   // edge pose: the plate is upside down on the bed
     else teardrop_prism(pin_d / 2 + clr, y0 - 1, y0 + knuckle_l + 1);
     for (i = [0, 2])
         translate([min(hinge_x - barrel_d / 2, vane_x) - 1, nub_y0(yc, i) - knuckle_gap, fin_z_low - 1])

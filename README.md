@@ -8,7 +8,7 @@ vane mechanism reconstructed from photos of the real MET-b52 parts.
 |---|---|
 | `shroud.scad` | The whole model. Parameters at the top, one section per Shapr3D operation, then the vane mechanism. |
 | `viewer.json` | Part list for the browser viewer (`../viewer`, `bun run dev`, open http://127.0.0.1:5180/). |
-| `print_layout.scad` | `-D part="..."`: each part in its printing pose. Vanes stand on their -Y end (`vane_pose = "vertical"`). With `-D 'vane_mount="fused"'`: `shroud` carries the root bars, `fin_right` / `fin_left` are the plates alone (standing), `slat` has its axle barrel on the bed. |
+| `print_layout.scad` | `-D part="..."`: each part in its printing pose. Vanes stand on their -Y end (`vane_pose = "vertical"`). With `-D 'vane_mount="fused"'`: `shroud` carries the root bars, `fin_right` / `fin_left` are the plates alone (`fin_print = "edge"`: upside down on the long outer edge, knuckles up; `"vertical"`: on the -Y end), `slat` has its axle barrel on the bed. |
 | `hinge_coupon.scad` | Tolerance test print: hinge x3 (standing, pins vertical; `-D 'hinge_pin="filament"'` ladders the filament hole 0.10 / 0.15 / 0.20 instead), slat axle holes x3, keyhole eyes x3, strut pockets x3 + one ear, fork darts x3 (standing) + a piece of rim. |
 | `saddle_coupon.scad` | Fit test for the saddle-mount alternative: three rim pieces with receivers at `chan_clrs` = 0.05 / 0.10 / 0.15, plus a standing stub of the bar's -Y end with the wedge peg. |
 | `tab_coupon.scad` | Tab fit test print: four 108° arcs of the shroud (30 % of the ring, centred on the tab, `keep = 0.3`) with tab `variants` = [grip, stem_extra] pairs, labelled on a tag. Round 1 laddered the grip; round 2 ladders the stem width at grip 0.7. |
@@ -35,7 +35,7 @@ Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_c
 ## Print next (as of 2026-09-12)
 0. **Fused variant** (Armen's idea, 2026-09-12, see below): `stl/shroud_fused.stl` (base down, 36 mm tall; the two bars bridge the bore
    about 20 mm up, so enable supports under them: support PLA, 0 interface distance, as the vane reprint used), `stl/fin_right_fused.stl` +
-   `stl/fin_left_fused.stl` (standing on the -Y end, brim, no support), `stl/slat_fused.stl` x2 (flat), `stl/tie_bar.stl`, plus 2 x 15 mm and
+   `stl/fin_left_fused.stl` (standing on the long outer edge, knuckles up, no support), `stl/slat_fused.stl` x2 (flat), `stl/tie_bar.stl`, plus 2 x 15 mm and
    2 x 61 mm of 1.75 filament. Nothing of it has been printed yet.
 0. Filament hinge settled (`fil_clr = 0.15`) and fork dart settled (`tooth_clr = 0.10`): the vanes can print now as
    `vane_right_filpin.stl` + `vane_left_filpin.stl` (fork mount), or `_saddle_filpin` if the saddle wins below.
@@ -57,8 +57,11 @@ Armen: "what if I just combined the shroud and the vane roots? That would give m
   `receiver()` are all off. The +Y crossing keeps the same silhouette inside the wall as the sketch peg did in its notch.
 - **Plates are separate parts** on the filament hinge (`hinge_pin` is forced to `"filament"` via `hinge_pin_eff`):
   drop the plate's middle knuckle between the root's two, push 15 mm of 1.75 through, trim 1 mm proud, mushroom.
-  The root's holes print lying down in the shroud, so they are teardrops with the roof up (`fil_hole(roof = 1)`);
-  the plate's holes print vertical and stay round.
+  The root's holes print lying down in the shroud, so they are teardrops with the roof up (`fil_hole(roof = 1)`).
+  **The plate prints standing on its long outer edge, upside down, knuckles up** (`fin_print = "edge"`; Armen's
+  print experiments 2026-09-12: the best result of the poses tried), so its hole is a teardrop too, roof toward the
+  hinge side (`roof = -1` in the model's frame). `print_layout.scad` levels the slanted edge (`fin_slant`, 6.5 deg)
+  and drops it onto the bed. `fin_print = "vertical"` is the old on-end pose with a round hole.
 - **Slats ride on filament axles** (`slat_axle()`, 61 mm): rigid bars cannot be sprung apart for a printed rod. The
   slat carries a barrel `slat_barrel_d` (3.45) on the axle, flush with its bed face and proud on the other, with a
   teardrop hole `slat_fil_clr` (0.10, untested; snugger than the bar's `fil_clr` so the slat stays where it is
