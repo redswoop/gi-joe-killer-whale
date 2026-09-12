@@ -18,7 +18,7 @@ hatch_w    = 93.3;     // measured, WHALE/measurements.md "width of ramp"
 hatch_len  = 90;       // traced 2026-09-11: x-extent of the side edge, flat (cabin) end to the hinge end
 hatch_rise = 18;       // traced: the hinge end sits 18 below the flat end (drops 0 / 4 / 18 at x = 0 / 50 / 90)
 hatch_sag  = 5.9;      // circle through the three traced points: R 180.7, chord 91.8, sagitta 5.93
-hatch_t    = 2.5;      // plate thickness. Guess; calipers on the real plate
+hatch_t    = 1.5;      // Armen 2026-09-11: same as the rest of the shell (the hatch itself is missing)
 edge_r     = 1.0;      // rounding on the outer face's long edges (cosmetic)
 
 // ---------- hinge ----------

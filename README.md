@@ -1,12 +1,12 @@
 # Killer W.H.A.L.E. front landing hatch (bow ramp) with replacement hinge
 
-State as of 2026-09-11. Parametric skeleton in place (arc plate + hinge eyes + bay mock); every plate number except the width is a photo estimate. Waiting on calipers/tracing of the real plate and close-ups of the hull's hinge points.
+State as of 2026-09-11. Plate profile and thickness settled (traced fender edge, 1.5 mm). Hinge eyes are placeholders: waiting on close-ups of the hull's hinge points and the cabin-end latch.
 
 ## What the part is
 The bow ramp of the 1984 Killer W.H.A.L.E. (part "landing ramp" / "sled launch ramp door"). A large curved plate
 that closes the bow opening, hinged along its bottom edge, folding forward and down to lie as a ramp
-(treaded face inside). Armen's example: the plate survives, the hinges are completely broken off, so the
-plate gets remodelled to the same curve with a new hinge that mounts to the existing hull.
+(treaded face inside). Armen's example is missing the hatch entirely (2026-09-11), so the plate is designed from the hull:
+its side-edge profile is traced off the fenders' inner top edges, which the closed ramp sits flush with.
 
 ## Reference material found (2026-09-11)
 - `../../WHALE/measurements.md`: ramp width 93.3 mm. That is the only ramp number on disk.
@@ -45,14 +45,15 @@ over the nose.
 - Left side of the bay has a black channel with slots along the floor edge; right side a rail with three
   rectangular notches. Purpose unknown (sled guide? ramp latch?).
 
-## Needed from Armen before modelling
-1. Photos: hatch outside face, inside face, and edge-on along the hinge axis (shows the curve); the bow
-   opening with the hatch off, and close-ups of whatever hinge remnants are on the hull.
-2. Calipers on the hatch: width, height (hinge edge to top edge), plate thickness, and the curve as
-   chord + sagitta (lay it convex-up on a flat table: gap under the middle, and at the quarter points
-   to tell one arc from a compound curve). Which way does it curve: around a vertical axis (bow is
-   round in plan) or around the hinge axis, or both?
-3. Hull side: distance between the two hinge points, what is left of them (stubs, holes, a slot), how far
+## Settled 2026-09-11
+- Profile: Armen traced the fender edge on paper: drops 0 / 4 / 18 below the baseline at 0 / 50 / 90 mm.
+  Circle through those: R 180.7, chord 91.8, sagitta 5.9 -> `hatch_len 90, hatch_rise 18, hatch_sag 5.9`.
+  The steep end is the hinge (front lip), the flat end sits at the cabin.
+- Thickness 1.5 (`hatch_t`), "same as the rest of the shell". A 93 x 92 plate at 1.5 will flex; ribs on the
+  inside face (the original had tread there) are the fix if it does.
+
+## Needed from Armen before the hinge can be designed
+1. Hull side: distance between the two hinge points, what is left of them (stubs, holes, a slot), how far
    the hinge axis sits from the hull face, and whether the original pins were on the hatch or the hull.
 4. Behaviour: open angle when lowered (flat on the ground?), and how the top edge latches closed
    ("UNLATCH" tabs on the deck).
