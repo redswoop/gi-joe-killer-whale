@@ -8,13 +8,13 @@ vane mechanism reconstructed from photos of the real MET-b52 parts.
 |---|---|
 | `shroud.scad` | The whole model. Parameters at the top, one section per Shapr3D operation, then the vane mechanism. |
 | `viewer.json` | Part list for the browser viewer (`../viewer`, `bun run dev`, open http://127.0.0.1:5180/). |
-| `print_layout.scad` | `-D part="..."`: each part in its printing pose. Vanes stand on their -Y end (`vane_pose = "vertical"`). |
+| `print_layout.scad` | `-D part="..."`: each part in its printing pose. Vanes stand on their -Y end (`vane_pose = "vertical"`). With `-D 'vane_mount="fused"'`: `shroud` carries the root bars, `fin_right` / `fin_left` are the plates alone (standing), `slat` has its axle barrel on the bed. |
 | `hinge_coupon.scad` | Tolerance test print: hinge x3 (standing, pins vertical; `-D 'hinge_pin="filament"'` ladders the filament hole 0.10 / 0.15 / 0.20 instead), slat axle holes x3, keyhole eyes x3, strut pockets x3 + one ear, fork darts x3 (standing) + a piece of rim. |
 | `saddle_coupon.scad` | Fit test for the saddle-mount alternative: three rim pieces with receivers at `chan_clrs` = 0.05 / 0.10 / 0.15, plus a standing stub of the bar's -Y end with the wedge peg. |
 | `tab_coupon.scad` | Tab fit test print: four 108° arcs of the shroud (30 % of the ring, centred on the tab, `keep = 0.3`) with tab `variants` = [grip, stem_extra] pairs, labelled on a tag. Round 1 laddered the grip; round 2 ladders the stem width at grip 0.7. |
-| `check.scad` | Collision pairs (`-D pair="..."`, `steer`, `tilt`, `strut_dz`). Run them all: `../tools/check.sh check.scad 'steer=0' 'steer=30' 'steer=-30 tilt=20' 'strut_dz=8'`. |
+| `check.scad` | Collision pairs (`-D pair="..."`, `steer`, `tilt`, `strut_dz`). Run them all: `../tools/check.sh check.scad 'steer=0' 'steer=30' 'steer=-30 tilt=20' 'strut_dz=8'`. Every argument is a pose, so the fused table is `'vane_mount="fused"' 'vane_mount="fused" steer=30' ...` (there `roots-duct` is skipped: one body by design). |
 | `compare.scad` | Volume diff against the Shapr3D export (`ref_bodies/` = the STL split per shell). Numeric version: `../tools/voxcmp.py stl/shroud.stl ref_bodies/shroud.stl`. |
-| `export.sh` | Regenerates every STL in `stl/` in parallel. Plain names are the defaults; `_saddle`, `_filpin` and `_saddle_filpin` are the alternates, plus `saddle_coupon.stl` and `hinge_coupon_filpin.stl`. Run after changing parameters. |
+| `export.sh` | Regenerates every STL in `stl/` in parallel. Plain names are the defaults; `_saddle`, `_filpin` and `_saddle_filpin` are the alternates, `_fused` is the fused variant (`shroud_fused`, `fin_right_fused`, `fin_left_fused`, `slat_fused`), plus `saddle_coupon.stl` and `hinge_coupon_filpin.stl`. Run after changing parameters. |
 | `render.sh` | Headless PNGs into `renders/`. |
 | `Shroud.shapr/.step/.stl` | Armen's originals. Read the .shapr with `../tools/shapr_dump.py Shroud.shapr`. |
 
@@ -33,6 +33,10 @@ Z = duct axis (airflow exits +Z). Y = the toy's vertical, **+Y (tab side) = the 
 Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_clr`, `tooth_clr` (settled: 0.10, round 3, 2026-09-12), `tie_eye_clr`, `ear_clr`.
 
 ## Print next (as of 2026-09-12)
+0. **Fused variant** (Armen's idea, 2026-09-12, see below): `stl/shroud_fused.stl` (base down, 36 mm tall; the two bars bridge the bore
+   about 20 mm up, so enable supports under them: support PLA, 0 interface distance, as the vane reprint used), `stl/fin_right_fused.stl` +
+   `stl/fin_left_fused.stl` (standing on the -Y end, brim, no support), `stl/slat_fused.stl` x2 (flat), `stl/tie_bar.stl`, plus 2 x 15 mm and
+   2 x 61 mm of 1.75 filament. Nothing of it has been printed yet.
 0. Filament hinge settled (`fil_clr = 0.15`) and fork dart settled (`tooth_clr = 0.10`): the vanes can print now as
    `vane_right_filpin.stl` + `vane_left_filpin.stl` (fork mount), or `_saddle_filpin` if the saddle wins below.
 0. `stl/saddle_coupon.stl` (103 x 39 mm, flat, no supports; the stub wants a brim): decide fork vs saddle. If saddle: put the
@@ -41,6 +45,34 @@ Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_c
 2. `stl/shroud.stl`: settled tab, strut pockets, and the new shallow (3 mm) key notches.
 3. `stl/strut.stl` (ears in pockets, standing on an ear, brim) once the pocket clearance is known.
 4. Vanes and slats once the coupon confirms `hinge_clr`, `tooth_clr` and `slat_clr`.
+
+## Fused variant: bars part of the shroud (2026-09-12)
+`vane_mount = "fused"` (the default `"teeth"` is everything above; `-D 'vane_mount="fused"'` or the viewer panel).
+Armen: "what if I just combined the shroud and the vane roots? That would give me a single, strong shape". So:
+- **Root bars are part of the shroud.** Each bar stands on a `post()` at both wall crossings: the bar's own slab from
+  `post_bury` (2) below the rim top up into the bar, trimmed to the wall's annulus at every height so it grows straight
+  out of the wall with no overhang (the sketch pegs' boxes are longer than the oblique crossing and their corners
+  would hang over the bore and past the outer face), with a `post_fillet` (1 mm) concave foot where the bar's faces
+  meet the rim. No notches, teeth, receivers, pegs or darts: `vane_slots()`, `tooth_fork()`, `peg()`, `peg2()`,
+  `receiver()` are all off. The +Y crossing keeps the same silhouette inside the wall as the sketch peg did in its notch.
+- **Plates are separate parts** on the filament hinge (`hinge_pin` is forced to `"filament"` via `hinge_pin_eff`):
+  drop the plate's middle knuckle between the root's two, push 15 mm of 1.75 through, trim 1 mm proud, mushroom.
+  The root's holes print lying down in the shroud, so they are teardrops with the roof up (`fil_hole(roof = 1)`);
+  the plate's holes print vertical and stay round.
+- **Slats ride on filament axles** (`slat_axle()`, 61 mm): rigid bars cannot be sprung apart for a printed rod. The
+  slat carries a barrel `slat_barrel_d` (3.45) on the axle, flush with its bed face and proud on the other, with a
+  teardrop hole `slat_fil_clr` (0.10, untested; snugger than the bar's `fil_clr` so the slat stays where it is
+  put). The bar's holes are `fil_d + 2 * fil_clr` teardrops. Push the filament in from outside the bar (open air
+  above the rim), through the slat, out the other bar; mushroom both ends.
+- **Print**: `shroud_fused.stl` base down as always. The bars float about 20 mm up and span the bore (70 mm between
+  the posts, plus 10 mm cantilevers outside the wall): slicer supports under them. The root-to-rim joint is now in
+  the layer-adhesion direction (a sideways push on a vane peels layers at the post), but the joint is the whole
+  wall crossing (2 x 4.2 mm) plus the fillet foot, instead of 1.1 mm prongs. Plates print standing as before.
+- **Checks**: fused collision table all clear at steer 0 / 30 / -30, tilt +-20, strut_dz 8 (`roots-duct` skipped;
+  `slats-roots` includes the axles). `shroud_fused.stl` is one watertight shell (15.65 cm3). The `teeth` variant's STLs
+  are unchanged in volume and area by the switch.
+- Untested: everything. Bridging / support removal under the bars, `slat_fil_clr`, how the posts look on the toy, and
+  whether the Whale's base slot still meets the +Y crossing the way it met the peg.
 
 ## Hinge pin: printed or filament (2026-09-12)
 `hinge_pin = "printed"` (default, the print-in-place pin) or `"filament"`. **Why**: the vertical vane print
@@ -100,7 +132,10 @@ untouched. Renders: `renders/saddle_receiver.png`, `saddle_vane_in.png`, `saddle
 - Coupon round 3 not yet printed: hinge 0.15 / 0.20 / 0.25, slat holes, fork teeth 0.10 / 0.15 / 0.20, ear-in-pocket fit (0.10 / 0.20 / 0.30), keyhole click, bullet-rooted pins.
 - Fallback if the keyhole/pins still misbehave: a separate reinforced peg that tabs into a slot in the plate.
 - Mounting tab: settled by two coupon rounds on 2026-09-10 (olive green). Round 1 grip 0.8 best but a tad tight, 0.5 loose -> `tab_grip = 0.7`. Round 2 stem width: +0.15 and +0.3 both good, +0.3 a tad much -> `tab_stem_extra = 0.2`. Not yet tested on a full shroud print.
-- Fans and the spin box are out of scope so far.
+- Fans and the spin box are out of scope so far. The strut is removable, so a fan on its hub goes in from the base side
+  whatever the vane mount; in the fused variant the bars start about 20 mm up the bore and cannot move, so a fan's blade
+  tips and downstream edge must stay below that with the strut seated (a `check.scad` pair once the fan is sketched).
+- Fused variant (2026-09-12): unprinted. See its section above for what to watch.
 
 ## Gotchas learned
 - This OpenSCAD nightly renders a small-angle `rotate_extrude` as a single chord; `arc_sweep()` hulls per-degree slabs instead.

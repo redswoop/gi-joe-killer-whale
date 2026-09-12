@@ -1,6 +1,7 @@
 // Collision checks for the steering mechanism. Each `pair` should be EMPTY.
 //   pair: "fins-roots" | "fins-duct" | "roots-duct" | "tie-fins" | "fins-fins" | "tie-duct" | "slats-fins" | "slats-roots" | "slats-duct" | "strut-duct"
 // Run with -D steer=<deg>. An empty export (84-byte STL) means no collision.
+// vane_mount = "fused": "roots-duct" is skipped (they are one body by design); "slats-roots" then includes the filament axles.
 include <shroud.scad>
 show_ghost = false; show_shroud = false; show_strut = false; show_vanes = false;
 pair = "fins-roots";
@@ -9,7 +10,7 @@ module A() {
     if (pair == "strut-duct") translate([0, 0, -strut_dz]) strut();
     if (pair == "slats-fins" || pair == "slats-roots" || pair == "slats-duct") slats();
     if (pair == "fins-roots" || pair == "fins-duct" || pair == "fins-fins") vane_fins();
-    if (pair == "roots-duct") vane_roots();
+    if (pair == "roots-duct" && !fused) vane_roots();
     if (pair == "tie-fins" || pair == "tie-duct") tie_bar_placed();
 }
 module B() {

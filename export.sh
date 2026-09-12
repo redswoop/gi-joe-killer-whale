@@ -2,6 +2,7 @@
 # Regenerate every print file into stl/. Run after changing parameters in shroud.scad.
 # Variants: the -Y mount (ny_mount fork | saddle) and the hinge pin (hinge_pin printed | filament) are switches in
 # shroud.scad; the plain file names are the defaults, suffixes name the alternates (_saddle, _filpin, _saddle_filpin).
+# vane_mount="fused" (bars part of the shroud, plates and slats on filament pins): shroud_fused, fin_*_fused, slat_fused.
 # Jobs run in parallel (one per core).
 set -e
 cd "$(dirname "$0")"
@@ -19,6 +20,7 @@ for p in vane_right vane_left; do
   job "${p}_filpin"        "stl/${p}_filpin.stl"        print_layout.scad -D "part=\"$p\"" -D 'hinge_pin="filament"'
   job "${p}_saddle_filpin" "stl/${p}_saddle_filpin.stl" print_layout.scad -D "part=\"$p\"" -D 'ny_mount="saddle"' -D 'hinge_pin="filament"'
 done
+for p in shroud slat fin_right fin_left; do job "${p}_fused" "stl/${p}_fused.stl" print_layout.scad -D "part=\"$p\"" -D 'vane_mount="fused"'; done
 job hinge_coupon        stl/hinge_coupon.stl        hinge_coupon.scad
 job hinge_coupon_filpin stl/hinge_coupon_filpin.stl hinge_coupon.scad -D 'hinge_pin="filament"'
 job saddle_coupon       stl/saddle_coupon.stl       saddle_coupon.scad

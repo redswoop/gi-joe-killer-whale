@@ -106,7 +106,11 @@ fil_clr      = 0.15;   // hole clearance on the filament, per side. Coupon (2026
 fil_proud    = 1;      // pin length = hinge_len + 2 * fil_proud, for the mushroomed ends
 barrel_print_d = 4.2;  // hinge knuckle OD with the printed pin (pin + 2 clearances + 2 walls; about the floor)
 barrel_fil_d = 4.6;    // ... and with the filament pin: 2.05 hole + 1.28 walls (4.2 would leave 1.08)
-barrel_d     = hinge_pin == "filament" ? barrel_fil_d : barrel_print_d;
+vane_mount   = "teeth";   // "teeth" (loose vanes on teeth, ny_mount picks the -Y one) | "fused" (bars part of the shroud; see the
+                          // FUSED block below). Flip in the viewer's panel or with -D 'vane_mount="fused"'
+fused        = vane_mount == "fused";
+hinge_pin_eff = fused ? "filament" : hinge_pin;   // fused: the plate is a separate part, so it needs the filament pin
+barrel_d     = hinge_pin_eff == "filament" ? barrel_fil_d : barrel_print_d;
 pin_d        = 1.4;    // printed hinge pin, round; the plate's hole is a teardrop so it prints flat
 hinge_clr    = 0.15;   // pin-to-hole clearance, per side. Coupon round 1: 0.35 and 0.45 good, 0.25 not;
                        // printed vanes at 0.4 (2026-09-10): range good but too loose -> 0.3;
@@ -232,6 +236,26 @@ recv_nub_z    = 23;                     // nub height: mid-cheek, at the ring cr
 recv_top_r    = 0.8;                    // round on the block's top edges (rounded_pad; the r 41 arc is concave, hull adds 0.09 mm)
 chan_lead     = 0.6;                    // 45 deg lead-in on the channel mouth so the bar finds its way in
 recv_z_top    = slat_z - slat_rod_d / 2 - recv_gap_slat;   // 24.5
+
+// FUSED variant (2026-09-12, Armen: 'combine the shroud and the vane roots ... a single, strong shape'):
+//   the root bars are part of the shroud. Each bar stands on a POST at both wall crossings: the sketch's own two
+//   pegs (peg_y, peg2_y), run post_bury into the wall and up into the bar, and a concave fillet post_fillet
+//   where the bar's two faces meet the rim top (over the wall only). The pegs already span the whole wall
+//   crossing along the bar, so a gusset in the bar's plane would hang over air: none. No notches, no teeth,
+//   no receivers. The shroud prints base down as before; the bars bridge the bore about
+//   20 mm up (slicer supports under them, the H2C's support PLA peels off a 2 mm edge). The PLATES are
+//   separate parts, printed standing as now, and go on with the filament hinge pin (hinge_pin is forced to
+//   "filament"): drop the plate's knuckle between the root's, push the pin through, mushroom the ends. The
+//   SLATS ride on filament axles too: rigid bars cannot be sprung apart for a printed rod, so the slat
+//   carries a barrel with a hole and a length of 1.75 goes in from outside the bar (open air above the rim),
+//   through the slat, out the other bar. Root holes print horizontal, so they are teardrops (roof up).
+//   The switch itself (vane_mount, fused, hinge_pin_eff) sits up in the hinge pin block: barrel_d needs it first.
+post_bury     = 2;         // the post runs this far down into the wall below the rim top
+post_fillet   = 1;         // concave fillet radius where the bar's faces meet the rim top, along the wall crossing
+slat_fil_clr  = 0.10;      // slat barrel hole clearance on the filament axle, per side (snugger than the bar's fil_clr:
+                           // the slats 'need not swing freely'; untested)
+slat_wall     = 0.75;      // barrel wall around the axle hole
+slat_barrel_d = fil_d + 2 * slat_fil_clr + 2 * slat_wall;   // 3.45, flush with the slat's bed face, proud on the other
 
 // strut-to-shroud: EARS IN POCKETS. The bar's ends bend up into curved ears
 // that hug the bore wall; a boss on the wall at each end has a pocket, open at
@@ -395,13 +419,13 @@ module duct() {
                 union() { duct_ring(); for (a = [0, 180]) rotate([0, 0, a]) boss_pad(); }
                 below_taper();
             }
-            if (ny_mount == "saddle") receivers();
+            if (!fused && ny_mount == "saddle") receivers();
         }
-        vane_slots();
-        if (ny_mount == "saddle") for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0]) { channel_cut(); peg2_pocket(); }
+        if (!fused) vane_slots();
+        if (!fused && ny_mount == "saddle") for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0]) { channel_cut(); peg2_pocket(); }
         for (a = [0, 180]) rotate([0, 0, a]) pocket();
     }
-    if (ny_mount == "saddle") for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0]) translate(recv_nub_c()) sphere(d = tooth_nub_d, $fn = 32);
+    if (!fused && ny_mount == "saddle") for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0]) translate(recv_nub_c()) sphere(d = tooth_nub_d, $fn = 32);
 }
 
 module deco_boxes() {
@@ -504,6 +528,28 @@ module vane_2d() {
 
 // The +Y peg: the sketch's rectangle, the bar's full thickness, sharp edges
 module peg() { translate([vane_x, peg_y[0], peg_z[0]]) cube([vane_t, peg_y[1] - peg_y[0], peg_z[1] - peg_z[0]]); }
+
+// FUSED: the post on side sgn of the +X bar: the bar's slab where it crosses the wall, from post_bury below the
+// rim top up 1 mm into the bar, trimmed to the wall's annulus at every height (the bar crosses the ring
+// obliquely; the sketch peg's box was longer than the crossing and its corners hung over the bore and past the
+// outer face). So the bar grows straight out of the wall, no overhang. Plus a fillet band: the bar's (x, z)
+// section widened by post_fillet each side at the rim, with quarter-circle concave fillets up to rim +
+// post_fillet, extruded along the crossing and kept over the wall too.
+module post(sgn) {
+    ys = sgn > 0 ? peg_y : peg2_y;  yc = (ys[0] + ys[1]) / 2;   // the sketch pegs' spans, wider than the crossing: the annulus trims
+    zr = rim_z(yc);  z0 = zr - post_bury;  z1 = bar_bot(yc) + 1;  f = post_fillet;
+    intersection() {
+        union() {
+            yz_extrude(vane_x, vane_t) polygon([[ys[0], z0], [ys[1], z0], [ys[1], z1], [ys[0], z1]]);
+            translate([0, ys[0], 0]) rotate([90, 0, 0]) mirror([0, 0, 1]) linear_extrude(ys[1] - ys[0])   // the fillet band, an (x, z) shape along +Y
+                difference() {
+                    translate([vane_x - f, zr - 1]) square([vane_t + 2 * f, 1 + f]);
+                    for (x = [vane_x - f, vane_x + vane_t + f]) translate([x, zr + f]) circle(r = f, $fn = 32);
+                }
+        }
+        linear_extrude(100) annulus_2d(duct_r_in, duct_r_out);
+    }
+}
 
 // The fork dart on the +X bar, side sgn (-1 = the -Y end): the pod revolved,
 // minus the wall's annulus (offset clr) from the nose up to the key's bottom,
@@ -615,24 +661,29 @@ module barrel(y0, y1) {
 module web(y0, y1, z0, z1) {   // 2 mm plate joining a knuckle to the bar
     translate([vane_x, y0, z0]) cube([vane_t, y1 - y0, z1 - z0]);
 }
-// the filament pin's hole, straight through the whole nub and out both ends
-module fil_hole(yc, clr = fil_clr) { pin_prism(fil_d + 2 * clr, yc - hinge_len / 2 - 1, yc + hinge_len / 2 + 1); }
+// the filament pin's hole, straight through the whole nub and out both ends. roof = 1: a teardrop with its point
+// up (+Z) for a hole printed lying down; 0: round, for a hole printed vertical
+module fil_hole(yc, clr = fil_clr, roof = 0) {
+    y0 = yc - hinge_len / 2 - 1;  y1 = yc + hinge_len / 2 + 1;
+    if (roof == 0) pin_prism(fil_d + 2 * clr, y0, y1);
+    else translate([hinge_x, y0, hinge_z]) rotate([-90, 0, 0]) linear_extrude(y1 - y0) rotate(-90) teardrop_2d(fil_d / 2 + clr, 1);
+}
 // root side of one nub: two outer knuckles webbed to the bar, and the pin (or the hole for the filament pin).
 // clr is the hole clearance in filament mode; the printed pin has none of its own (the plate's hole carries it)
 module hinge_root(yc, clr = fil_clr) {
     difference() {
         for (i = [0, 2]) { y0 = nub_y0(yc, i); barrel(y0, y0 + knuckle_l); web(y0, y0 + knuckle_l, 29, hinge_z); }
-        if (hinge_pin == "filament") fil_hole(yc, clr);
+        if (hinge_pin_eff == "filament") fil_hole(yc, clr, fused ? 1 : 0);   // fused: the root prints base down, hole horizontal -> teardrop
     }
-    if (hinge_pin == "printed") pin_prism(pin_d, yc - hinge_len / 2, yc + hinge_len / 2);
+    if (hinge_pin_eff == "printed") pin_prism(pin_d, yc - hinge_len / 2, yc + hinge_len / 2);
 }
 // plate side of one nub: the middle knuckle (solid; the hole is cut afterwards)
 module hinge_fin_knuckle(yc) { y0 = nub_y0(yc, 1); barrel(y0, y0 + knuckle_l); }
 // what to subtract from the plate around one nub: the pin hole (teardrop on the printed pin, round on the
 // filament), and notches so the plate clears the root knuckles
-module hinge_fin_cut(yc, clr = hinge_pin == "filament" ? fil_clr : hinge_clr) {
+module hinge_fin_cut(yc, clr = hinge_pin_eff == "filament" ? fil_clr : hinge_clr) {
     y0 = nub_y0(yc, 1);
-    if (hinge_pin == "filament") fil_hole(yc, clr);
+    if (hinge_pin_eff == "filament") fil_hole(yc, clr);
     else teardrop_prism(pin_d / 2 + clr, y0 - 1, y0 + knuckle_l + 1);
     for (i = [0, 2])
         translate([min(hinge_x - barrel_d / 2, vane_x) - 1, nub_y0(yc, i) - knuckle_gap, fin_z_low - 1])
@@ -696,12 +747,17 @@ module vane_root() {
         union() {
             plate_yz() vane_2d();
             for (yc = hinge_pts) hinge_root(yc);
-            peg();                                                                            // +Y: the sketch peg, into the base's slot
-            if (ny_mount == "fork") { tooth_fork(-1); translate(tooth_nub_c(-1)) sphere(d = tooth_nub_d, $fn = 32); }   // -Y: the fork dart + its click nub
-            else peg2();                                                                                                 // -Y: the wedge peg, into the receiver's pocket
+            if (fused) { post(1); post(-1); }                                                                            // fused: posts onto the rim at both crossings
+            else {
+                peg();                                                                            // +Y: the sketch peg, into the base's slot
+                if (ny_mount == "fork") { tooth_fork(-1); translate(tooth_nub_c(-1)) sphere(d = tooth_nub_d, $fn = 32); }   // -Y: the fork dart + its click nub
+                else peg2();                                                                                                 // -Y: the wedge peg, into the receiver's pocket
+            }
         }
-        if (ny_mount == "saddle") translate(recv_nub_c()) sphere(d = tooth_nub_d + 2 * tooth_nub_clr, $fn = 32);       // dimple for the receiver's nub
-        for (y = slat_y) translate([vane_x - 8, y, slat_z]) rotate([0, 90, 0]) cylinder(d = slat_rod_d + 2 * slat_clr, h = vane_t + 9);   // long enough to pass any pod material on the inside face
+        if (!fused && ny_mount == "saddle") translate(recv_nub_c()) sphere(d = tooth_nub_d + 2 * tooth_nub_clr, $fn = 32);   // dimple for the receiver's nub
+        for (y = slat_y) translate([vane_x - 8, y, slat_z]) rotate([0, 90, 0])                    // slat axle holes, long enough to pass any pod material on the inside face
+            if (fused) linear_extrude(vane_t + 9) teardrop_2d(fil_d / 2 + fil_clr, -1);          // fused: filament axle, hole printed horizontal -> teardrop, roof up (+Z is the 2D -x here)
+            else cylinder(d = slat_rod_d + 2 * slat_clr, h = vane_t + 9);
         for (f = bar_panels) { L = vane_top_r[0] - vane_top_l[0];
             face_cut(panel_recess) grooves_2d(vane_top_l[0] + f[0] * L, vane_top_l[0] + f[1] * L, panel_pitch, panel_groove) bar_panel_2d(f); }
     }
@@ -744,14 +800,29 @@ module tie_bar() {
 
 // ---- slats: tapered plates on an axle between the bars ----
 // Built with the rod along X through the origin and the plate trailing in +Z.
+// FUSED: no rod; a barrel slat_barrel_d on the axle (still the origin), the plate's span, with a teardrop hole for
+// the filament axle (roof toward -Y = up on the bed). The plate is shifted +Y so its +Y face (the bed face when
+// printing flat) is flush with the barrel; the barrel is proud on the other face. The axle is drawn separately
+// (slat_axle) so the collision pairs see it.
+slat_plate_y = fused ? slat_barrel_d / 2 - slat_t / 2 : 0;   // the plate's mid-plane, off the axle
 module slat() {
     rod_len = 2 * (vane_x + vane_t);
-    rotate([0, 90, 0]) cylinder(d = slat_rod_d, h = rod_len, center = true);
+    if (fused) difference() {
+        union() {
+            rotate([0, 90, 0]) cylinder(d = slat_barrel_d, h = slat_len_rod, center = true);
+            translate([0, slat_plate_y, 0]) slat_plate();
+        }
+        rotate([0, 90, 0]) linear_extrude(slat_len_rod + 2, center = true) rotate(-90) teardrop_2d(fil_d / 2 + slat_fil_clr, 1);
+    }
+    else { rotate([0, 90, 0]) cylinder(d = slat_rod_d, h = rod_len, center = true); slat_plate(); }
+}
+module slat_plate() {
     rotate([90, 0, 0]) linear_extrude(slat_t, center = true)
         polygon([[-slat_len_rod / 2, 0], [slat_len_rod / 2, 0], [slat_len_edge / 2, slat_depth], [-slat_len_edge / 2, slat_depth]]);
 }
+module slat_axle() { rotate([0, 90, 0]) cylinder(d = fil_d, h = 2 * (vane_x + vane_t + fil_proud), center = true); }   // the filament, trimmed fil_proud past each bar
 tilt_eff = animate ? 20 * sin($t * 720) : tilt;
-module slats() { for (y = slat_y) translate([0, y, slat_z]) rotate([tilt_eff, 0, 0]) slat(); }
+module slats() { for (y = slat_y) translate([0, y, slat_z]) rotate([tilt_eff, 0, 0]) { slat(); if (fused) slat_axle(); } }
 
 // lay a +X vane (or its mirror, side = -1) flat on the face opposite the barrel
 module lay_flat(side = 1) {
