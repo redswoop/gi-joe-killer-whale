@@ -37,7 +37,7 @@ Print the **coupon** first and put the winning numbers into `hinge_clr`, `slat_c
 ## Print next (as of 2026-09-12)
 0. **Fan + shaft** (new, unprinted): `stl/fan.stl` (80 mm, flat) and `stl/shaft.stl` (75.5 mm, on its flat). Check the socket fit
    (`shaft_clr`), which way the gearbox turns (`blade_hand`), and how much longer the shaft must be (`shaft_extra`).
-0. **Fused variant** (Armen's idea, 2026-09-12, see below): `stl/shroud_fused.stl` (base down, 36 mm tall; the two bars bridge the bore
+0. **Fused variant** (Armen's idea, 2026-09-12, see below): `stl/shroud_fused.stl` (now with the canoes; base down, 36 mm tall; the two bars bridge the bore
    about 20 mm up, so enable supports under them: support PLA, 0 interface distance, as the vane reprint used), `stl/fin_right_fused.stl` +
    `stl/fin_left_fused.stl` (standing on the long outer edge, knuckles up, no support), `stl/slat_fused.stl` x2 (flat), `stl/tie_bar.stl`, plus 2 x 15 mm and
    2 x 61 mm of 1.75 filament. Nothing of it has been printed yet.
@@ -100,6 +100,13 @@ Armen: "what if I just combined the shroud and the vane roots? That would give m
   would hang over the bore and past the outer face), with a `post_fillet` (1 mm) concave foot where the bar's faces
   meet the rim. No notches, teeth, receivers, pegs or darts: `vane_slots()`, `tooth_fork()`, `peg()`, `peg2()`,
   `receiver()` are all off. The +Y crossing keeps the same silhouette inside the wall as the sketch peg did in its notch.
+- **Canoes on the fused shroud** (`fused_canoes = true`, 2026-09-12: "I don't see an STL with the fully composed shroud
+  with the vane roots and canoes"): the posts stay the structure, and over them go the same fairings the loose vanes have:
+  the -Y dart (`tooth_fork(-1)`), the +Y pod with its bore-side half-canoe (`peg_pod()`) and the +Y flare above the rim
+  (`peg_flare()`, the peg's fillets without the peg's box, whose corners would hang over the bore). In fused mode the
+  dart's slot clearance is `tooth_clr_eff = -0.2`, i.e. the prongs sink 0.2 into the wall, and the mouth chamfer is off:
+  faces that only touch left the union with open edges and stray shells; sunk, `shroud_fused.stl` is one watertight shell.
+  `-D fused_canoes=false` gives the bare posts.
 - **Plates are separate parts** on the filament hinge (`hinge_pin` is forced to `"filament"` via `hinge_pin_eff`):
   drop the plate's middle knuckle between the root's two, push 15 mm of 1.75 through, trim 1 mm proud, mushroom.
   The root's holes print lying down in the shroud, so they are teardrops with the roof up (`fil_hole(roof = 1)`).

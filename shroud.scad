@@ -110,6 +110,12 @@ barrel_fil_d = 4.6;    // ... and with the filament pin: 2.05 hole + 1.28 walls 
 vane_mount   = "teeth";   // "teeth" (loose vanes on teeth, ny_mount picks the -Y one) | "fused" (bars part of the shroud; see the
                           // FUSED block below). Flip in the viewer's panel or with -D 'vane_mount="fused"'
 fused        = vane_mount == "fused";
+fused_canoes = true;      // fused: keep the canoes as fairings over the posts (the -Y dart, the +Y pod with its bore-side half and
+                          // the +Y flare), merged into the wall with zero slot clearance (Armen 2026-09-12: 'I don't see an STL with
+                          // the fully composed shroud with the vane roots and canoes'). false: bare posts.
+tooth_clr_eff  = fused ? -0.2 : tooth_clr; // fused: the dart's slot is filled by the wall: a NEGATIVE clearance sinks the prongs 0.2 into it
+                                            // (faces that only touch leave the union with open edges and stray shells)
+tooth_lead_eff = fused ? 0 : tooth_lead;   // ... and no mouth chamfer, which would leave a groove where the prongs meet the wall
 hinge_pin_eff = fused ? "filament" : hinge_pin;   // fused: the plate is a separate part, so it needs the filament pin
 barrel_d     = hinge_pin_eff == "filament" ? barrel_fil_d : barrel_print_d;
 pin_d        = 1.4;    // printed hinge pin, round; the plate's hole is a teardrop so it prints flat
@@ -616,6 +622,11 @@ module peg_2d() {   // (y, z)
     }
 }
 module peg() { translate([vane_x, 0, 0]) rotate([90, 0, 90]) linear_extrude(vane_t) peg_2d(); }
+// fused: just the flare, from the rim top up (the post owns the wall crossing; the peg's box corners would hang over the bore)
+module peg_flare() {
+    yc = (peg_y[0] + peg_y[1]) / 2;
+    intersection() { peg(); translate([0, -100, rim_z(yc)]) cube([100, 200, 50]); }
+}
 // the canoe: revolved about the peg's centre line (along Z); below z_flat (just above the rim) everything outside the
 // bore face is cut away, leaving the half inside the duct to run down the wall as a half-canoe with an ogive nose
 module peg_pod() {
@@ -628,7 +639,7 @@ module peg_pod() {
         translate([tooth_ax, yc, 0]) rotate_extrude($fn = 48)
             polygon(concat([for (i = [0 : 16]) let (t = L * i / 16) [sqrt(rho * rho - (L - t) * (L - t)) + R - rho, zb + t]],
                            [[R, z0], [0, z0 + peg_pod_tail]]));
-        translate([0, 0, zb - 1]) linear_extrude(z_flat - zb + 1) difference() { circle(100); circle(duct_r_in - tooth_clr); }
+        translate([0, 0, zb - 1]) linear_extrude(z_flat - zb + 1) difference() { circle(100); circle(duct_r_in - tooth_clr_eff); }
     }
 }
 
@@ -672,14 +683,15 @@ module deco_box_keepout(clr) {
     for (i = [0 : box_n - 1]) rotate([0, 0, i * box_step])
         translate([-w, duct_r_out - 0.5, -1]) cube([2 * w, 5, box_z0 + box_h + clr + 1]);
 }
-module tooth_fork(sgn, clr = tooth_clr) {
+module tooth_fork(sgn, clr = tooth_clr_eff) {
     zk = tooth_key_z(sgn);  zb = tooth_zb(sgn);   // key bottom, nose tip
     difference() {
         tooth_sweep(sgn) tooth_pod_profile_2d(sgn);
         translate([0, 0, zb - 1]) linear_extrude(zk - zb + 1) annulus_2d(duct_r_in - clr, duct_r_out + clr);
-        rotate_extrude() polygon([[duct_r_in - clr - tooth_lead, zb - 1], [duct_r_out + clr + tooth_lead, zb - 1],
-                                  [duct_r_out + clr + tooth_lead, zb], [duct_r_out + clr, zb + tooth_lead],
-                                  [duct_r_in - clr, zb + tooth_lead], [duct_r_in - clr - tooth_lead, zb]]);
+        if (tooth_lead_eff > 0)
+            rotate_extrude() polygon([[duct_r_in - clr - tooth_lead, zb - 1], [duct_r_out + clr + tooth_lead, zb - 1],
+                                      [duct_r_out + clr + tooth_lead, zb], [duct_r_out + clr, zb + tooth_lead],
+                                      [duct_r_in - clr, zb + tooth_lead], [duct_r_in - clr - tooth_lead, zb]]);
         deco_box_keepout(tooth_box_clr);
     }
 }
@@ -847,12 +859,15 @@ module bar_panel_2d(f) {
 }
 module vane_root() {
     // the peg's canoe is added after the panel grooves are cut, so its tail rides smoothly over the ribbed panel
-    if (!fused) peg_pod();
+    if (!fused || fused_canoes) peg_pod();
     difference() {
         union() {
             plate_yz() vane_2d();
             for (yc = hinge_pts) hinge_root(yc);
-            if (fused) { post(1); post(-1); }                                                                            // fused: posts onto the rim at both crossings
+            if (fused) {
+                post(1); post(-1);                                                                                       // fused: posts onto the rim at both crossings
+                if (fused_canoes) { tooth_fork(-1); peg_flare(); }                                                       // ... faired with the dart and the peg's flare (peg_pod above)
+            }
             else {
                 peg();                                                                            // +Y: the sketch peg, into the base's slot (its half-canoe is above)
                 if (ny_mount == "fork") { tooth_fork(-1); translate(tooth_nub_c(-1)) sphere(d = tooth_nub_d, $fn = 32); }   // -Y: the fork dart + its click nub
