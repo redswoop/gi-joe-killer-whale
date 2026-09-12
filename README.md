@@ -1,6 +1,6 @@
 # Killer W.H.A.L.E. front landing hatch (bow ramp) with replacement hinge
 
-State as of 2026-09-11. Plate profile and thickness settled (traced fender edge, 1.5 mm). Hinge eyes are placeholders: waiting on close-ups of the hull's hinge points and the cabin-end latch.
+State as of 2026-09-11. Tray + hinge modelled from eBay photos of the real part (M-3798-4): 1.5 skin, 3 mm rim, hinge bar with ears and 2.6 pins. First print is a fit check; all hinge and rim numbers are photo estimates.
 
 ## What the part is
 The bow ramp of the 1984 Killer W.H.A.L.E. (part "landing ramp" / "sled launch ramp door"). A large curved plate
@@ -52,17 +52,29 @@ over the nose.
 - Thickness 1.5 (`hatch_t`), "same as the rest of the shell". A 93 x 92 plate at 1.5 will flex; ribs on the
   inside face (the original had tread there) are the fix if it does.
 
-## Needed from Armen before the hinge can be designed
-1. Hull side: distance between the two hinge points, what is left of them (stubs, holes, a slot), how far
-   the hinge axis sits from the hull face, and whether the original pins were on the hatch or the hull.
-2. Behaviour: open angle when lowered (flat on the ground?), and how the top edge latches closed
-   ("UNLATCH" tabs on the deck).
+## Needed from Armen
+1. Hull side: the pin holes in the fenders' inner faces at the front lip: diameter, height above the floor,
+   distance behind the lip. These set `pin_drop`, `pin_back` and `hinge_pin_d`.
+2. After the first print: where it stands proud or falls short, and by how much.
+
+## What the real part looks like (eBay photos, 2026-09-11)
+- A shallow tray: the plate with a ~3 mm rim on the inside along both sides and the cabin end. A separate
+  black treaded "liner" (two tread strips, side clips) snaps into the tray. Mold number M-3798-4.
+- Hinge: a round bar across the whole hinge edge on the inside, lobed ears at both ends, short pins (~2.6 dia,
+  ~3.5-4.5 long) pointing outward into holes in the fenders. Width 93.3 + 2 x 3.5 pins = 100.3, which matches
+  the ~100.5 measured between the fenders.
+- Cabin end: square edge with 45 deg corner cuts in plan (~10 mm legs). The plate scales to ~97 long on the
+  photo vs the 90 traced lip-to-cabin, so `cabin_tuck = 5` continues the arc under the cabin lip.
+- Four small latch hooks on the side edges (two per side, ~14 % and ~48 % of the length from the cabin end),
+  engaging the notched rails on the fenders. Not modelled yet.
+- Outer face: two perforated vent grilles near the cabin end, seven ribbed panels, "PANEL REMOVAL" /
+  "UNLATCH" / "RAMP ACCESS" labels. Cosmetic, not modelled yet.
 
 ## Print next (as of 2026-09-11)
-- `stl/hatch.stl`: shape-check plate, no hinge (`hinge_style = "none"`), 45 deg bevel at the cabin end
-  (`top_bevel = 45`, outer surface long). Stands on its hinge end face, 89 tall, leans up to ~29 deg at the
-  top: brim, no supports. Check the fit against the fender edges and the cabin lip; the profile numbers
-  are one pencil tracing, so expect a round or two.
+- `stl/hatch.stl`: tray + hinge bar + pins, `cabin_tuck 5`. Stands on its cabin end face (73 wide after the
+  chamfers), 96 tall, hinge bar and pins at the top: brim, no supports. Fit checks: curve flush with the
+  fender edges, pins reach the fender holes, cabin end under the lip (zero `cabin_tuck` if it hits), width
+  between the rails.
 
 ## Open items
 - Everything above. Coupon not yet printed.
