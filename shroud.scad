@@ -340,8 +340,9 @@ shaft_len    = socket_depth + shaft_reach + shaft_extra;
 // The gearbox end (Armen 2026-09-12, gear out of the hull, photos + sketch): the gear's boss has a socket with sloped
 // walls and a keyed SLOT in its floor; the shaft's end is a BLADE that keys into the slot, and the shoulders where the
 // round shank becomes the blade are ROUNDED RAMPS that seat on the socket's slopes ('the shaft should have rounded ramps
-// to meet with the ramps in the socket'). Like a screwdriver tip ground from round bar. Slot numbers are placeholders
-// until measured; the old mesh's 1.6 x 1.2 x 0.6 pin was somebody's guess.
+// to meet with the ramps in the socket'). Like a screwdriver tip ground from round bar. The numbers below were guessed
+// from the photos; the first print fit the gear ('got it on the first try', 2026-09-12). The old mesh's 1.6 x 1.2 x 0.6
+// pin was somebody's guess.
 tab_w        = 2.8;    // blade width (along the flat), the slot's length
 tab_t        = 1.2;    // blade thickness (across the flat), the slot's width
 tab_len      = 3.0;    // blade length beyond the ramps, the slot's depth
