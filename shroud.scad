@@ -292,8 +292,8 @@ boss_fade  = 3;                // concave fillet radius blending the boss into t
 // down through the strut's 5 mm bore. Tip radius: the strut's pocket bosses reach in to boss_r_in (40.6), so the
 // reference's 42.6 does not fit; the tip follows the boss less fan_tip_clr.
 fan_n        = 3;
-fan_tip_clr  = 1.0;                              // blade tip to the boss's inner face
-fan_r        = boss_r_in - fan_tip_clr;          // 39.6 (the reference was 42.6 in the same 88 mm bore)
+fan_tip_clr  = 3.0;                              // blade tip to the boss's inner face (Armen 2026-09-12: 'end about 3mm from the mounting boxes')
+fan_r        = boss_r_in - fan_tip_clr;          // 37.6: the outline's farthest point lands exactly here (the reference was 42.6 in the same bore)
 fan_gap      = 0.5;                              // hub bottom above the strut's hub core
 fan_z0       = hub_core_t / 2 + fan_gap;         // 3: the fan's own z=0 (hub bottom) in the assembly
 fan_hub_d    = 10;   fan_hub_h = 7;   fan_hub_ch = 0.8;     // hub: diameter, height, top chamfer
@@ -309,8 +309,8 @@ blade_r_top  = 0.6;   blade_r_bot = 0.3;         // rounds on the trailing edge'
 blade_hand   = 1;                                // +1: leading edge on the counter-clockwise side seen from +Z (the exit); -1 mirrors.
                                                  // The fan pushes air +Z when it turns toward its leading edges. Unknown which way the gearbox turns.
 // Planform (Armen 2026-09-12: 'a smooth swoopy spline as their edge ... built between 2 smooth splines'): each edge is a
-// cubic Bezier from the root to the tip in a unit frame (x radial, y toward the leading edge, 1 = fan_r; keep the
-// outline inside the unit circle, the console echoes the actual tip radius). Both edges arrive at blade_tip along blade_tip_dir, from
+// cubic Bezier from the root to the tip in a unit frame (x radial, y toward the leading edge); the outline is scaled so
+// its farthest point sits exactly at fan_r while the root stays on the hub circle (blade_S solves the scale). Both edges arrive at blade_tip along blade_tip_dir, from
 // opposite sides, so the tip is a smooth round of size blade_tip_k. Proportions follow the mesh (root chord 0.13,
 // mid-span 0.31 of the tip radius), the trailing edge sweeps back a little instead of the mesh's straight radial line.
 blade_tip     = [0.95, -0.10];                   // tip point, swept to the trailing side
@@ -921,12 +921,14 @@ module vanes() { vane_roots(); vane_fins(); tie_bar_placed(); slats(); }
 // ---- fan: hub + lofted blades, in its own frame (hub bottom at z = 0, axis Z) ----
 // cubic Bezier through control points P (4 of them) at t
 function bez(P, t) = pow(1 - t, 3) * P[0] + 3 * pow(1 - t, 2) * t * P[1] + 3 * (1 - t) * t * t * P[2] + pow(t, 3) * P[3];
-function blade_hub_n() = fan_hub_d / 2 / fan_r;                                   // hub radius, unit frame
-function blade_root_a() = asin((blade_root_c / 2) / blade_hub_n());               // half-angle the root chord spans on the hub
-function blade_te_pts() = let (h = blade_hub_n(), a = blade_root_a()) [[h * cos(a), -h * sin(a)], blade_te_c[0], blade_tip - blade_tip_k * blade_tip_dir, blade_tip];
-function blade_le_pts() = let (h = blade_hub_n(), a = blade_root_a()) [[h * cos(a),  h * sin(a)], blade_le_c[0], blade_tip + blade_tip_k * blade_tip_dir, blade_tip];
-// the outline's farthest point, in mm (for the echo; the unit frame is 1 = fan_r)
-function blade_reach() = fan_r * max([for (i = [0 : 40]) let (t = i / 40) max(norm(bez(blade_te_pts(), t)), norm(bez(blade_le_pts(), t)))]);
+// with scale S (mm per unit): the hub radius in the unit frame, the half-angle the root chord spans on the hub, the two edges
+function blade_hub_n(S) = fan_hub_d / 2 / S;
+function blade_root_a(S) = asin((blade_root_c / 2) / blade_hub_n(S));
+function blade_te_pts(S) = let (h = blade_hub_n(S), a = blade_root_a(S)) [[h * cos(a), -h * sin(a)], blade_te_c[0], blade_tip - blade_tip_k * blade_tip_dir, blade_tip];
+function blade_le_pts(S) = let (h = blade_hub_n(S), a = blade_root_a(S)) [[h * cos(a),  h * sin(a)], blade_le_c[0], blade_tip + blade_tip_k * blade_tip_dir, blade_tip];
+function blade_reach_n(S) = max([for (i = [0 : 40]) let (t = i / 40) max(norm(bez(blade_te_pts(S), t)), norm(bez(blade_le_pts(S), t)))]);   // farthest point, unit frame
+// the scale that puts the farthest point at fan_r: a fixed point (the root moves a hair with S), three rounds is plenty
+function blade_S(n = 3) = n == 0 ? fan_r : fan_r / blade_reach_n(blade_S(n - 1));
 // arc of n points from angle a0 to a1 about c, radius r
 function arc2(c, r, a0, a1, n) = [for (k = [0 : n]) c + r * [cos(a0 + (a1 - a0) * k / n), sin(a0 + (a1 - a0) * k / n)]];
 // one cross-section for chord c, as a closed (s, z) loop, counter-clockwise: s = 0 is the trailing edge (thick, rounded
@@ -942,11 +944,11 @@ function blade_profile(c) = let (
            [for (q = arc2([rb, rb], rb, 180, 270, 4)) if (q[1] > 1e-6) q]);                            // bottom trailing corner (its last point is the start)
 blade_np = len(blade_profile(10));
 module blade() {
-    S = fan_r;  np = blade_np;
-    echo(str("fan: blade reaches r ", blade_reach(), " (fan_r ", fan_r, ", boss at ", boss_r_in, ")"));
+    S = blade_S();  np = blade_np;
+    echo(str("fan: blade reaches r ", S * blade_reach_n(S), " (fan_r ", fan_r, ", boss at ", boss_r_in, ", scale ", S, ")"));
     // station: trailing point T, leading point L (in mm), chord c, unit vector u along the chord. The first two stations
     // are the hub-surface station shifted straight inward (a constant section through the hub's wall), then the Bezier ones
-    stb = [for (i = [0 : blade_nr - 1]) let (t = i / blade_nr, T = S * bez(blade_te_pts(), t), L = S * bez(blade_le_pts(), t), c = norm(L - T)) [T, (L - T) / c, c]];
+    stb = [for (i = [0 : blade_nr - 1]) let (t = i / blade_nr, T = S * bez(blade_te_pts(S), t), L = S * bez(blade_le_pts(S), t), c = norm(L - T)) [T, (L - T) / c, c]];
     st = concat([for (d = [blade_bury, blade_bury / 2]) [stb[0][0] - [d, 0], stb[0][1], stb[0][2]]], stb);
     nr = len(st);
     apex = S * blade_tip;

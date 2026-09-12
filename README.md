@@ -71,10 +71,9 @@ shaft can print horizontally.
   (the uncapped wedge hit 3.6 at the root: 'very fat, very stubby'; so the real slope is about 6 deg inboard and the
   full 12 outboard of mid-span), rounds `blade_r_top` 0.6 / `blade_r_bot` 0.3 on the trailing corners, all shrinking
   with the chord toward the tip. Nothing overhangs beyond the 0.3 bottom round and no edge is sharp. Lofted over
-  `blade_nr` 40 stations to an apex at the tip. The console echoes the outline's real reach (37.8 with these control
-  points; keep it under fan_r). `blade_hand` mirrors the blade once we know which way the gearbox turns.
+  `blade_nr` 40 stations to an apex at the tip. The console echoes the reach and the scale. `blade_hand` mirrors the blade once we know which way the gearbox turns.
   **Tip radius**: the strut's pocket bosses reach in to r 40.6, so the reference's 42.6 does not fit this shroud;
-  `fan_r = boss_r_in - fan_tip_clr` = 39.6. The fan sits `fan_gap` 0.5 above the strut's hub core (`fan_z0` 3).
+  `fan_r = boss_r_in - fan_tip_clr` = 37.6 (`fan_tip_clr` 3, Armen: 'end about 3mm from the mounting boxes'); the outline is scaled (`blade_S()`, a fixed point since the root sits on the hub circle) so its farthest point lands exactly there. The fan sits `fan_gap` 0.5 above the strut's hub core (`fan_z0` 3).
 - **Shaft** (`shaft()`, prints lying on its flat): D section, `shaft_d` 3.5 (the reference's; the strut's bore is 5)
   with a `shaft_flat` 0.5 flat, which is the bed face and keys the torque into the hub's D socket (`shaft_clr` 0.10
   per side, untested). `shaft_len` = socket depth + `shaft_reach` 65 (the reference) + `shaft_extra` (0: Armen says
