@@ -12,6 +12,7 @@ show_ghost = false;    // no reference STL yet
 show_all   = true;
 show_hull  = true;     // grey mock of the bay: floor + fenders, for the viewer only
 open_deg   = 0;        // animate: 0 = closed, ~115 = ramp lowered over the nose
+hinge_style = "none";  // "none" (shape-check prints) | "eyes" (placeholder eyes at the hinge corners)
 
 // ---------- plate (PHOTO ESTIMATES unless noted, 2026-09-11) ----------
 hatch_w    = 93.3;     // measured, WHALE/measurements.md "width of ramp"
@@ -19,7 +20,10 @@ hatch_len  = 90;       // traced 2026-09-11: x-extent of the side edge, flat (ca
 hatch_rise = 18;       // traced: the hinge end sits 18 below the flat end (drops 0 / 4 / 18 at x = 0 / 50 / 90)
 hatch_sag  = 5.9;      // circle through the three traced points: R 180.7, chord 91.8, sagitta 5.93
 hatch_t    = 1.5;      // Armen 2026-09-11: same as the rest of the shell (the hatch itself is missing)
-edge_r     = 1.0;      // rounding on the outer face's long edges (cosmetic)
+edge_r     = 1.0;      // rounding on the outer face's long edges (cosmetic, not applied yet)
+top_bevel  = 45;       // Armen 2026-09-11: the cabin end is cut at 45. Angle of that end face from the
+                       // radial (square) cut; + leans the face so the OUTER surface is the long one
+                       // (a wedge that tucks under the cabin lip), - makes the inner surface longer.
 
 // ---------- hinge ----------
 hinge_pin_d = 3.0;     // Cryoguns' replacement bracket uses a 3.10 hole, so the original pins were ~3
@@ -57,12 +61,26 @@ a_hinge  = atan2(0 - arc_cen[1], 0 - arc_cen[0]);
 a_top    = atan2(hatch_rise - arc_cen[1], hatch_len - arc_cen[0]);
 
 // 2D section of the plate in the YZ plane (as [y, z] points): outer arc out,
-// inner arc back, so the plate has thickness hatch_t measured radially.
+// inner arc back, so the plate has thickness hatch_t measured radially. The
+// band is drawn a little past the cabin end and then clipped by the bevel plane.
 function arc_seg(r, a0, a1, n = 48) = [for (i = [0 : n]) let (a = a0 + (a1 - a0) * i / n)
     arc_cen + r * [cos(a), sin(a)]];
-function plate_section() = concat(
-    arc_seg(arc_R,           a_hinge, a_top),
-    arc_seg(arc_R - hatch_t, a_top,   a_hinge));
+a_dir  = sign(a_top - a_hinge);                       // which way the arc's angle runs, hinge -> cabin
+a_over = a_top + 10 * a_dir;                          // 10 deg of spare band past the cabin end
+function plate_band() = concat(
+    arc_seg(arc_R,           a_hinge, a_over),
+    arc_seg(arc_R - hatch_t, a_over,  a_hinge));
+top_pt = [hatch_len, hatch_rise];                     // outer corner at the cabin end
+module plate_section_2d() {
+    intersection() {
+        polygon(plate_band());
+        // Half-plane on the hinge side of the cut line through top_pt. The square's local
+        // +X is its outward normal; the tangent toward the cabin is a_top + 90 * a_dir, and
+        // top_bevel pivots the line about the outer corner toward the hinge.
+        translate(top_pt) rotate(a_top + (90 + top_bevel) * a_dir)
+            translate([-500, -500]) square([500, 1000]);
+    }
+}
 
 // =====================================================================
 //  parts
@@ -70,7 +88,7 @@ function plate_section() = concat(
 module hatch_plate() {
     // The section lives in YZ; extrude along X and centre it on the hinge.
     rotate([90, 0, 90]) translate([0, 0, -hatch_w / 2])
-        linear_extrude(hatch_w) polygon(plate_section());
+        linear_extrude(hatch_w) plate_section_2d();
 }
 
 module hinge_eyes() {
@@ -88,7 +106,7 @@ module hinge_eyes() {
 
 module hatch() {              // the printed part, closed pose
     hatch_plate();
-    hinge_eyes();
+    if (hinge_style == "eyes") hinge_eyes();
 }
 
 module bay_mock() {           // hull stand-in for the viewer, not printed

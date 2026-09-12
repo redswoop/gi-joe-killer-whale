@@ -58,5 +58,11 @@ over the nose.
 2. Behaviour: open angle when lowered (flat on the ground?), and how the top edge latches closed
    ("UNLATCH" tabs on the deck).
 
+## Print next (as of 2026-09-11)
+- `stl/hatch.stl`: shape-check plate, no hinge (`hinge_style = "none"`), 45 deg bevel at the cabin end
+  (`top_bevel = 45`, outer surface long). Stands on its hinge end face, 89 tall, leans up to ~29 deg at the
+  top: brim, no supports. Check the fit against the fender edges and the cabin lip; the profile numbers
+  are one pencil tracing, so expect a round or two.
+
 ## Open items
 - Everything above. Coupon not yet printed.
