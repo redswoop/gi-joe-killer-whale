@@ -15,9 +15,9 @@ open_deg   = 0;        // animate: 0 = closed, ~115 = ramp lowered over the nose
 
 // ---------- plate (PHOTO ESTIMATES unless noted, 2026-09-11) ----------
 hatch_w    = 93.3;     // measured, WHALE/measurements.md "width of ramp"
-hatch_len  = 88;       // chord, hinge edge to top edge. Photo: ruler along the bay, lip to cabin face ~85-90
-hatch_rise = 18;       // top edge above the hinge edge (closed). Photo guess off the fender profile
-hatch_sag  = 8;        // bulge of the arc above that chord, at mid-length. Photo guess
+hatch_len  = 90;       // traced 2026-09-11: x-extent of the side edge, flat (cabin) end to the hinge end
+hatch_rise = 18;       // traced: the hinge end sits 18 below the flat end (drops 0 / 4 / 18 at x = 0 / 50 / 90)
+hatch_sag  = 5.9;      // circle through the three traced points: R 180.7, chord 91.8, sagitta 5.93
 hatch_t    = 2.5;      // plate thickness. Guess; calipers on the real plate
 edge_r     = 1.0;      // rounding on the outer face's long edges (cosmetic)
 
