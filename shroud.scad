@@ -189,6 +189,9 @@ bar_panels    = [[0.18, 0.40], [0.70, 0.92]];
 //   touch that box's blend (a small flat, below the rim, among the boxes).
 peg_y        = [31.924, 37.191];  peg_z = [19.065, 26.5];   // the +Y peg, straight from Sketch 06: y span, z bottom .. top (buried in the bar)
 peg_clr      = 0.15;   // peg / key to notch, per side. Coupon round 1 (2026-09-08): 'tooth fit 0.15 is fine'
+peg_fillet   = 3;      // concave fillets flaring the peg into the bar's bottom edge, both sides, in the bar's plane. The
+                       // printed vane snapped here (2026-09-12: sharp inside corner on a 2 x 5.27 root). They use the
+                       // 4 mm between the bar's bottom edge and the rim top and stop ~1 mm above the rim
 tooth_r      = 2.25;   // pod radius (3 was 'far too fat'); each prong is a D 3.9 wide and 1.1 thick beside the 2.3 mm slot
 tooth_nose   = 8;      // ogive nose length along the axis
 tooth_over   = 1.5;    // the pod stays full round this far past the bar's bottom edge, then the tail cone fades out on the bar's
@@ -589,8 +592,22 @@ module vane_2d() {
     polygon(concat([vane_top_l, vane_end_l], arc_pts(vane_arc_l), arc_pts(vane_arc_r), [vane_end_r, vane_top_r]));
 }
 
-// The +Y peg: the sketch's rectangle, the bar's full thickness, sharp edges
-module peg() { translate([vane_x, peg_y[0], peg_z[0]]) cube([vane_t, peg_y[1] - peg_y[0], peg_z[1] - peg_z[0]]); }
+// The +Y peg: the sketch's rectangle (sharp-edged and the bar's full 2 mm from the rim down, where it must fit
+// the base's slot), flaring into the bar's bottom edge with concave fillets of radius peg_fillet on both sides:
+// offset(+f) then offset(-f) on "bar + peg" fills the two inside corners (the boss_fade trick), boxed to the peg's
+// neighbourhood with a 1 mm strip of bar for the arcs to land on. Extruded at the peg's full 2 mm, so it stands
+// 0.06 proud of the tapered bar along that strip.
+module peg_2d() {   // (y, z)
+    yc = (peg_y[0] + peg_y[1]) / 2;  f = peg_fillet;
+    intersection() {
+        offset(r = -f) offset(r = f) union() {
+            vane_2d();
+            translate([peg_y[0], peg_z[0]]) square([peg_y[1] - peg_y[0], peg_z[1] - peg_z[0]]);
+        }
+        translate([peg_y[0] - f - 1, peg_z[0] - 1]) square([peg_y[1] - peg_y[0] + 2 * f + 2, bar_bot(yc) + 1 - (peg_z[0] - 1)]);
+    }
+}
+module peg() { translate([vane_x, 0, 0]) rotate([90, 0, 90]) linear_extrude(vane_t) peg_2d(); }
 
 // FUSED: the post on side sgn of the +X bar: the bar's slab where it crosses the wall, from post_bury below the
 // rim top up 1 mm into the bar, trimmed to the wall's annulus at every height (the bar crosses the ring
