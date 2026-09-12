@@ -19,7 +19,10 @@ show_ghost = false;    // no reference STL yet
 show_all   = true;
 show_hull  = true;     // grey mock of the bay: floor + fenders, for the viewer only
 open_deg   = 0;        // animate: 0 = closed, ~115 = ramp lowered over the nose
-hinge_style = "pins";  // "pins" (like the original: bar + ears + outward pins) | "none" (bare shape check)
+hinge_style = "slide"; // "slide": separate bar (printed flat) slides along X onto a dovetail tongue on the
+                       //          hatch's hinge edge; the fender holes then lock it in place
+                       // "pins":  bar + ears + pins integral with the hatch (needs the hatch printed on an end)
+                       // "none":  bare shape check
 show_rim   = true;     // the tray rim on the inside face
 
 // ---------- plate ----------
@@ -42,11 +45,22 @@ rim_t      = 1.5;      // rim wall thickness
 hinge_pin_d = 2.6;     // pin diameter (photo ~2.6; Cryoguns' replacement bracket bores 3.10)
 pin_len     = 3.5;     // how far each pin sticks out past the side edge (photo ~3.5-4.5)
 pin_drop    = 3.0;     // pin/bar axis inside the outer surface, measured along the plate's normal
-pin_back    = 0;       // pin/bar axis behind the hinge edge, along the plate (+ = past the edge)
-bar_d       = 4;       // hinge bar diameter (photo ~3-4)
-ear_r       = 4;       // ear lobe radius about the axis
+pin_back    = -0.85;   // pin/bar axis along the plate: + = past the hinge edge, - = under the plate.
+                       // -0.85 puts the pin's underside on the bed when the slide bar prints flat.
+bar_d       = 4;       // ("pins" style) hinge bar diameter (photo ~3-4)
+ear_r       = 3.5;     // ear lobe radius about the axis
 ear_w       = 5;       // ear width along X (from the side edge inward)
-ear_up      = 8;       // ear web reach up the plate's inner face
+ear_up      = 8;       // ("pins" style) ear web reach up the plate's inner face
+
+// ---------- slide bar ("slide" style; the bar is a separate flat print) ----------
+tongue_len = 4;        // dovetail tongue on the hatch's hinge edge: reach along the plate
+tongue_t   = 3.0;      // its thickness at the very edge (tapers back to hatch_t over tongue_len)
+slide_clr  = 0.15;     // tongue-to-slot clearance per face (coupon)
+bar_floor  = 2.0;      // bar material beyond the tongue tip
+bar_in     = 5.0;      // bar reach into the tray (from the outer surface), i.e. the inner wall's outside
+bar_out    = 0.6;      // lip over the outer surface at the hinge edge (keeps the bar from lifting inward)
+lip_len    = 2.5;      // that lip's reach along the plate
+bar_reach  = 5.5;      // inner wall's reach along the plate (> tongue_len so it grips the plain plate)
 
 // ---------- bay mock (photo estimates, viewer only) ----------
 bay_w      = 100.5;    // ruler across the bay near the cabin: 0.2 .. 10.2 cm
@@ -122,6 +136,10 @@ module hatch_tray() {                               // skin + rim: a thicker pla
                                         a_hinge - 5 * a_dir, a_end - a_dir * rim_t / arc_R * 180 / PI);
             plan_clip(rim_t);
         }
+        // "slide": the bar's inner wall wraps the hinge edge, so the side rims stop short of it
+        if (hinge_style == "slide") hinge_frame() across(hatch_w + 1) polygon([
+            [in_sign * hatch_t, -1], [in_sign * (hatch_t + rim_h + 1), -1],
+            [in_sign * (hatch_t + rim_h + 1), bar_reach + slide_clr], [in_sign * hatch_t, bar_reach + slide_clr]]);
     }
 }
 
@@ -150,9 +168,50 @@ module hinge_bar() {
     }
 }
 
-module hatch() {              // the printed part, closed pose
+// Dovetail tongue along the hinge edge, on the inside face (local frame: u into the
+// thickness, v along the plate). Thick at the edge, tapering back to the plain plate.
+module hinge_tongue() {
+    hinge_frame() across(hatch_w) polygon([
+        [in_sign * (hatch_t - eps), 0], [in_sign * tongue_t, 0], [in_sign * (hatch_t - eps), tongue_len]]);
+}
+
+// The slide bar: a channel along X whose slot matches the tongue (+ clearance), open toward
+// the plate (+Z local). Ear lobes at both ends carry the pins. Modelled in the hinge frame,
+// i.e. in its installed position on the hatch.
+module slide_bar_local() {
+    c = slide_clr; L = hatch_w + 2 * c;                  // a hair longer than the plate for the ends
+    axis = [in_sign * pin_drop, pin_back];              // (y, z) of the pin axis
+    difference() {
+        union() {
+            // channel body: floor + outer lip (full depth to lip_len), inner wall up to bar_reach
+            translate([-L / 2, 0, 0]) mirror([0, in_sign < 0 ? 1 : 0, 0]) {
+                translate([0, -bar_out, -bar_floor - c]) cube([L, bar_out + bar_in, bar_floor + c + lip_len]);
+                translate([0, 0, -bar_floor - c])        cube([L, bar_in, bar_floor + c + bar_reach]);
+            }
+            // ear lobes, flat on the far side so the bar prints on its back
+            for (sx = [-1, 1]) intersection() {
+                translate([sx * (hatch_w / 2 - ear_w / 2), axis[0], axis[1]])
+                    rotate([0, 90, 0]) cylinder(r = ear_r, h = ear_w, center = true);
+                translate([-100, -100, -bar_floor - c]) cube([200, 200, 100]);
+            }
+        }
+        // the slot: tongue + clearance, open at the top
+        across(L + 2) polygon([
+            [in_sign * -c, -c], [in_sign * (tongue_t + c), -c],
+            [in_sign * (hatch_t + c), tongue_len], [in_sign * (hatch_t + c), 100], [in_sign * -c, 100]]);
+    }
+    // pins, rounded tips
+    for (sx = [-1, 1]) translate([sx * hatch_w / 2, axis[0], axis[1]]) rotate([0, sx * 90, 0]) {
+        cylinder(d = hinge_pin_d, h = pin_len - hinge_pin_d / 2);
+        translate([0, 0, pin_len - hinge_pin_d / 2]) sphere(d = hinge_pin_d);
+    }
+}
+module slide_bar() { hinge_frame() slide_bar_local(); }   // in the assembly frame
+
+module hatch() {              // the printed hatch, closed pose
     if (show_rim) hatch_tray(); else hatch_plate();
     if (hinge_style == "pins") hinge_bar();
+    if (hinge_style == "slide") hinge_tongue();
 }
 
 module bay_mock() {           // hull stand-in for the viewer, not printed
@@ -167,4 +226,7 @@ module bay_mock() {           // hull stand-in for the viewer, not printed
 //  assembly
 // =====================================================================
 if (show_hull) bay_mock();
-if (show_all) rotate([-open_deg, 0, 0]) color("OliveDrab") hatch();
+if (show_all) rotate([-open_deg, 0, 0]) {
+    color("OliveDrab") hatch();
+    if (hinge_style == "slide") color("DarkOliveGreen") slide_bar();
+}

@@ -1,11 +1,10 @@
 // Collision checks. Each `pair` should be EMPTY.
-//   pair: "body-body"
-// Run: ../tools/check.sh check.scad 'pose=0' 'pose=30'
+//   pair: "hatch-bar"
+// Run: ../tools/check.sh check.scad 'open_deg=0' 'open_deg=115'
 include <whale_hatch.scad>
-show_ghost = false; show_all = false;
-pair = "body-body";
-pose = 0;
+show_ghost = false; show_all = false; show_hull = false;
+pair = "hatch-bar";
 
-module A() { if (pair == "body-body") body(); }
-module B() { if (pair == "body-body") translate([size_x + 1, 0, 0]) body(); }
+module A() { if (pair == "hatch-bar") hatch(); }
+module B() { if (pair == "hatch-bar") slide_bar(); }
 intersection() { A(); B(); }

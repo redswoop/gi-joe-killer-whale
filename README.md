@@ -70,11 +70,23 @@ over the nose.
 - Outer face: two perforated vent grilles near the cabin end, seven ribbed panels, "PANEL REMOVAL" /
   "UNLATCH" / "RAMP ACCESS" labels. Cosmetic, not modelled yet.
 
+## Hinge: slide-on bar (Armen 2026-09-11: hatch prints on its side for smoothness, so the pins move to a
+## separate flat print)
+- The hatch's hinge edge carries a dovetail tongue on the inside (`tongue_t 3.0` at the edge tapering to the
+  1.5 plate over `tongue_len 4`). The bar is a channel with the matching slot (`slide_clr 0.15` per face,
+  coupon), an outer lip (`bar_out 0.6` proud of the outer surface over `lip_len 2.5`) so it cannot lift
+  inward, and an inner wall reaching `bar_reach 5.5` up the plate. It slides on along X; once the pins are in
+  the fender holes the hull locks it. Rigid, no snap (shroud lesson: springs failed, locks held).
+- The side rims stop `bar_reach + clr` short of the hinge edge so the channel seats. `check.scad` pair
+  `hatch-bar` is clear at rest.
+
 ## Print next (as of 2026-09-11)
-- `stl/hatch.stl`: tray + hinge bar + pins, `cabin_tuck 5`. Stands on its cabin end face (73 wide after the
-  chamfers), 96 tall, hinge bar and pins at the top: brim, no supports. Fit checks: curve flush with the
-  fender edges, pins reach the fender holes, cabin end under the lip (zero `cabin_tuck` if it hits), width
-  between the rails.
+- `stl/hatch.stl` ON ITS SIDE: the +X side face is a flat plane on the bed, footprint an arc 4.5 wide x 95
+  long, 93.3 tall. Brim. The arc is traced in every layer, so the outer face is a true vertical wall.
+- `stl/bar.stl` flat on its back, slot up, pins lying on the bed (`pin_back -0.85` puts their underside at
+  z = 0). 100.3 long.
+- Fit checks: curve flush with the fender edges; bar slides on and pins reach the fender holes; cabin end
+  under the lip (zero `cabin_tuck` if it hits); width between the rails.
 
 ## Open items
 - Everything above. Coupon not yet printed.
