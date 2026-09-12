@@ -72,21 +72,24 @@ over the nose.
 - Outer face: two perforated vent grilles near the cabin end, seven ribbed panels, "PANEL REMOVAL" /
   "UNLATCH" / "RAMP ACCESS" labels. Cosmetic, not modelled yet.
 
-## Hinge: slide-on bar (Armen 2026-09-11: hatch prints on its side for smoothness, so the pins move to a
-## separate flat print)
-- The hatch's hinge edge carries a dovetail tongue on the inside (`tongue_t 3.0` at the edge tapering to the
-  1.5 plate over `tongue_len 4`). The bar is a channel with the matching slot (`slide_clr 0.15` per face,
-  coupon), an outer lip (`bar_out 0.6` proud of the outer surface over `bar_lip_len 2.5`) so it cannot lift
-  inward, and an inner wall reaching `bar_reach 5.5` up the plate. It slides on along X; once the pins are in
-  the fender holes the hull locks it. Rigid, no snap (shroud lesson: springs failed, locks held).
-- The side rims stop `bar_reach + clr` short of the hinge edge so the channel seats. `check.scad` pair
-  `hatch-bar` is clear at rest.
+## Hinge end (Armen 2026-09-11, after the first print): a flange, and a slide-on bar on its free edge
+- The bow end of the plate bends ~90 deg into the hull: `flange_len 5`, `flange_t 1.5` (`flange_deg 90`).
+  The pins sit at the bottom of that flange, so the hinge axis is ~6 below the outer surface at the bow.
+  (This is the "bar" seen edge-on in the eBay photos.) The flange also closes the tray's hinge end.
+- The hatch prints on its side for smoothness, so the pins live on a separate flat print: the flange's free
+  edge carries a dovetail tongue on its cabin-side face (`tongue_t 3.0` at the edge tapering to 1.5 over
+  `tongue_len 2.5`); the bar is a channel with the matching slot (`slide_clr 0.15` per face, coupon), an
+  outer lip (`bar_out 0.6` over `bar_lip_len 2.5`) so it cannot lift inward, an inner wall `bar_reach 3.0`
+  up the flange, ear lobes `ear_r 3.5` and pins `hinge_pin_d 2.6` x `pin_len 3.5` at `pin_drop 1.5` /
+  `pin_back -0.85`. It slides on along X; the fender holes then lock it. Rigid, no snap (shroud lesson).
+- The side rims stop `max(bar_in, pin_drop + ear_r) - flange_t + clr` (3.65) short of the flange so the
+  channel and lobes seat. `check.scad` pair `hatch-bar` is clear.
 
 ## Print next (as of 2026-09-11)
 - `stl/hatch.stl` ON ITS SIDE: the +X side face is a flat plane on the bed, footprint an arc 4.5 wide x 95
   long, 93.3 tall. Brim. The arc is traced in every layer, so the outer face is a true vertical wall.
 - `stl/bar.stl` flat on its back, slot up, pins lying on the bed (`pin_back -0.85` puts their underside at
-  z = 0). 100.3 long.
+  z = 0). 100.3 long, 5.15 tall.
 - Fit checks: curve flush with the fender edges; bar slides on and pins reach the fender holes; cabin end
   under the lip (`plate_extra`, `lip_len` if it hits); width between the rails.
 
