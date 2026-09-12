@@ -298,14 +298,24 @@ fan_gap      = 0.5;                              // hub bottom above the strut's
 fan_z0       = hub_core_t / 2 + fan_gap;         // 3: the fan's own z=0 (hub bottom) in the assembly
 fan_hub_d    = 10;   fan_hub_h = 7;   fan_hub_ch = 0.8;     // hub: diameter, height, top chamfer
 blade_r0     = fan_hub_d / 2 - 1;                // blade root, buried 1 mm in the hub
-blade_t      = 1.2;                              // thickness at the leading (thin) edge
-blade_pitch  = 12;                               // deg, slope of the top face across the chord (the reference is about 16 at mid-span)
+blade_t      = 1.4;                              // thickness at the leading edge: the nose is a full round of this diameter
+blade_pitch  = 12;                               // deg, mean slope of the top face across the chord (the reference is about 16 at mid-span)
+blade_r_top  = 0.8;   blade_r_bot = 0.4;         // rounds on the trailing edge's top and bottom corners (the bottom one lifts the
+                                                 // print edge off the bed by that much; keep it small)
 blade_hand   = 1;                                // +1: leading edge on the counter-clockwise side seen from +Z (the exit); -1 mirrors.
                                                  // The fan pushes air +Z when it turns toward its leading edges. Unknown which way the gearbox turns.
-blade_plan   = [[0.13, 0.13], [0.20, 0.13], [0.34, 0.26], [0.41, 0.29], [0.48, 0.30], [0.55, 0.31], [0.62, 0.30],
-                [0.69, 0.29], [0.76, 0.28], [0.83, 0.25], [0.90, 0.22], [0.95, 0.20]];   // [r / tip, chord / tip] from the mesh
-blade_tip_f  = 0.95;                             // from here to the tip the chord falls on a quarter ellipse
-blade_nr     = 36;  blade_nt = 8;                // polyhedron grid: radial steps, chordwise steps
+// Planform (Armen 2026-09-12: 'a smooth swoopy spline as their edge ... built between 2 smooth splines'): each edge is a
+// cubic Bezier from the root to the tip in a unit frame (x radial, y toward the leading edge, tip radius about 1; the
+// outline is scaled so its farthest point sits at fan_r). Both edges arrive at blade_tip along blade_tip_dir, from
+// opposite sides, so the tip is a smooth round of size blade_tip_k. Proportions follow the mesh (root chord 0.13,
+// mid-span 0.31 of the tip radius), the trailing edge sweeps back a little instead of the mesh's straight radial line.
+blade_tip     = [0.95, -0.05];                   // tip point, leaning a little to the trailing side
+blade_tip_dir = [0.35, 1] / norm([0.35, 1]);     // tangent at the tip (the outline turns around it)
+blade_tip_k   = 0.18;                            // tip roundness: control-point distance either side (a broad paddle tip)
+blade_te_c    = [[0.55, -0.12]];                 // trailing edge's inner control point (root .. tip): a gentle concave sweep
+blade_le_c    = [[0.45, 0.50]];                  // leading edge's inner control point: the big swoop
+blade_root_c  = 0.18;                            // root chord, unit frame
+blade_nr      = 40;                              // loft stations root .. tip
 shaft_d      = 3.5;                              // the reference's (it fits the hull); the strut's bore is 5
 shaft_flat   = 0.5;                              // depth of the D flat (the bed face when printing; keys the hub)
 shaft_clr    = 0.10;                             // socket clearance on the shaft, per side (untested)
@@ -313,7 +323,8 @@ socket_depth = fan_hub_h - 1.5;                  // blind socket up from the hub
 shaft_reach  = 65;                               // hub bottom to the tab's base, as the reference
 shaft_extra  = 0;                                // Armen: the reference is too short; add this much (TBD from the print)
 shaft_len    = socket_depth + shaft_reach + shaft_extra;
-tab_w        = 1.6;  tab_t = 1.2;  tab_len = 1.0;   // the gearbox tab: across the flat's direction, along it, length (mesh: 1.6 x 1.2 x 0.6)
+tab_w        = 1.6;  tab_t = 1.2;  tab_len = 3.0;   // the gearbox tab: across the flat's direction, along it, length (mesh: 1.6 x 1.2 x 0.6;
+                                                    // Armen 2026-09-12: 'we need the tab to be longer')
 
 // ---------- Fillet 01 / 02 / 03 ----------
 box_fillet_out   = 0.5;   // Fillet 01: convex rounds on the box's outer face edges
@@ -903,29 +914,41 @@ module tie_bar_placed() {
 }
 module vanes() { vane_roots(); vane_fins(); tie_bar_placed(); slats(); }
 
-// ---- fan: hub + polyhedron blades, in its own frame (hub bottom at z = 0, axis Z) ----
-function blade_chord(r) = let (f = r / fan_r)
-    fan_r * (f <= blade_tip_f ? lookup(f, blade_plan)
-                              : max(0.3 / fan_r, lookup(blade_tip_f, blade_plan) * sqrt(max(0, 1 - pow((f - blade_tip_f) / (1 - blade_tip_f), 2)))));
-// grid point (i radial, j chordwise, k 0 bottom / 1 top): the trailing edge is the straight radial line at angle 0,
-// the leading edge at angle chord / r (radians); the top face falls from blade_t + chord * tan(pitch) at the trailing
-// edge to blade_t at the leading edge, linearly across the chord
-function blade_pt(i, j, k) = let (r = blade_r0 + (fan_r - blade_r0) * i / blade_nr, c = blade_chord(r),
-                                  a = blade_hand * (c / r) * (j / blade_nt) * 180 / PI,
-                                  z = k == 0 ? 0 : blade_t + tan(blade_pitch) * c * (1 - j / blade_nt))
-    [r * cos(a), r * sin(a), z];
-function blade_idx(i, j, k) = ((i * (blade_nt + 1)) + j) * 2 + k;
+// ---- fan: hub + lofted blades, in its own frame (hub bottom at z = 0, axis Z) ----
+// cubic Bezier through control points P (4 of them) at t
+function bez(P, t) = pow(1 - t, 3) * P[0] + 3 * pow(1 - t, 2) * t * P[1] + 3 * (1 - t) * t * t * P[2] + pow(t, 3) * P[3];
+function blade_r0n() = blade_r0 / fan_r;
+function blade_te_pts() = [[blade_r0n(), 0], blade_te_c[0], blade_tip - blade_tip_k * blade_tip_dir, blade_tip];
+function blade_le_pts() = [[blade_r0n(), blade_root_c], blade_le_c[0], blade_tip + blade_tip_k * blade_tip_dir, blade_tip];
+// scale so the outline's farthest point is at fan_r
+function blade_scale() = fan_r / max([for (i = [0 : 40]) let (t = i / 40) max(norm(bez(blade_te_pts(), t)), norm(bez(blade_le_pts(), t)))]);
+// arc of n points from angle a0 to a1 about c, radius r
+function arc2(c, r, a0, a1, n) = [for (k = [0 : n]) c + r * [cos(a0 + (a1 - a0) * k / n), sin(a0 + (a1 - a0) * k / n)]];
+// one cross-section for chord c, as a closed (s, z) loop, counter-clockwise: s = 0 is the trailing edge (thick, rounded
+// corners), s = c the leading edge (a full round nose of diameter blade_t); the top runs between them on a cosine so it
+// meets both rounds with a horizontal tangent; the bottom is flat (the bed). The rounds shrink with the chord toward the tip.
+function blade_profile(c) = let (
+        rn = min(blade_t / 2, c / 4),  tle = 2 * rn,  tte = tle + c * tan(blade_pitch),
+        rt = min(blade_r_top, c / 4, tte / 3),  rb = min(blade_r_bot, c / 4, tte / 3),  s0 = rt,  s1 = c - rn, nt = 14)
+    concat([[rb, 0]],                                                                                   // bottom (the nose arc starts at its far end)
+           arc2([s1, rn], rn, -90, 90, 8),                                                              // nose, up and over
+           [for (k = [1 : nt - 1]) let (w = k / nt) [s1 - (s1 - s0) * w, tle + (tte - tle) * (1 - cos(180 * w)) / 2]],   // top, leading -> trailing
+           arc2([rt, tte - rt], rt, 90, 180, 4),                                                        // top trailing corner
+           [for (q = arc2([rb, rb], rb, 180, 270, 4)) if (q[1] > 1e-6) q]);                            // bottom trailing corner (its last point is the start)
+blade_np = len(blade_profile(10));
 module blade() {
-    nr = blade_nr;  nt = blade_nt;
-    pts = [for (i = [0 : nr], j = [0 : nt], k = [0, 1]) blade_pt(i, j, k)];
+    S = blade_scale();  nr = blade_nr;  np = blade_np;
+    // station i: trailing point T, leading point L (in mm), chord c, unit vector u along the chord
+    st = [for (i = [0 : nr - 1]) let (t = i / nr, T = S * bez(blade_te_pts(), t), L = S * bez(blade_le_pts(), t), c = norm(L - T)) [T, (L - T) / c, c]];
+    apex = S * blade_tip;
+    pts = concat([for (i = [0 : nr - 1], m = [0 : np - 1]) let (q = blade_profile(st[i][2])[m], xy = st[i][0] + st[i][1] * q[0]) [xy[0], xy[1], q[1]]],
+                 [[apex[0], apex[1], 0]]);
+    idx = function(i, m) i * np + (m % np);
     faces = concat(
-        [for (i = [0 : nr - 1], j = [0 : nt - 1]) [blade_idx(i, j, 1), blade_idx(i, j + 1, 1), blade_idx(i + 1, j + 1, 1), blade_idx(i + 1, j, 1)]],   // top
-        [for (i = [0 : nr - 1], j = [0 : nt - 1]) [blade_idx(i, j, 0), blade_idx(i + 1, j, 0), blade_idx(i + 1, j + 1, 0), blade_idx(i, j + 1, 0)]],   // bottom
-        [for (i = [0 : nr - 1]) [blade_idx(i, 0, 0), blade_idx(i, 0, 1), blade_idx(i + 1, 0, 1), blade_idx(i + 1, 0, 0)]],                              // trailing edge wall
-        [for (i = [0 : nr - 1]) [blade_idx(i, nt, 0), blade_idx(i + 1, nt, 0), blade_idx(i + 1, nt, 1), blade_idx(i, nt, 1)]],                          // leading edge wall
-        [for (j = [0 : nt - 1]) [blade_idx(0, j, 0), blade_idx(0, j + 1, 0), blade_idx(0, j + 1, 1), blade_idx(0, j, 1)]],                              // root cap (in the hub)
-        [for (j = [0 : nt - 1]) [blade_idx(nr, j, 0), blade_idx(nr, j, 1), blade_idx(nr, j + 1, 1), blade_idx(nr, j + 1, 0)]]);                         // tip cap
-    polyhedron(points = pts, faces = faces, convexity = 4);
+        [for (i = [0 : nr - 2], m = [0 : np - 1]) [idx(i, m), idx(i + 1, m), idx(i + 1, m + 1), idx(i, m + 1)]],   // ring to ring
+        [for (m = [0 : np - 1]) [idx(nr - 1, m), nr * np, idx(nr - 1, m + 1)]],                                   // last ring to the apex
+        [[for (m = [0 : np - 1]) idx(0, m)]]);                                                                    // root cap (inside the hub; seen from the axis, +u is to the left, so the CCW profile is already clockwise)
+    mirror([0, blade_hand < 0 ? 1 : 0, 0]) polyhedron(points = pts, faces = faces, convexity = 6);
 }
 module shaft_2d() { intersection() { circle(d = shaft_d); translate([-(shaft_d / 2 - shaft_flat), -shaft_d]) square(2 * shaft_d); } }   // D: the flat faces -X
 module fan() {
