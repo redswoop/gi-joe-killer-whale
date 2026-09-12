@@ -55,7 +55,7 @@ over the nose.
 ## Needed from Armen before the hinge can be designed
 1. Hull side: distance between the two hinge points, what is left of them (stubs, holes, a slot), how far
    the hinge axis sits from the hull face, and whether the original pins were on the hatch or the hull.
-4. Behaviour: open angle when lowered (flat on the ground?), and how the top edge latches closed
+2. Behaviour: open angle when lowered (flat on the ground?), and how the top edge latches closed
    ("UNLATCH" tabs on the deck).
 
 ## Open items
