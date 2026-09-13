@@ -21,6 +21,8 @@
 //  ~3 mm rim on the inside along both sides and the cabin end, a round hinge bar
 //  across the hinge edge on the inside with lobed ears and short outward pins,
 //  four latch hooks on the side edges, vents + ribbed panels on the outer face.
+//  In plan it is six-sided: two angled corner cuts at the cabin end, and the plate is thinner
+//  along those angled edges (from the inside) where it rests on tabs in the hull.
 //  A separate black treaded "liner" snaps into the tray (not modelled yet).
 //  Bow end, side view, front to the right: the arch ends in a vertical front face that
 //  drops 10 to the hull's lip level (the pencil tracing) and the front plate continues
@@ -44,10 +46,13 @@ hatch_t    = 1.5;      // Armen 2026-09-11: same as the rest of the shell (the h
 plate_extra = 0;       // full-thickness plate past the traced 90 (the cabin face). Tune on the print.
 top_bevel  = 0;        // angle of the cabin end face from the radial (square) cut; + makes the OUTER
                        // surface the long one. 0 after the eBay photo of the real part (square edge).
-top_edge_w = 68.85;    // width of the cabin end after the 45 deg corner cuts = the wide end of the
+top_edge_w = 68.85;    // width of the cabin end after the corner cuts = the wide end of the
                        // top-hatch opening (WHALE/measurements.md "wider opening"). Photo of the real
                        // part scales to ~69 too.
-top_chamfer = (hatch_w - top_edge_w) / 2;   // 12.2: leg of each 45 deg corner cut, in plan
+top_cut_deg = 30;      // angle of each angled edge from the cabin end edge, in plan (Armen 2026-09-13:
+                       // "like a 30 deg cut"). 0 would be a square end, 90 no cut at all.
+top_cut_x  = (hatch_w - top_edge_w) / 2;          // 12.2: how far each cut comes in from the side
+top_cut_y  = top_cut_x * tan(top_cut_deg);        // 7.1: how far it runs along the side
 
 // ---------- cabin-end lip: a ledge that tucks under the top hatch ----------
 top_hatch_t = 2.5;     // Armen's top hatch (WHALE/Whale Hatch.3mf) is a 2.5 plate at that edge
@@ -59,6 +64,14 @@ lip_len    = 5;        // ledge reach past the plate's end, under the top hatch 
 // ---------- tray rim (inside face; PHOTO ESTIMATES) ----------
 rim_h      = 3;        // rim height above the plate's inner face (photo: shallow tray)
 rim_t      = 1.5;      // rim wall thickness
+
+// ---------- angled cabin-end edges: rabbeted underneath, they rest on hull tabs (Armen 2026-09-13) ----------
+// The plan outline is six-sided: square hinge edge, two long sides, and two angled edges (top_cut_deg)
+// bringing the cabin end down to top_edge_w. Along those angled edges the plate is thinner than hatch_t, from the
+// INSIDE (the outer surface stays flush), so it can sit on tabs in the hull's corners that stop the
+// hatch falling into the bay. Rim and cabin-end rim end where the rabbet begins.
+tab_w      = 4;        // how far the hull tab reaches under the plate, square to the angled edge.   ESTIMATE
+tab_edge_t = 1.0;      // plate thickness left over the tab ("a bit thinner than the rest").         ESTIMATE
 
 // ---------- front face + dovetail socket (Armen 2026-09-13) ----------
 front_h    = 10;       // vertical front face: outer surface down to the hull's lip level. Tracing: the curve
@@ -162,8 +175,9 @@ module band_2d(r_out, r_in, a0 = a_hinge, a1 = a_end + 10 * a_dir) {
 // Extrude a YZ section across X and clip it to a plan outline.
 module across(w) { rotate([90, 0, 90]) translate([0, 0, -w / 2]) linear_extrude(w) children(); }
 module plan_2d(inset = 0) {                         // plate outline in XY with the corner cuts
-    c = top_chamfer; w = hatch_w / 2; L = end_pt[0];
-    offset(delta = -inset) polygon([[-w, -50], [w, -50], [w, L - c], [w - c, L + 50], [-w + c, L + 50], [-w, L - c]]);
+    cx = top_cut_x; cy = top_cut_y; w = hatch_w / 2; L = end_pt[0];
+    offset(delta = -inset) polygon([[-w, -50], [w, -50], [w, L - cy], [w - cx, L], [w - cx, L + 50],
+                                    [-w + cx, L + 50], [-w + cx, L], [-w, L - cy]]);
 }
 module plan_clip(inset = 0) { translate([0, 0, -100]) linear_extrude(300) plan_2d(inset); }
 
@@ -198,6 +212,31 @@ module hatch_tray() {                               // skin + rim + socket block
             translate([-100, sock_d, -100]) cube([200, 300, 200]);
         }
         across(hatch_w + 2) polygon(rail_2d(slide_clr));   // the groove, open at both ends
+        tab_rabbet();
+    }
+}
+
+// Plan view: a strip tab_w wide inside each angled edge (and everything outside it, which is air).
+// The edge runs from (w, L - cy) up-and-in at 180 - top_cut_deg; the strip's local +y points into
+// the plate. The strip stops at |x| = top_edge_w / 2, the top-hatch opening: the hull tab cannot
+// continue into the opening, and the cabin ledge (cabin_lip) lives there.
+module tab_strip_2d() {
+    w = hatch_w / 2; L = end_pt[0];
+    for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0]) intersection() {
+        translate([w, L - top_cut_y]) rotate(180 - top_cut_deg) translate([-100, -100]) square([200, 100 + tab_w]);
+        translate([w - top_cut_x - eps, -100]) square([100, 300]);   // eps: the lip's side face and
+    }                                                                // this end face must not coincide
+}
+// The rabbet: everything under the angled edges from the inner face up to tab_edge_t below the
+// outer surface. Cut from the tray only; cabin_lip() is unioned afterwards so it keeps its corners.
+// The band runs 10 deg past the cabin end unclipped (not band_2d): a cutter whose end face
+// coincides with the tray's end face leaves doubled faces in the export.
+module tab_rabbet() {
+    a0 = a_hinge - 5 * a_dir; a1 = a_end + 10 * a_dir;
+    intersection() {
+        across(hatch_w + 2) polygon(concat(arc_seg(arc_R - tab_edge_t, a0, a1),
+                                           arc_seg(arc_R - hatch_t - rim_h - 1, a1, a0)));
+        translate([0, 0, -100]) linear_extrude(300) tab_strip_2d();
     }
 }
 

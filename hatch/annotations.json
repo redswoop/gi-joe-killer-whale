@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "rev": 19,
-  "updated": "2026-09-13T12:59:46.890Z",
+  "rev": 20,
+  "updated": "2026-09-13T14:59:33.831Z",
   "annotations": [
     {
       "kind": "text",
@@ -58,7 +58,7 @@
       "flipX": true,
       "flipY": false,
       "opacity": 0.6,
-      "visible": true,
+      "visible": false,
       "onTop": false,
       "calib": {
         "px": [[786, 964], [1438, 964]],

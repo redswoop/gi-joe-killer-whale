@@ -1,6 +1,6 @@
 # Killer W.H.A.L.E. front landing hatch (bow ramp) with replacement hinge
 
-State as of 2026-09-13 (evening). Three printed parts: the arched tray (`hatch`) with a dovetail socket under its front edge, a flat front plate (`front`) that slides into it along X and carries the hinge pins out of its side edges, and two brackets (`mount`) with pin holes that glue to the fenders. Coupon for the dovetail and pin fits is ready and unprinted. Pin position and bracket size are estimates.
+State as of 2026-09-13 (later). Plan outline fixed: the cabin-end corner cuts are now real 30 deg cuts (the old polygon produced an 11 deg sliver) and the plate is rabbeted thinner along them to sit on the hull's corner tabs. Three printed parts: the arched tray (`hatch`) with a dovetail socket under its front edge, a flat front plate (`front`) that slides into it along X and carries the hinge pins out of its side edges, and two brackets (`mount`) with pin holes that glue to the fenders. Coupon for the dovetail and pin fits is ready and unprinted. Pin position and bracket size are estimates.
 
 ## What the part is
 The bow ramp of the 1984 Killer W.H.A.L.E. (part "landing ramp" / "sled launch ramp door"). A large curved plate
@@ -68,8 +68,14 @@ console echoes where the axis sits relative to the front face and the lip level.
 - Hinge: a round bar across the whole hinge edge on the inside, lobed ears at both ends, short pins (~2.6 dia,
   ~3.5-4.5 long) pointing outward into holes in the fenders. Width 93.3 + 2 x 3.5 pins = 100.3, which matches
   the ~100.5 measured between the fenders.
-- Cabin end: square edge with 45 deg corner cuts in plan bringing the edge to `top_edge_w 68.85`, the wide
-  end of the top-hatch opening. A ledge (`lip_drop 2.7` below the outer surface, `lip_t 1.5`, `lip_len 5`)
+- Cabin end: square edge with angled corner cuts in plan bringing the edge to `top_edge_w 68.85`, the wide
+  end of the top-hatch opening. Armen 2026-09-13: the cut is "like a 30 deg cut" measured from the cabin end
+  edge (`top_cut_deg 30`), so each cut comes in `top_cut_x 12.2` and runs only `top_cut_y 7.1` along the side.
+  The plate is thinner along those two edges, from the inside, because the hull has tabs there that the
+  hatch rests on: `tab_w 4` reach, `tab_edge_t 1.0` left (both ESTIMATES). The rabbet stops at the top-hatch
+  opening (|x| = top_edge_w / 2) so the cabin ledge keeps its corners; the side rims and the cabin-end rim
+  end where the rabbet begins. Verified by probing the export: 1.0 thick within 4 mm of the angled edge,
+  1.5 beyond. A ledge (`lip_drop 2.7` below the outer surface, `lip_t 1.5`, `lip_len 5`)
   tucks under Armen's 2.5 top hatch; it is the step visible on the inside of the real part. The plate
   scales to ~97 long on the photo vs the 90 traced lip-to-cabin, which is that ledge.
 - Four small latch hooks on the side edges (two per side, ~14 % and ~48 % of the length from the cabin end),
@@ -128,6 +134,9 @@ in frame.
 
 ## Open items
 - Everything above. Coupon not yet printed.
+- Measure the cabin-end corners on the hull with a flexible tape (Armen 2026-09-13): the angle of the corner
+  tabs, how far they reach under the hatch (`tab_w`), how thick the hatch can be over them (`tab_edge_t`),
+  and the straight width between them (`top_edge_w`). The existing photos stop short of that end.
 - Hull side: how far below the lip the axis must sit for the front plate to swing clear of the lip's front
   face (`pin_below_lip`), and whether the bracket's 14 x 10 footprint has a flat fender face to glue to at
   that spot. No lip in `bay_mock` yet.
