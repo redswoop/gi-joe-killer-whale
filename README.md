@@ -18,7 +18,7 @@ them separately. The toy is one git repo (this folder).
 |---|---|---|
 | Fan shroud + steering vanes | [`shroud/`](shroud/README.md) | Printed and fitted; fused shroud variant is current. |
 | Front landing hatch (bow ramp) + hinge | [`hatch/`](hatch/README.md) | Three parts since 2026-09-13: tray with a dovetail socket, flat front plate with the pins, two glue-on brackets. Cabin-end corner (30 deg cuts, rabbet for the hull tabs, 97.1 length) confirmed by two corner coupons. Dovetail + pin coupon still unprinted. Profile still the 3-point circle. |
-| Cockpit windscreen (3 clear panels + base) | [`windscreen/`](windscreen/README.md) | Modelled 2026-09-13 from Armen's dimensions (60/54 x 40/44, 10 tall). Coupon unprinted. |
+| Cockpit windscreen (3 clear panels + base) | [`windscreen/`](windscreen/README.md) | Modelled 2026-09-13 from Armen's dimensions (60/65 x 40/44, 10 tall, V from the front). Coupon unprinted. |
 
 Viewer: `cd ../viewer && bun run dev` (once), then http://127.0.0.1:5180/whale/shroud/ or
 http://127.0.0.1:5180/whale/hatch/ or http://127.0.0.1:5180/whale/windscreen/. Tools and shared modules are two levels up:

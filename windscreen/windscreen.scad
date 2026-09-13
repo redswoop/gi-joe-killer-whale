@@ -12,11 +12,11 @@
 //  printed sheet back into the assembly. One set of numbers, no rotation
 //  angles typed by hand.
 //
-//  Taper: the back narrows 60 -> 54 so the sides lean inward; the sides
-//  lengthen 40 -> 44 while their free (open) edge stays square in the flat
-//  sheet, which means the back panel leans forward (away from the opening)
-//  by exactly `rake` = 44 - 40 over the height. Both facts fall out of the
-//  corner points.
+//  Taper: the back widens 60 -> 65 so the sides lean outward (a V from the
+//  front); the sides lengthen 40 -> 44 while their free (open) edge stays
+//  square in the flat sheet, which means the back panel leans away from the
+//  opening by exactly `rake` = 44 - 40 over the height (\____| from the
+//  side). Both angles fall out of the corner points.
 // =====================================================================
 
 // ---------- switches ----------
@@ -24,7 +24,7 @@ show_all = true;
 
 // ---------- panels (OUTSIDE dimensions, clear PETG, 0.6 nozzle) ----------
 back_bot  = 60;    // back panel width along the base
-back_top  = 54;    // back panel width at the free top edge
+back_top  = 65;    // back panel width at the free top edge (Armen 2026-09-13: a V from the front)
 side_bot  = 40;    // side panel length along the base, from the back's outer face
 side_top  = 44;    // side panel length at the top
 height    = 10;    // vertical height of the screen above the panel seat (Armen 2026-09-13)
@@ -46,7 +46,7 @@ use <../lib/shape.scad>   // stroke_2d
 use <../lib/fit.scad>
 
 // ---------- derived ----------
-rake   = side_top - side_bot;             // back leans forward by this over `height`
+rake   = side_top - side_bot;             // back leans away from the opening by this over `height`
 seat_z = base_floor;                      // z of the panel bottom edges
 base_h = base_floor + groove_d;
 c_in   = [side_bot / 2, 0, seat_z + height / 2];   // a point inside the C, used to orient normals

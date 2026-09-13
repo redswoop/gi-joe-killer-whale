@@ -22,16 +22,16 @@ toward +X, Y symmetric. Panel bottom edges sit at z = `base_floor` (1).
 ## Dimensions (outside, from Armen 2026-09-13)
 | | base end | top edge |
 |---|---|---|
-| back panel width | 60 | 54 |
+| back panel width | 60 | 65 |
 | side panel length (from the back's outer face) | 40 | 44 |
 | height (vertical) | 10 | |
 
-The sides lean inward (3 mm each over the height, 16.7 deg). The side's free edge is square in
-the flat sheet, so the back must lean forward (away from the opening) by 44 - 40 = 4 mm, 21.8 deg.
-Both angles are derived from the corner points, not typed.
+A V from the front: the sides lean outward (2.5 mm each over the height, 14 deg). From the side
+it is \____| : the side's free edge is square in the flat sheet, so the back leans away from the
+opening by 44 - 40 = 4 mm, 21.8 deg. Both angles are derived from the corner points, not typed.
 
-Flat sheets as printed: back is an isosceles trapezoid 60 / 54 x 10.77 tall; each side is a
-right trapezoid 38.8 / 42.8 x 10.44 with the angled edge at the corner (trimmed ~1.02 so it butts
+Flat sheets as printed: back is an isosceles trapezoid 60 / 65 x 10.77 tall; each side is a
+right trapezoid 38.9 / 42.9 x 10.31 with the angled edge at the corner (trimmed ~1.08 so it butts
 on the back panel's inner face). The two sides are the same piece flipped over.
 
 ## Parts and how they go together
