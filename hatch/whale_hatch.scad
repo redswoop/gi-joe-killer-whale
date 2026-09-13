@@ -53,7 +53,8 @@ top_edge_w = 68.85;    // width of the cabin end after the corner cuts = the wid
                        // top-hatch opening (WHALE/measurements.md "wider opening"). Photo of the real
                        // part scales to ~69 too.
 top_cut_deg = 30;      // angle of each angled edge from the cabin end edge, in plan (Armen 2026-09-13:
-                       // "like a 30 deg cut"). 0 would be a square end, 90 no cut at all.
+                       // "like a 30 deg cut"; corner coupon round 1: "perfect"). 0 would be a square end,
+                       // 90 no cut at all.
 top_cut_x  = (hatch_w - top_edge_w) / 2;          // 12.2: how far each cut comes in from the side
 top_cut_y  = top_cut_x * tan(top_cut_deg);        // 7.1: how far it runs along the side
 
@@ -73,8 +74,8 @@ rim_t      = 1.5;      // rim wall thickness
 // bringing the cabin end down to top_edge_w. Along those angled edges the plate is thinner than hatch_t, from the
 // INSIDE (the outer surface stays flush), so it can sit on tabs in the hull's corners that stop the
 // hatch falling into the bay. Rim and cabin-end rim end where the rabbet begins.
-tab_w      = 4;        // how far the hull tab reaches under the plate, square to the angled edge.   ESTIMATE
-tab_edge_t = 1.0;      // plate thickness left over the tab ("a bit thinner than the rest").         ESTIMATE
+tab_w      = 4;        // how far the hull tab reaches under the plate, square to the angled edge (corner coupon 1)
+tab_edge_t = 1.0;      // plate thickness left over the tab ("a bit thinner than the rest").  ESTIMATE, not yet judged
 
 // ---------- front face + dovetail socket (Armen 2026-09-13) ----------
 front_h    = 10;       // vertical front face: outer surface down to the hull's lip level. Tracing: the curve

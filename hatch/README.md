@@ -74,7 +74,8 @@ console echoes where the axis sits relative to the front face and the lip level.
   end of the top-hatch opening. Armen 2026-09-13: the cut is "like a 30 deg cut" measured from the cabin end
   edge (`top_cut_deg 30`), so each cut comes in `top_cut_x 12.2` and runs only `top_cut_y 7.1` along the side.
   The plate is thinner along those two edges, from the inside, because the hull has tabs there that the
-  hatch rests on: `tab_w 4` reach, `tab_edge_t 1.0` left (both ESTIMATES). The rabbet stops at the top-hatch
+  hatch rests on: `tab_w 4` reach (corner coupon round 1: angle and reach "look perfect"), `tab_edge_t 1.0`
+  left (still an estimate). The rabbet stops at the top-hatch
   opening (|x| = top_edge_w / 2) so the cabin ledge keeps its corners; the side rims and the cabin-end rim
   end where the rabbet begins. Verified by probing the export: 1.0 thick within 4 mm of the angled edge,
   1.5 beyond. A ledge (`lip_drop 2.7` below the outer surface, `lip_t 1.5`, `lip_len 5`)
@@ -141,9 +142,10 @@ in frame.
 
 ## Open items
 - Everything above. Coupon not yet printed.
-- Measure the cabin-end corners on the hull with a flexible tape (Armen 2026-09-13): the angle of the corner
-  tabs, how far they reach under the hatch (`tab_w`), how thick the hatch can be over them (`tab_edge_t`),
-  and the straight width between them (`top_edge_w`). The existing photos stop short of that end.
+- Cabin-end corners: angle (`top_cut_deg 30`) and tab reach (`tab_w 4`) confirmed by the first corner coupon
+  (2026-09-13). Still to judge on the hull: the thickness over the tab (`tab_edge_t`, does the outer surface
+  sit flush?), the straight width between the tabs (`top_edge_w`), and the lengthened plate (round 2 coupon).
+  A flexible tape along the fender curve would settle the width numbers the ruler could not.
 - Hull side: how far below the lip the axis must sit for the front plate to swing clear of the lip's front
   face (`pin_below_lip`), and whether the bracket's 14 x 10 footprint has a flat fender face to glue to at
   that spot. No lip in `bay_mock` yet.
