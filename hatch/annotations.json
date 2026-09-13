@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "rev": 17,
-  "updated": "2026-09-13T12:02:00.265Z",
+  "rev": 19,
+  "updated": "2026-09-13T12:59:46.890Z",
   "annotations": [
     {
       "kind": "text",
@@ -21,6 +21,28 @@
       ],
       "id": "a1",
       "created": "2026-09-13T12:02:00.265Z",
+      "status": "done",
+      "done": "2026-09-13T12:59:46+00:00",
+      "reply": "Superseded: the pins now go into glue-on brackets, not hull holes. Open question is now how far below the lip the axis must sit (pin_below_lip, 3 now) for the front plate to clear the lip when opening."
+    },
+    {
+      "kind": "text",
+      "by": "claude",
+      "caption": "Bracket: 14 x 10 x 3, glued to the fender's inner face here. Is there a flat spot this size at the bow, and is the fender gap really 3.6?",
+      "pts": [[0.5, 0.5]],
+      "camera": {
+        "pos": [308.288, -127.923, 103.546],
+        "target": [3.8, 58.258, 2.113],
+        "up": [0, 0, 1],
+        "fov": 40,
+        "ortho": false,
+        "zoom": 1
+      },
+      "hits": [
+        { "i": 0, "part": "mounts", "xyz": [48, 2, 0] }
+      ],
+      "id": "a2",
+      "created": "2026-09-13T12:59:46.890Z",
       "status": "open"
     }
   ],

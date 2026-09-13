@@ -2,8 +2,9 @@
   "file": "whale_hatch.scad",
   "defines": { "show_ghost": false, "show_all": false, "show_hull": false },
   "parts": [
-    { "name": "hatch",    "call": "hatch();",     "color": "#6b8e23" },
-    { "name": "bar",      "call": "slide_bar();", "color": "#556b2f" },
-    { "name": "bay_mock", "call": "bay_mock();",  "color": "#696969" }
+    { "name": "hatch",    "call": "hatch();",    "color": "#6b8e23" },
+    { "name": "front",    "call": "front();",    "color": "#556b2f" },
+    { "name": "mounts",   "call": "mounts();",   "color": "#708090" },
+    { "name": "bay_mock", "call": "bay_mock();", "color": "#696969" }
   ]
 }

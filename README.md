@@ -7,7 +7,7 @@ them separately. The toy is one git repo (this folder).
 | Assembly | Folder | State |
 |---|---|---|
 | Fan shroud + steering vanes | [`shroud/`](shroud/README.md) | Printed and fitted; fused shroud variant is current. |
-| Front landing hatch (bow ramp) + hinge | [`hatch/`](hatch/README.md) | First fit-check print pending. Hinge end redone 2026-09-13: 10 mm vertical front face, angled skirt, bar below the lip; skirt numbers are photo estimates. Profile still the 3-point circle. |
+| Front landing hatch (bow ramp) + hinge | [`hatch/`](hatch/README.md) | Three parts since 2026-09-13: tray with a dovetail socket, flat front plate with the pins, two glue-on brackets. Coupon (dovetail + pin fits) ready, nothing printed yet. Profile still the 3-point circle. |
 
 Viewer: `cd ../viewer && bun run dev` (once), then http://127.0.0.1:5180/whale/shroud/ or
 http://127.0.0.1:5180/whale/hatch/. Tools and shared modules are two levels up:

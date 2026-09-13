@@ -7,15 +7,24 @@
 //  front corner (top of the front face); hatch_shift moves it so the pin axis
 //  lands on the world X axis, and open_deg swings the hatch about that.
 //
+//  Three printed parts (Armen 2026-09-13):
+//    hatch  the arched tray. Under its front edge a dovetail SOCKET runs the full
+//           width, open at both ends.
+//    front  a flat plate carrying the front face and the hinge pins out of its side
+//           edges; a dovetail RAIL on its top edge slides into the socket along X.
+//           This is the part to iterate on.
+//    mount  x2, a plate with a pin hole that sits between the front's side edge and
+//           the fender's inner face and is glued to the fender, with the closed hatch
+//           as the jig. The pins do not touch the hull directly.
+//
 //  The real part (eBay photos, 2026-09-11) is a shallow tray: a 1.5 plate with a
 //  ~3 mm rim on the inside along both sides and the cabin end, a round hinge bar
 //  across the hinge edge on the inside with lobed ears and short outward pins,
 //  four latch hooks on the side edges, vents + ribbed panels on the outer face.
 //  A separate black treaded "liner" snaps into the tray (not modelled yet).
-//  Bow end, side view with the front to the right (Armen 2026-09-13):
-//        |      the front face: a 10 mm vertical drop from the arch to the hull's lip level
-//         \     the skirt: forward and down from its base, the overhang over the lip
-//         |o    the hinge bar on the skirt's edge; the pins sit below and forward of the lip
+//  Bow end, side view, front to the right: the arch ends in a vertical front face that
+//  drops 10 to the hull's lip level (the pencil tracing) and the front plate continues
+//  below the lip to the hinge pins.
 //  Parameters first, one section per feature; modules below; assembly last.
 // =====================================================================
 
@@ -24,9 +33,6 @@ show_ghost = false;    // no reference STL yet
 show_all   = true;
 show_hull  = true;     // grey mock of the bay: floor + fenders, for the viewer only
 open_deg   = 0;        // animate: 0 = closed, ~115 = ramp lowered over the nose
-hinge_style = "slide"; // "slide": separate bar (printed flat) slides along X onto a dovetail tongue on the
-                       //          free edge of the hinge-end skirt; the fender holes then lock it in place
-                       // "none":  bare shape check (front wall + skirt, no tongue)
 show_rim   = true;     // the tray rim on the inside face
 
 // ---------- plate ----------
@@ -54,32 +60,38 @@ lip_len    = 5;        // ledge reach past the plate's end, under the top hatch 
 rim_h      = 3;        // rim height above the plate's inner face (photo: shallow tray)
 rim_t      = 1.5;      // rim wall thickness
 
-// ---------- hinge end: front face + skirt (Armen 2026-09-13, eBay edge photo + tracing) ----------
+// ---------- front face + dovetail socket (Armen 2026-09-13) ----------
 front_h    = 10;       // vertical front face: outer surface down to the hull's lip level. Tracing: the curve
                        // is 10 above the paper edge at the 90 mark and the paper edge rested on the lip.
-front_t    = 1.5;      // its thickness (= the shell)
-skirt_fwd  = 3.5;      // the skirt ("\\") runs this far FORWARD of the front face...      PHOTO ESTIMATE
-skirt_drop = 1.5;      // ...and this far BELOW the lip level, to its free edge.          PHOTO ESTIMATE
-skirt_t    = 1.5;      // skirt thickness. The bar slides onto the skirt's free edge.
+front_t    = 3.5;      // the front plate's thickness. Thick enough for the rail and the 2.6 pins; only
+                       // its edges show, inside the fenders.
+sock_h     = 4.5;      // socket block: outer surface down to the seam with the front plate (= skin + rim)
+sock_back  = 1.5;      // wall behind the groove
+rail_h     = 1.2;      // dovetail rail up from the front plate's top edge into the groove
+rail_neck  = 1.2;      // rail thickness where it leaves the plate (measured back from the inner face)
+rail_taper = 1.0;      // extra thickness at the rail's top, toward the OUTER face. One-sided dovetail:
+                       // the inner face is flat so the front prints on that face with no overhang.
+slide_clr  = 0.15;     // rail-to-groove clearance per face (coupon.scad)
+sock_d     = front_t + slide_clr + sock_back;   // socket block depth aft of the front face
 
-// ---------- hinge pins (PHOTO ESTIMATES off the eBay pictures, scaled on the 93.3 width) ----------
+// ---------- hinge pins, out of the front plate's side edges ----------
 hinge_pin_d = 2.6;     // pin diameter (photo ~2.6; Cryoguns' replacement bracket bores 3.10)
 pin_len     = 3.5;     // how far each pin sticks out past the side edge (photo ~3.5-4.5)
-pin_drop    = 1.5;     // pin axis inside the skirt's outer face, along the skirt's normal
-pin_back    = -0.85;   // pin axis along the skirt: - = past its free edge, + = up the skirt.
-                       // -0.85 puts the pin's underside on the bed when the slide bar prints on its floor.
-ear_r       = 3.5;     // ear lobe radius about the axis
-ear_w       = 5;       // ear width along X (from the side edge inward)
+pin_below_lip = 3;     // pin axis below the lip level.                               PHOTO ESTIMATE
+pin_edge    = 2.5;     // front plate material below the pin axis
+pin_y       = front_t - hinge_pin_d / 2;   // axis aft of the outer face: the pin lies on the bed when
+                                            // the front prints on its inner face
 
-// ---------- slide bar ("slide" style; the bar is a separate flat print) ----------
-tongue_len = 2.5;      // dovetail tongue on the skirt's free edge: reach up the skirt
-tongue_t   = 3.0;      // skirt thickness at the very edge (tapers back to skirt_t over tongue_len)
-slide_clr  = 0.15;     // tongue-to-slot clearance per face (coupon)
-bar_floor  = 2.0;      // bar material beyond the skirt's edge
-bar_in     = 3.5;      // bar reach behind the skirt's outer face = the inner wall's outside
-bar_out    = 0.6;      // lip over the skirt's outer face, keeps the bar from lifting inward
-bar_lip_len = 2.5;     // that lip's reach up the skirt
-bar_reach  = 3.0;      // inner wall's reach up the skirt (> tongue_len; < skirt_len keeps it off the front face)
+// ---------- mounts: one bracket per side, pin hole, glued to the fender's inner face ----------
+pin_clr     = 0.4;     // pin-to-hole clearance (coupon; hinge_clr from the shroud was 0.4)
+mount_t     = 3.0;     // bracket thickness = the gap between the hatch and the fender minus a hair
+                       // ((bay_w - hatch_w) / 2 = 3.6 measured, pin_len 3.5 passes through)
+mount_clr   = 0.2;     // gap between the front plate's side edge and the bracket
+mount_len   = 14;      // bracket along Y
+mount_h     = 10;      // bracket along Z
+mount_hole_back = 5;   // hole centre from the bracket's front edge
+mount_hole_up   = 4;   // hole centre above the bracket's bottom edge
+mount_r     = 1.5;     // corner radius
 
 // ---------- bay mock (photo estimates, viewer only) ----------
 bay_w      = 100.5;    // ruler across the bay near the cabin: 0.2 .. 10.2 cm
@@ -114,22 +126,22 @@ a_end    = a_top + a_dir * plate_extra / arc_R * 180 / PI;
 a_lip    = a_end + a_dir * lip_len / arc_R * 180 / PI;    // where the ledge ends
 end_pt   = arc_cen + arc_R * [cos(a_end), sin(a_end)];   // outer corner at the cabin end
 
-// Hinge end, in the plate frame's YZ (y aft, z up). The front face drops from T to B; the skirt
-// runs from B along d (forward and down) to its free edge E; n_in is the skirt's inward normal
-// (aft/down, into the hull). The bar hangs on E; the pin axis A is where open_deg pivots.
-skirt_deg = atan2(skirt_fwd, skirt_drop);            // skirt angle from vertical (0 = straight down)
-skirt_len = norm([skirt_fwd, skirt_drop]);
-sk_d      = [-sin(skirt_deg), -cos(skirt_deg)];      // along the skirt, toward its free edge
-sk_n      = [ cos(skirt_deg), -sin(skirt_deg)];      // into the skirt's thickness
-pt_T      = [0, 0];
-pt_B      = [0, -front_h];
-pt_E      = pt_B + skirt_len * sk_d;
-pt_Ei     = pt_E + skirt_t * sk_n;                   // free edge, inner face
-pt_Bi     = skirt_fwd < 0.01 ? [front_t, -front_h]   // inner corner: skirt's inner line meets y = front_t
-          : pt_Ei + (front_t - pt_Ei[0]) / sin(skirt_deg) * -sk_d;
-pin_axis  = pt_E + pin_drop * sk_n - pin_back * sk_d;  // (y, z) of the hinge axis in the plate frame
+// Hinge end, in the plate frame's YZ (y aft, z up; the outer surface's front corner at 0,0).
+// The socket block spans z = 0 .. -sock_h; the front plate hangs below the seam and carries
+// the pins on the world X axis once hatch_shift is applied.
+seam_z     = -sock_h;                                // socket / front plate seam
+front_bot  = -front_h - pin_below_lip - pin_edge;    // front plate's bottom edge
+pin_axis   = [pin_y, -front_h - pin_below_lip];      // (y, z) of the hinge axis in the plate frame
 hatch_shift = [0, -pin_axis[0], -pin_axis[1]];       // plate frame -> world (axis on X)
-echo(str("hinge axis is ", -pin_axis[0], " forward of the front face and ", -front_h - pin_axis[1], " below the lip level"));
+echo(str("hinge axis ", pin_axis[0], " aft of the front face, ", pin_below_lip, " below the lip; front plate ",
+         seam_z - front_bot, " tall + ", rail_h, " rail"));
+
+// Dovetail rail profile (y, z), grown by g on the fitting faces for the groove. Flat on the
+// inner face (y = front_t), the taper toward the outer face is what holds the front on.
+function rail_2d(g = 0) = [[front_t - rail_neck - g, seam_z - (g > 0 ? 1 : 0)],
+                           [front_t + g,             seam_z - (g > 0 ? 1 : 0)],
+                           [front_t + g,             seam_z + rail_h + g],
+                           [front_t - rail_neck - rail_taper - g, seam_z + rail_h + g]];
 
 function arc_seg(r, a0, a1, n = 48) = [for (i = [0 : n]) let (a = a0 + (a1 - a0) * i / n)
     arc_cen + r * [cos(a), sin(a)]];
@@ -171,69 +183,63 @@ module cabin_lip() {
         arc_seg(arc_R - lip_drop - lip_t, a_lip, a0,    16)));
 }
 
-module hatch_tray() {                               // skin + rim: a thicker plate minus the pocket
+module hatch_tray() {                               // skin + rim + socket block, minus pocket and groove
     difference() {
-        intersection() { across(hatch_w) band_2d(arc_R, arc_R - hatch_t - rim_h); plan_clip(); }
+        union() {
+            intersection() { across(hatch_w) band_2d(arc_R, arc_R - hatch_t - rim_h); plan_clip(); }
+            socket_block();
+        }
         // pocket: everything inside the skin, inset rim_t from the sides and the cabin end,
-        // stopping at the front wall's inner face (y = front_t)
+        // stopping at the socket block's back wall (y = sock_d)
         intersection() {
             across(hatch_w + 1) band_2d(arc_R - hatch_t, arc_R - hatch_t - rim_h - 1,
                                         a_hinge - 5 * a_dir, a_end - a_dir * rim_t / arc_R * 180 / PI);
             plan_clip(rim_t);
-            translate([-100, front_t, -100]) cube([200, 300, 200]);
+            translate([-100, sock_d, -100]) cube([200, 300, 200]);
         }
+        across(hatch_w + 2) polygon(rail_2d(slide_clr));   // the groove, open at both ends
     }
 }
 
-// Front wall + skirt: one YZ profile across the width. T is the arch's front corner (the wall's
-// top edge sits inside the skin), B the base of the front face at the lip level, E the skirt's free edge.
-module front_wall() { across(hatch_w) polygon([pt_T, pt_B, pt_E, pt_Ei, pt_Bi, [front_t, 0]]); }
-
-// Local frame at the skirt's free edge: origin on its outer face at that edge, +Z up the skirt
-// toward the front face, +Y into the skirt's thickness (aft/down, into the hull).
-module skirt_frame() { translate([0, pt_E[0], pt_E[1]]) rotate([-skirt_deg, 0, 0]) children(); }
-
-// Dovetail tongue along the skirt's free edge, on its inside face:
-// thick at the edge, tapering back to the plain skirt over tongue_len.
-module hinge_tongue() {
-    skirt_frame() across(hatch_w) polygon([[skirt_t - eps, 0], [tongue_t, 0], [skirt_t - eps, tongue_len]]);
+// Socket block under the plate's front edge: y = 0 .. sock_d, from the seam up to the outer surface.
+// Clipped against the outer arc only (band_2d would also cut it along the slanted radial line at T
+// and take the groove's lip with it).
+module socket_block() {
+    intersection() {
+        across(hatch_w) polygon([[0, seam_z], [sock_d, seam_z], [sock_d, 5], [0, 5]]);
+        across(hatch_w + 1) polygon(concat(arc_seg(arc_R, a_hinge - 5 * a_dir, a_hinge + 10 * a_dir), [[30, -30], [-10, -30]]));
+    }
 }
 
-// The slide bar: a channel along X whose slot matches the tongue (+ clearance), open toward
-// the skirt (+Z local). Ear lobes at both ends carry the pins. Drawn in the skirt frame.
-module slide_bar_local() {
-    c = slide_clr; L = hatch_w + 2 * c;                  // a hair longer than the plate for the ends
-    axis = [pin_drop, pin_back];                        // (y, z) of the pin axis
-    difference() {
-        union() {
-            translate([-L / 2, 0, 0]) {
-                // channel body: floor + outer lip (to bar_lip_len), inner wall up to bar_reach
-                translate([0, -bar_out, -bar_floor - c]) cube([L, bar_out + bar_in, bar_floor + c + bar_lip_len]);
-                translate([0, 0, -bar_floor - c])        cube([L, bar_in, bar_floor + c + bar_reach]);
-            }
-            // ear lobes, flat on the far side so the bar prints on its back
-            for (sx = [-1, 1]) intersection() {
-                translate([sx * (hatch_w / 2 - ear_w / 2), axis[0], axis[1]])
-                    rotate([0, 90, 0]) cylinder(r = ear_r, h = ear_w, center = true);
-                translate([-100, -100, -bar_floor - c]) cube([200, 200, 100]);
-            }
-        }
-        // the slot: tongue + clearance, open at the top
-        across(L + 2) polygon([[-c, -c], [tongue_t + c, -c], [skirt_t + c, tongue_len], [skirt_t + c, 100], [-c, 100]]);
-    }
-    // pins, rounded tips
-    for (sx = [-1, 1]) translate([sx * hatch_w / 2, axis[0], axis[1]]) rotate([0, sx * 90, 0]) {
+// The front plate: flat, y = 0 .. front_t, from the seam down to front_bot, with the rail on
+// top and a pin out of each side edge. Plate frame. Prints on its inner face (print_layout).
+module front_local() {
+    across(hatch_w) polygon([[0, front_bot], [front_t, front_bot], [front_t, seam_z], [0, seam_z]]);
+    across(hatch_w) polygon(rail_2d());
+    for (sx = [-1, 1]) translate([sx * hatch_w / 2, pin_axis[0], pin_axis[1]]) rotate([0, sx * 90, 0]) {
         cylinder(d = hinge_pin_d, h = pin_len - hinge_pin_d / 2);
-        translate([0, 0, pin_len - hinge_pin_d / 2]) sphere(d = hinge_pin_d);
+        translate([0, 0, pin_len - hinge_pin_d / 2]) sphere(d = hinge_pin_d);   // rounded tip
     }
 }
-module slide_bar() { translate(hatch_shift) skirt_frame() slide_bar_local(); }   // world frame, closed pose
+module front() { translate(hatch_shift) front_local(); }          // world frame, closed pose
+
+// One mount bracket, in its own frame: a plate in YZ, thickness along +X from x = 0,
+// front-bottom corner at the origin, hole through it at (mount_hole_back, mount_hole_up).
+module mount_local() {
+    rotate([90, 0, 90]) linear_extrude(mount_t) difference() {
+        offset(r = mount_r) offset(delta = -mount_r) square([mount_len, mount_h]);
+        translate([mount_hole_back, mount_hole_up]) circle(d = hinge_pin_d + pin_clr);
+    }
+}
+// Both brackets in the world frame: hole on the hinge axis, inner face mount_clr off the front plate.
+module mounts() {
+    for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0])
+        translate([hatch_w / 2 + mount_clr, -mount_hole_back, -mount_hole_up]) mount_local();
+}
 
 module hatch() {              // the printed hatch, closed pose, world frame
     translate(hatch_shift) {
-        if (show_rim) { hatch_tray(); cabin_lip(); } else hatch_plate();
-        front_wall();
-        if (hinge_style == "slide") hinge_tongue();
+        if (show_rim) { hatch_tray(); cabin_lip(); } else { hatch_plate(); socket_block(); }
     }
 }
 
@@ -250,7 +256,7 @@ module bay_mock() {           // hull stand-in for the viewer, not printed
 //  assembly
 // =====================================================================
 if (show_hull) bay_mock();
-if (show_all) rotate([-open_deg, 0, 0]) {
-    color("OliveDrab") hatch();
-    if (hinge_style == "slide") color("DarkOliveGreen") slide_bar();
+if (show_all) {
+    rotate([-open_deg, 0, 0]) { color("OliveDrab") hatch(); color("DarkOliveGreen") front(); }
+    color("SlateGray") mounts();
 }
