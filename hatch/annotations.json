@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "rev": 14,
+  "updated": "2026-09-13T02:02:44.769Z",
+  "annotations": [],
+  "overlays": [
+    {
+      "image": "profile_tracing.jpeg",
+      "sizePx": [1999, 1500],
+      "plane": "YZ",
+      "offset": 0,
+      "mmPerPx": 0.0613,
+      "originPx": [1438, 1257],
+      "rot": 0,
+      "flipX": true,
+      "flipY": false,
+      "opacity": 0.6,
+      "visible": true,
+      "onTop": false,
+      "calib": {
+        "px": [[786, 964], [1438, 964]],
+        "mm": 40
+      },
+      "caption": "Armen's pencil tracing of the fender's inner top edge (2026-09-11). Baseline with ticks at 50 and 90 mm; heights above the paper edge 28 / 24 / 10 mm at 0 / 50 / 90. Cabin end at the left, hinge (steep end) at the right. The 0 tick is just off the left edge.",
+      "id": "o1",
+      "created": "2026-09-13T02:00:14.841Z"
+    }
+  ]
+}

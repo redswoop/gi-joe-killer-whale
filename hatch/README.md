@@ -17,7 +17,9 @@ its side-edge profile is traced off the fenders' inner top edges, which the clos
   axis 4.55 mm above the bracket's base, plus a triangular gusset. Renders in `renders/` once render.sh runs.
 - Not the ramp: `../../../WHALE/Whale Hatch.3mf` (55 x 72 x 6.2 mm) is the small TOP hatch, and thing:6660330
   "Hatch Hinge" is that top hatch's pin.
-- No photos of the ramp or the bow exist on disk.
+- `ref/`: Armen's pencil tracing of the fender edge (`profile_tracing.jpeg`: 28 / 24 / 10 above the paper edge at
+  0 / 50 / 90), his five hull photos (`hull_photo_*.jpeg`) and the eBay photos of the real ramp (`ebay_*`).
+  Recovered from the 2026-09-11 session transcript on 2026-09-12.
 
 ## Files
 | File | What |
@@ -28,6 +30,8 @@ its side-edge profile is traced off the fenders' inner top edges, which the clos
 | `check.scad` | Collision pairs; `../../tools/check.sh check.scad 'pose=..'`. Empty = clear. |
 | `coupon.scad` | Tolerance test print. |
 | `export.sh` / `render.sh` | STLs into `stl/`, PNGs into `renders/`. |
+| `ref/` | The tracing, hull photos and eBay photos; captions and the tracing's pixel scale in `ref/index.json`. Shown in the viewer's gallery. |
+| `annotations.json` | Viewer notes and the overlay placement. `../../tools/notes whale/hatch` lists them. |
 
 ## Coordinate frame
 Hinge axis = X at the origin, +Y aft toward the cabin, +Z up. The plate is modelled closed: hinge edge at
@@ -93,5 +97,16 @@ over the nose.
 - Fit checks: curve flush with the fender edges; bar slides on and pins reach the fender holes; cabin end
   under the lip (`plate_extra`, `lip_len` if it hits); width between the rails.
 
+## Tracing overlay (2026-09-12)
+`profile_tracing.jpeg` is placed in the viewer as overlay `o1`: plane YZ (the plate runs along +Y, Z up), calibrated
+on the 50 and 90 mm ticks (0.0613 mm/px), flipped horizontally so the hinge end is at y = 0, origin at the curve's
+hinge end (px 1438, 1257). Side view + Ortho shows the pencil line over the model's edge; they agree to within the
+pencil width on a first look. The 0 mm tick is just off the left of the photo, so the cabin end of the curve is not
+in frame.
+
 ## Open items
 - Everything above. Coupon not yet printed.
+- Trace the fender edge properly: `k` (points tool) along the pencil line on overlay `o1`, Enter, then
+  `../../tools/notes whale/hatch points <id> --scad fender_pts --2d` gives a `[y, z]` list. The single circle
+  (`hatch_sag`) sits a little low mid-span and a little high at the hinge; a polyline or two-arc profile through the
+  traced points would replace it.
