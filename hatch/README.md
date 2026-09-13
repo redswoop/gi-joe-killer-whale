@@ -26,7 +26,7 @@ its side-edge profile is traced off the fenders' inner top edges, which the clos
 |---|---|
 | `whale_hatch.scad` | The model: `hatch()`, `front()`, `mounts()`, `bay_mock()`. |
 | `viewer.json` | Part list for the browser viewer (`../../viewer`, `bun run dev`, open http://127.0.0.1:5180/whale/hatch/). |
-| `print_layout.scad` | `-D part="..."`: each part in its printing pose. |
+| `print_layout.scad` | `-D part="..."`: each part in its printing pose; `corner` is the cabin-end fit coupon. |
 | `check.scad` | Collision pairs; `../../tools/check.sh check.scad 'pose=..'`. Empty = clear. |
 | `coupon.scad` | Tolerance test print. |
 | `export.sh` / `render.sh` | STLs into `stl/`, PNGs into `renders/`. |
@@ -112,6 +112,10 @@ the front and fixes inside the hull.
 - `check.scad`: `hatch-front`, `front-mounts`, `hatch-mounts` all clear at 0 and 115 deg.
 
 ## Print next (as of 2026-09-13)
+0. `stl/corner.stl`: the fit coupon for the cabin end (Armen 2026-09-13). The -X 50 mm of the tray at full
+   length, standing on its cut face (94.8 x 22.8 footprint, 50 tall, brim). Checks the 30 deg corner cut,
+   the rabbet on the hull tab, the cabin ledge under the top hatch, and the lip-to-cabin length.
+   `corner_w` in `print_layout.scad` sets the width.
 1. `stl/coupon.stl` first: three 20 mm socket slices (groove at 0.1 / 0.15 / 0.25 per face, standing so the
    slot is vertical like the real hatch) + one 20 mm rail slice printed on its inner face; three pin holes
    (+0.3 / 0.4 / 0.5) + a pin stub. Report which slide is snug-but-moving and which hole turns freely;
