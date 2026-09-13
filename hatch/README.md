@@ -1,6 +1,6 @@
 # Killer W.H.A.L.E. front landing hatch (bow ramp) with replacement hinge
 
-State as of 2026-09-13 (night). First corner coupon printed: the plate was short by the corner cuts' run, fixed (`end_y = hatch_len + plate_extra + top_cut_y`), coupon narrowed to 25. Plan outline fixed: the cabin-end corner cuts are now real 30 deg cuts (the old polygon produced an 11 deg sliver) and the plate is rabbeted thinner along them to sit on the hull's corner tabs. Three printed parts: the arched tray (`hatch`) with a dovetail socket under its front edge, a flat front plate (`front`) that slides into it along X and carries the hinge pins out of its side edges, and two brackets (`mount`) with pin holes that glue to the fenders. Coupon for the dovetail and pin fits is ready and unprinted. Pin position and bracket size are estimates.
+State as of 2026-09-13 (night). Two corner coupons printed. Round 1 showed the plate short by the corner cuts' run, fixed (`end_y = hatch_len + plate_extra + top_cut_y`); round 2 (25 wide, lengthened) fits: angle, tab reach and length all confirmed on the hull. Plan outline fixed: the cabin-end corner cuts are now real 30 deg cuts (the old polygon produced an 11 deg sliver) and the plate is rabbeted thinner along them to sit on the hull's corner tabs. Three printed parts: the arched tray (`hatch`) with a dovetail socket under its front edge, a flat front plate (`front`) that slides into it along X and carries the hinge pins out of its side edges, and two brackets (`mount`) with pin holes that glue to the fenders. Coupon for the dovetail and pin fits is ready and unprinted. Pin position and bracket size are estimates.
 
 ## What the part is
 The bow ramp of the 1984 Killer W.H.A.L.E. (part "landing ramp" / "sled launch ramp door"). A large curved plate
@@ -117,7 +117,7 @@ the front and fixes inside the hull.
 ## Print next (as of 2026-09-13)
 0. `stl/corner.stl`: the fit coupon for the cabin end (Armen 2026-09-13). The -X 25 mm of the tray at full
    length, standing on its cut face (101.7 x 22.8 footprint, 25 tall, brim). Round 1 (50 wide) showed the
-   plate short by the cut's run; round 2 has the fix. Checks the 30 deg corner cut,
+   plate short by the cut's run; round 2 has the fix and Armen reports it "great angle and fit wise". Done. Checks the 30 deg corner cut,
    the rabbet on the hull tab, the cabin ledge under the top hatch, and the lip-to-cabin length.
    `corner_w` in `print_layout.scad` sets the width.
 1. `stl/coupon.stl` first: three 20 mm socket slices (groove at 0.1 / 0.15 / 0.25 per face, standing so the
@@ -142,9 +142,10 @@ in frame.
 
 ## Open items
 - Everything above. Coupon not yet printed.
-- Cabin-end corners: angle (`top_cut_deg 30`) and tab reach (`tab_w 4`) confirmed by the first corner coupon
-  (2026-09-13). Still to judge on the hull: the thickness over the tab (`tab_edge_t`, does the outer surface
-  sit flush?), the straight width between the tabs (`top_edge_w`), and the lengthened plate (round 2 coupon).
+- Cabin-end corners: angle (`top_cut_deg 30`), tab reach (`tab_w 4`) and the plate length (`end_y 97.1`)
+  confirmed by the two corner coupons (2026-09-13). Not explicitly judged yet: the thickness over the tab
+  (`tab_edge_t`, is the outer surface flush?) and the straight width between the tabs (`top_edge_w`); the
+  full-width hatch print will show both.
   A flexible tape along the fender curve would settle the width numbers the ruler could not.
 - Hull side: how far below the lip the axis must sit for the front plate to swing clear of the lip's front
   face (`pin_below_lip`), and whether the bracket's 14 x 10 footprint has a flat fender face to glue to at
