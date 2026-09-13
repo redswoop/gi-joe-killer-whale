@@ -1,6 +1,6 @@
 # Killer W.H.A.L.E. front landing hatch (bow ramp) with replacement hinge
 
-State as of 2026-09-11. Tray + hinge modelled from eBay photos of the real part (M-3798-4): 1.5 skin, 3 mm rim, hinge bar with ears and 2.6 pins. First print is a fit check; all hinge and rim numbers are photo estimates.
+State as of 2026-09-13. Tray + hinge modelled from eBay photos of the real part (M-3798-4): 1.5 skin, 3 mm rim, a 10 mm vertical front face, an angled skirt under it and a slide-on hinge bar with ears and 2.6 pins below the lip level. First print is a fit check; the skirt and pin numbers are photo estimates.
 
 ## What the part is
 The bow ramp of the 1984 Killer W.H.A.L.E. (part "landing ramp" / "sled launch ramp door"). A large curved plate
@@ -34,9 +34,10 @@ its side-edge profile is traced off the fenders' inner top edges, which the clos
 | `annotations.json` | Viewer notes and the overlay placement. `../../tools/notes whale/hatch` lists them. |
 
 ## Coordinate frame
-Hinge axis = X at the origin, +Y aft toward the cabin, +Z up. The plate is modelled closed: hinge edge at
-y = 0, top edge at (hatch_len, hatch_rise), arching hatch_sag above that chord. `open_deg` swings it down
-over the nose.
+Hinge axis = X at the origin, +Y aft toward the cabin, +Z up. The plate is modelled closed, in a "plate frame"
+whose origin is the outer surface's front corner (top of the front face); the arc runs to (hatch_len, hatch_rise)
+arching hatch_sag above that chord. `hatch_shift` (computed) moves the plate so the pin axis lands on X; the
+console echoes where the axis sits relative to the front face and the lip level. `open_deg` swings it down over the nose.
 
 ## What the 2026-09-11 photos showed (Armen's hull, ruler in cm)
 - The bay is an open-topped box between two fenders, cabin at the back, black treaded floor. The closed ramp
@@ -76,25 +77,36 @@ over the nose.
 - Outer face: two perforated vent grilles near the cabin end, seven ribbed panels, "PANEL REMOVAL" /
   "UNLATCH" / "RAMP ACCESS" labels. Cosmetic, not modelled yet.
 
-## Hinge end (Armen 2026-09-11, after the first print): a flange, and a slide-on bar on its free edge
-- The bow end of the plate bends ~90 deg into the hull: `flange_len 5`, `flange_t 1.5` (`flange_deg 90`).
-  The pins sit at the bottom of that flange, so the hinge axis is ~6 below the outer surface at the bow.
-  (This is the "bar" seen edge-on in the eBay photos.) The flange also closes the tray's hinge end.
-- The hatch prints on its side for smoothness, so the pins live on a separate flat print: the flange's free
-  edge carries a dovetail tongue on its cabin-side face (`tongue_t 3.0` at the edge tapering to 1.5 over
+## Hinge end (Armen 2026-09-13, from the eBay edge photo and the tracing): front face, skirt, bar
+Side view at the bow, front to the right, as Armen drew it:
+```
+|      the front face: a 10 mm vertical drop from the arch to the hull's lip level
+ \     the skirt: forward and down from its base (the overhang over the lip)
+ |o    the hinge bar on the skirt's edge; the pins sit below and forward of the lip
+```
+- Front face `front_h 10`, `front_t 1.5`: in the pencil tracing the curve is 10 above the paper edge at the
+  90 mark and the paper edge rested on the hull's lip, so the fender edge (and the closed hatch) drops
+  vertically 10 to the lip there. The wall closes the tray's hinge end; the side rims run into it.
+- Skirt `skirt_fwd 3.5` / `skirt_drop 1.5` (PHOTO ESTIMATES): from the base of the front face to its free
+  edge, forward and down. `skirt_deg` and `skirt_len` are derived. Replaced the old 5 mm flange
+  perpendicular to the plate.
+- The hatch prints on its side for smoothness, so the pins live on a separate flat print: the skirt's free
+  edge carries a dovetail tongue on its inside face (`tongue_t 3.0` at the edge tapering to 1.5 over
   `tongue_len 2.5`); the bar is a channel with the matching slot (`slide_clr 0.15` per face, coupon), an
   outer lip (`bar_out 0.6` over `bar_lip_len 2.5`) so it cannot lift inward, an inner wall `bar_reach 3.0`
-  up the flange, ear lobes `ear_r 3.5` and pins `hinge_pin_d 2.6` x `pin_len 3.5` at `pin_drop 1.5` /
+  up the skirt, ear lobes `ear_r 3.5` and pins `hinge_pin_d 2.6` x `pin_len 3.5` at `pin_drop 1.5` /
   `pin_back -0.85`. It slides on along X; the fender holes then lock it. Rigid, no snap (shroud lesson).
-- The side rims stop `max(bar_in, pin_drop + ear_r) - flange_t + clr` (3.65) short of the flange so the
-  channel and lobes seat. `check.scad` pair `hatch-bar` is clear.
+  The bar follows the skirt's angle, so its outer face is tilted, not vertical as in Armen's sketch.
+- With these numbers the pin axis is 3.7 forward of the front face and 3.2 below the lip level (echoed on
+  every build). `check.scad` pair `hatch-bar` is clear at 0 and 115 deg.
 
-## Print next (as of 2026-09-11)
-- `stl/hatch.stl` ON ITS SIDE: the +X side face is a flat plane on the bed, footprint an arc 4.5 wide x 95
-  long, 93.3 tall. Brim. The arc is traced in every layer, so the outer face is a true vertical wall.
-- `stl/bar.stl` flat on its back, slot up, pins lying on the bed (`pin_back -0.85` puts their underside at
+## Print next (as of 2026-09-13)
+- `stl/hatch.stl` ON ITS SIDE: the +X side face is a flat plane on the bed, footprint 32.6 x 98.3, 93.3 tall.
+  Brim. The arc, front face and skirt are traced in every layer, so the outer face is a true vertical wall.
+- `stl/bar.stl` on its floor, slot up, pins lying on the bed (`pin_back -0.85` puts their underside at
   z = 0). 100.3 long, 5.15 tall.
-- Fit checks: curve flush with the fender edges; bar slides on and pins reach the fender holes; cabin end
+- Fit checks: curve flush with the fender edges and the front face flush with their 10 mm front drop;
+  bar slides on and the pins reach the fender holes (this sets `skirt_fwd` / `skirt_drop`); cabin end
   under the lip (`plate_extra`, `lip_len` if it hits); width between the rails.
 
 ## Tracing overlay (2026-09-12)
@@ -106,6 +118,9 @@ in frame.
 
 ## Open items
 - Everything above. Coupon not yet printed.
+- Hull side of the hinge: where the fender pin holes sit relative to the lip (forward, below) decides
+  `skirt_fwd` / `skirt_drop`; whether the skirt or the tilted bar hits the lip's front face when opening
+  cannot be checked until the lip is measured (no lip in `bay_mock` yet).
 - Trace the fender edge properly: `k` (points tool) along the pencil line on overlay `o1`, Enter, then
   `../../tools/notes whale/hatch points <id> --scad fender_pts --2d` gives a `[y, z]` list. The single circle
   (`hatch_sag`) sits a little low mid-span and a little high at the hinge; a polyline or two-arc profile through the
