@@ -24,7 +24,8 @@ Generic helpers (`rounded_pad`, `wall_blend`, `arc_sweep`, `arc_pts`, `stroke_2d
 ## Fixed 2026-09-13
 `tooth_clr_eff` / `tooth_lead_eff` were assigned (in the fused block) before `tooth_clr` / `tooth_lead` existed, so in the
 `teeth` variant the fork dart's slot clearance and lead chamfer were undef since 2026-09-12 (warnings "unknown variable
-tooth_clr"; the committed teeth STLs were exported that way). Moved after the tooth block; `export.sh` re-run.
+tooth_clr"). Moved after the tooth block; `export.sh` re-run. The re-exported teeth vane STLs have the same volume, area and
+bbox as before (only the triangulation moved), so the undef never reached the printed geometry.
 Note: `tie_bar.stl` is exported in `teeth` mode; in `fused` mode the hinge line (and with it the bar's pins) sits 0.2 higher,
 which only translates the printed bar, so the file is the same shape either way.
 
