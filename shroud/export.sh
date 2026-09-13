@@ -27,4 +27,4 @@ job saddle_coupon       stl/saddle_coupon.stl       saddle_coupon.scad
 job tab_coupon          stl/tab_coupon.stl          tab_coupon.scad
 /bin/ls "$tmp"/*.sh | xargs -P "$(sysctl -n hw.ncpu 2>/dev/null || echo 4)" -n1 bash
 grep -ihE "error|warning" "$tmp"/*.log | grep -v NoError || true
-../../tools/stlinfo.py stl/*.stl
+[ -x ../../tools/stlinfo.py ] && ../../tools/stlinfo.py stl/*.stl || true   # workbench-only summary

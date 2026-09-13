@@ -1,5 +1,15 @@
 # Killer W.H.A.L.E. (1984 G.I. Joe hovercraft) replacement parts
 
+Open-source (MIT) OpenSCAD replacement parts for the 1984 G.I. Joe Killer W.H.A.L.E. hovercraft.
+On Makerworld: [cannon covers](https://makerworld.com/en/models/690907-gi-joe-killer-whale-cannon-covers); fan shroud listing in progress (`shroud/MAKERWORLD.md`).
+
+## Building
+Needs OpenSCAD 2025+ (Manifold backend). Shared helpers live in [`lib/`](lib/README.md) (a vendored copy of the
+workbench's `scad/lib/`). Each assembly's `export.sh` regenerates its `stl/`; `print_layout.scad -D part="..."`
+gives one part in its print pose; `check.scad` runs the collision pairs. Everything else below is workbench
+convention (the viewer and `tools/` are not part of this repo).
+
+## Layout
 One folder for the whole toy, one subfolder per assembly. Each assembly has its own `.scad`,
 `viewer.json`, coupons, checks, export script and README, so the viewer previews and rebuilds
 them separately. The toy is one git repo (this folder).

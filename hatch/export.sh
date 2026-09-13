@@ -10,4 +10,4 @@ for p in hatch front mount; do
   echo "ok"
 done
 "$O" --backend Manifold --export-format binstl -o stl/coupon.stl coupon.scad 2>&1 | grep -iE "error|warning" | grep -v NoError || true
-../../tools/stlinfo.py stl/*.stl
+[ -x ../../tools/stlinfo.py ] && ../../tools/stlinfo.py stl/*.stl || true   # workbench-only summary
