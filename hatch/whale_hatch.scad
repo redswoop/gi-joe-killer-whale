@@ -80,15 +80,20 @@ tab_edge_t = 1.0;      // plate thickness left over the tab ("a bit thinner than
 // ---------- front face + dovetail socket (Armen 2026-09-13) ----------
 front_h    = 10;       // vertical front face: outer surface down to the hull's lip level. Tracing: the curve
                        // is 10 above the paper edge at the 90 mark and the paper edge rested on the lip.
-front_t    = 3.5;      // the front plate's thickness. Thick enough for the rail and the 2.6 pins; only
-                       // its edges show, inside the fenders.
-sock_h     = 4.5;      // socket block: outer surface down to the seam with the front plate (= skin + rim)
+front_t    = 4.0;      // the front plate's thickness. Thick enough for the rail and the 2.6 pins; only
+                       // its edges show, inside the fenders. 3.5 with the small rail (coupon round 1).
+sock_h     = 5.5;      // socket block: outer surface down to the seam with the front plate. Was skin + rim
+                       // (4.5); the bigger rail needs the extra 1, so the block hangs 1 below the rim.
 sock_back  = 1.5;      // wall behind the groove
-rail_h     = 1.2;      // dovetail rail up from the front plate's top edge into the groove
-rail_neck  = 1.2;      // rail thickness where it leaves the plate (measured back from the inner face)
-rail_taper = 1.0;      // extra thickness at the rail's top, toward the OUTER face. One-sided dovetail:
+// Dovetail, round 2. Round 1 (rail 1.2 tall, 1.2 neck, 1.0 taper, clearances 0.1 / 0.15 / 0.25 per face)
+// was "far too loose" at every clearance: features that small come out undersized on the H2C. Rail
+// doubled, flank kept steep enough to lock, clearance now tested around zero (coupon.scad).
+rail_h     = 2.5;      // dovetail rail up from the front plate's top edge into the groove (1.5 roof left)
+rail_neck  = 1.8;      // rail thickness where it leaves the plate (measured back from the inner face)
+rail_taper = 1.2;      // extra thickness at the rail's top, toward the OUTER face. One-sided dovetail:
                        // the inner face is flat so the front prints on that face with no overhang.
-slide_clr  = 0.15;     // rail-to-groove clearance per face (coupon.scad)
+                       // Leaves a 1.0 hook between the groove's top and the front face.
+slide_clr  = 0;        // rail-to-groove clearance per face. ROUND 2 PENDING (coupon: -0.1 / 0 / 0.1)
 sock_d     = front_t + slide_clr + sock_back;   // socket block depth aft of the front face
 
 // ---------- hinge pins, out of the front plate's side edges ----------
@@ -100,7 +105,8 @@ pin_y       = front_t - hinge_pin_d / 2;   // axis aft of the outer face: the pi
                                             // the front prints on its inner face
 
 // ---------- mounts: one bracket per side, pin hole, glued to the fender's inner face ----------
-pin_clr     = 0.4;     // pin-to-hole clearance (coupon; hinge_clr from the shroud was 0.4)
+pin_clr     = fit_pin_clr();   // 0.3: pin-to-hole clearance, settled by the coupon 2026-09-13 ("perfect
+                               // fit"); lives in lib/fit.scad as the known H2C number
 mount_t     = 3.0;     // bracket thickness = the gap between the hatch and the fender minus a hair
                        // ((bay_w - hatch_w) / 2 = 3.6 measured, pin_len 3.5 passes through)
 mount_clr   = 0.2;     // gap between the front plate's side edge and the bracket
@@ -154,12 +160,13 @@ hatch_shift = [0, -pin_axis[0], -pin_axis[1]];       // plate frame -> world (ax
 echo(str("hinge axis ", pin_axis[0], " aft of the front face, ", pin_below_lip, " below the lip; front plate ",
          seam_z - front_bot, " tall + ", rail_h, " rail"));
 
-// Dovetail rail profile (y, z), grown by g on the fitting faces for the groove. Flat on the
-// inner face (y = front_t), the taper toward the outer face is what holds the front on.
-function rail_2d(g = 0) = [[front_t - rail_neck - g, seam_z - (g > 0 ? 1 : 0)],
-                           [front_t + g,             seam_z - (g > 0 ? 1 : 0)],
-                           [front_t + g,             seam_z + rail_h + g],
-                           [front_t - rail_neck - rail_taper - g, seam_z + rail_h + g]];
+// Dovetail rail profile (y, z), grown by g on the fitting faces for the groove (g may be negative
+// for an interference fit); ext extends the mouth below the seam so a groove cuts clean through.
+// Flat on the inner face (y = front_t), the taper toward the outer face is what holds the front on.
+function rail_2d(g = 0, ext = 0) = [[front_t - rail_neck - g, seam_z - ext],
+                                    [front_t + g,             seam_z - ext],
+                                    [front_t + g,             seam_z + rail_h + g],
+                                    [front_t - rail_neck - rail_taper - g, seam_z + rail_h + g]];
 
 function arc_seg(r, a0, a1, n = 48) = [for (i = [0 : n]) let (a = a0 + (a1 - a0) * i / n)
     arc_cen + r * [cos(a), sin(a)]];
@@ -216,7 +223,7 @@ module hatch_tray() {                               // skin + rim + socket block
             plan_clip(rim_t);
             translate([-100, sock_d, -100]) cube([200, 300, 200]);
         }
-        across(hatch_w + 2) polygon(rail_2d(slide_clr));   // the groove, open at both ends
+        across(hatch_w + 2) polygon(rail_2d(slide_clr, 1));   // the groove, open at both ends
         tab_rabbet();
     }
 }

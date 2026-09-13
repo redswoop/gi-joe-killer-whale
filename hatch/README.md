@@ -1,6 +1,6 @@
 # Killer W.H.A.L.E. front landing hatch (bow ramp) with replacement hinge
 
-State as of 2026-09-13 (night). Two corner coupons printed. Round 1 showed the plate short by the corner cuts' run, fixed (`end_y = hatch_len + plate_extra + top_cut_y`); round 2 (25 wide, lengthened) fits: angle, tab reach and length all confirmed on the hull. Plan outline fixed: the cabin-end corner cuts are now real 30 deg cuts (the old polygon produced an 11 deg sliver) and the plate is rabbeted thinner along them to sit on the hull's corner tabs. Three printed parts: the arched tray (`hatch`) with a dovetail socket under its front edge, a flat front plate (`front`) that slides into it along X and carries the hinge pins out of its side edges, and two brackets (`mount`) with pin holes that glue to the fenders. Coupon for the dovetail and pin fits is ready and unprinted. Pin position and bracket size are estimates.
+State as of 2026-09-13 (night). Dovetail + pin coupon printed: pins settled (`pin_clr 0.3`, now `fit_pin_clr()` in lib/fit.scad), dovetail far too loose at every clearance, so the rail is doubled (2.5 tall, 1.8 neck, 1.2 taper, front plate 4.0, socket 5.5) and round 2 of the coupon tests -0.1 / 0 / 0.1. Two corner coupons printed. Round 1 showed the plate short by the corner cuts' run, fixed (`end_y = hatch_len + plate_extra + top_cut_y`); round 2 (25 wide, lengthened) fits: angle, tab reach and length all confirmed on the hull. Plan outline fixed: the cabin-end corner cuts are now real 30 deg cuts (the old polygon produced an 11 deg sliver) and the plate is rabbeted thinner along them to sit on the hull's corner tabs. Three printed parts: the arched tray (`hatch`) with a dovetail socket under its front edge, a flat front plate (`front`) that slides into it along X and carries the hinge pins out of its side edges, and two brackets (`mount`) with pin holes that glue to the fenders. Pin position and bracket size are estimates.
 
 ## What the part is
 The bow ramp of the 1984 Killer W.H.A.L.E. (part "landing ramp" / "sled launch ramp door"). A large curved plate
@@ -91,20 +91,22 @@ Armen: "the entire front and hinge assembly should dovetail to the top ... then 
 The front should be flat, with the joints coming out the sides", plus a mount for the pins that sits outside
 the front and fixes inside the hull.
 
-- **Socket** (`hatch`): a block under the plate's front edge, `sock_d 5.15` deep, from the outer surface down
-  `sock_h 4.5` (= skin + rim, so the seam is level with the rim's underside). A dovetail groove runs the full
-  width, open at both ends, mouth on the seam face. The block's front face is the top 4.5 of the vertical
+- **Socket** (`hatch`): a block under the plate's front edge, `sock_d 5.5` deep, from the outer surface down
+  `sock_h 5.5` (skin + rim + 1: the bigger rail needs the depth, so the block hangs 1 below the rim). A dovetail groove runs the full
+  width, open at both ends, mouth on the seam face. The block's front face is the top 5.5 of the vertical
   front drop. It is clipped against the outer arc only (`band_2d` would cut it along the slanted radial
   line at the plate's front corner and shave the groove's lip off; that bug is fixed).
-- **Front** (`front`): a flat plate `front_t 3.5` thick, `hatch_w` wide, from the seam down to
-  `pin_edge 2.5` below the pin axis (11 tall). Its top edge carries the rail: `rail_h 1.2` up, `rail_neck 1.2`
-  thick where it leaves the plate, widening by `rail_taper 1.0` toward the OUTER face. One-sided dovetail: the
+- **Front** (`front`): a flat plate `front_t 4.0` thick, `hatch_w` wide, from the seam down to
+  `pin_edge 2.5` below the pin axis (10 tall). Its top edge carries the rail: `rail_h 2.5` up, `rail_neck 1.8`
+  thick where it leaves the plate, widening by `rail_taper 1.2` toward the OUTER face. One-sided dovetail: the
   inner face is flat so the front prints on that face with no overhang and the taper is a top-side slope.
-  Pins `hinge_pin_d 2.6` x `pin_len 3.5` straight out of the side edges, axis `pin_y` = 2.2 aft of the outer
+  Round 1 of the coupon (rail 1.2 / 1.2 / 1.0, plate 3.5, clearances 0.1 / 0.15 / 0.25 per face) was far too
+  loose everywhere, so the rail doubled on 2026-09-13; `slide_clr` is 0 until round 2 says otherwise.
+  Pins `hinge_pin_d 2.6` x `pin_len 3.5` straight out of the side edges, axis `pin_y` = 2.7 aft of the outer
   face (so they lie on the bed) and `pin_below_lip 3` below the lip level (PHOTO ESTIMATE; the hull decides).
-  `rail_2d(g)` gives the profile, grown by `g` for the groove (`slide_clr 0.15` per face, coupon).
+  `rail_2d(g, ext)` gives the profile, grown by `g` for the groove (`slide_clr` per face; negative = interference).
 - **Mounts** (`mounts`, print `mount.stl` twice): a `mount_len 14` x `mount_h 10` x `mount_t 3.0` plate with a
-  `hinge_pin_d + pin_clr 0.4` hole `mount_hole_back 5` from its front edge and `mount_hole_up 4` above its
+  `hinge_pin_d + pin_clr` hole (`pin_clr = fit_pin_clr()` = 0.3 on the diameter, coupon 2026-09-13: "perfect fit") `mount_hole_back 5` from its front edge and `mount_hole_up 4` above its
   bottom, corners `mount_r 1.5`. `mount_t` is the fender gap ((100.5 - 93.3) / 2 = 3.6) minus a hair, so the
   3.5 pin passes through; `mount_clr 0.2` off the front's side edge. Glue face = the outer face.
 - **Assembly**: slide the front into the socket from one side (the brackets stop it sliding back out), put a
@@ -120,13 +122,13 @@ the front and fixes inside the hull.
    plate short by the cut's run; round 2 has the fix and Armen reports it "great angle and fit wise". Done. Checks the 30 deg corner cut,
    the rabbet on the hull tab, the cabin ledge under the top hatch, and the lip-to-cabin length.
    `corner_w` in `print_layout.scad` sets the width.
-1. `stl/coupon.stl` first: three 20 mm socket slices (groove at 0.1 / 0.15 / 0.25 per face, standing so the
-   slot is vertical like the real hatch) + one 20 mm rail slice printed on its inner face; three pin holes
-   (+0.3 / 0.4 / 0.5) + a pin stub. Report which slide is snug-but-moving and which hole turns freely;
-   write back `slide_clr` and `pin_clr`.
-2. `stl/hatch.stl` ON ITS SIDE: the +X side face on the bed, footprint 22.8 x 101.7, 93.3 tall. Brim. Arc,
+1. `stl/coupon.stl` ROUND 2: three 20 mm socket slices with the doubled rail's groove at -0.1 / 0 / 0.1 per
+   face (standing, slot vertical like the real hatch) + one 20 mm rail slice printed on its inner face.
+   Round 1 (small rail, 0.1 / 0.15 / 0.25) was far too loose at all three; the pins settled at +0.3.
+   Report which slide is snug-but-moving; write back `slide_clr`.
+2. `stl/hatch.stl` ON ITS SIDE: the +X side face on the bed, footprint 23.8 x 101.7, 93.3 tall. Brim. Arc,
    front face and groove are traced in every layer.
-3. `stl/front.stl` flat on its inner face, 100.3 x 12.2 x 3.5, pins lying on the bed.
+3. `stl/front.stl` flat on its inner face, 100.3 x 12.5 x 4.0, pins lying on the bed.
 4. `stl/mount.stl` x2, flat, 14 x 10 x 3.
 - Fit checks: curve flush with the fender edges and the front face flush with their 10 mm front drop; the
   front slides in and stays; brackets fit the fender gap (`mount_t`); the pin height that lets the ramp open
@@ -141,7 +143,7 @@ pencil width on a first look. The 0 mm tick is just off the left of the photo, s
 in frame.
 
 ## Open items
-- Everything above. Coupon not yet printed.
+- Dovetail clearance (`slide_clr`): coupon round 2 pending. Pins done.
 - Cabin-end corners: angle (`top_cut_deg 30`), tab reach (`tab_w 4`) and the plate length (`end_y 97.1`)
   confirmed by the two corner coupons (2026-09-13). Not explicitly judged yet: the thickness over the tab
   (`tab_edge_t`, is the outer surface flush?) and the straight width between the tabs (`top_edge_w`); the
