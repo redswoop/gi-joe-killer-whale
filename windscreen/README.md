@@ -48,9 +48,11 @@ at the corner end. side_r is the mirror image of side_l (mitre on the other end)
    on the three outer faces (`base_lines`, `line_pitch/w/d`).
 2. Drop the front panel in its groove, then each side; the mitred corners meet face to face
    (`joint_clr` = 0). Glue if the groove fit is loose.
-3. Top frame (optional, `show_top`; PLA, printed cap down): a 4 wide x 3 tall inverted C rail
-   with the same grooves, 2 deep, 1 mm cap. Pushes down over the flat top rim. It is chunky next
-   to a 10 mm screen; `top_w`, `top_groove_d`, `top_cap` to taste.
+3. Top frame (optional, `show_top`; PLA, printed cap down): a rounded channel over each top
+   edge whose walls lean with the glass (profile drawn in the panel's own frame: `top_skin` 1.2
+   each face, skirt `top_groove_d` 2 down the glass, `top_cap` 1 above it, edges rounded
+   `top_r` 0.8). The top face is horizontal, so the three segments share one flat print face.
+   Corners mitred on the same planes as the glass (Armen 2026-09-13: curvier, sloping sides).
 4. Tabs into the deck slots.
 
 ## Open items
@@ -67,6 +69,8 @@ at the corner end. side_r is the mirror image of side_l (mitre on the other end)
 - The half-space cubes are 1000 mm; OpenSCAD's preview sizes the camera from every primitive,
   so PNGs came out blank until `render.sh` got `--render` (full evaluation first). The viewer
   is unaffected.
+- Two solids that touch exactly on a plane (the mitred frame segments) union into a dozen
+  sliver shells; overlap them by `eps` at the mitre and the union is one body.
 - The -Y side's corner list runs the other way along the bottom edge so every panel frame is
   right-handed with an inward normal (`panel_n()` asserts it). That is what makes
   `panel_unplace()` a true inverse and the printed side_r a real mirror part, not a flipped copy.

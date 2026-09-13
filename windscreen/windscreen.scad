@@ -54,9 +54,10 @@ line_w     = 0.6;   // one 0.4-nozzle line wide
 line_d     = 0.4;   // depth into the face
 
 // ---------- top frame (optional, opaque PLA) ----------
-top_w        = 4;     // rail width, centred on the panel's outer face
-top_groove_d = 2;     // how deep the panel tops sit in it
+top_skin     = 1.2;   // wall on each face of the glass (three 0.4 lines)
+top_groove_d = 2;     // how far the skirt reaches down the glass
 top_cap      = 1;     // material above the panel edge
+top_r        = 0.8;   // rounding of the profile's edges (< half the profile width)
 
 $fn = 48;
 eps = 0.01;
@@ -189,11 +190,9 @@ module rail_2d(pts, w) {
     }
 }
 
-// Rail paths follow the panels' outer edges; they end flush with the sides' free edges.
+// The base rail follows the panels' bottom edges and ends flush with the sides' free edges.
 function base_path() = let(x1 = side_bot - base_w / 2, y = front_bot / 2)
     [[x1, -y], [0, -y], [0, y], [x1, y]];
-function top_path() = let(x1 = side_bot - top_w / 2, y = front_top / 2)
-    [[x1, -y], [-rake, -y], [-rake, y], [x1, y]];
 
 module base() {
     difference() {
@@ -229,10 +228,45 @@ module base_line_cuts() {
             cube([line_w, line_d + eps, h]);
 }
 
-// Top frame: an inverted rail that caps the three top edges.
+// Top frame: a channel over each panel's top edge whose walls lean with the
+// glass. The profile is drawn in the panel's own frame, (a, b) = (v, n): sides
+// parallel to the sheet, bottom square to it, top horizontal in the world so
+// the three segments share one flat face (the print face). All four corners
+// rounded, then extruded along u and mitred at the corners like the panels.
+function panel_top_v(P) = (P[3] - P[0]) * panel_v(P);          // v of the top edge
+function world_z(P, a, b) = P[0][2] + a * panel_v(P)[2] + b * panel_n(P)[2];
+function top_a(P, b, z) = (z - P[0][2] - b * panel_n(P)[2]) / panel_v(P)[2];   // a where the profile column b hits height z
+
+module top_profile_2d(P) {
+    b0 = -groove_clr - top_skin; b1 = panel_t + groove_clr + top_skin;
+    a0 = panel_top_v(P) - top_groove_d;
+    z1 = top_z + top_cap;
+    offset(r = top_r) offset(delta = -top_r)      // round every convex corner
+        polygon([[a0, b0], [a0, b1], [top_a(P, b1, z1), b1], [top_a(P, b0, z1), b0]]);
+}
+
+// The profile swept along the whole top edge, overshooting both ends for the clips.
+module top_seg(P) {
+    ext = 2 * margin;
+    panel_place(P) translate([-ext, 0, 0]) rotate([90, 0, 90])   // 2D (a, b) -> local (v, n), extrude along u
+        linear_extrude(norm(P[1] - P[0]) + 2 * ext) top_profile_2d(P);
+}
+
 module top() {
+    F = front_corners();
     difference() {
-        translate([0, 0, top_z - top_groove_d]) linear_extrude(top_groove_d + top_cap) rail_2d(top_path(), top_w);
+        union() {
+            // segments overlap by eps at the mitre; exactly touching solids leave slivers in the union
+            intersection() {
+                top_seg(F);
+                intersection_for (s = [-1, 1]) mitre(F, side_corners(s), side_corner_pt(s), eps);
+            }
+            for (s = [-1, 1]) intersection() {
+                top_seg(side_corners(s));
+                mitre(side_corners(s), F, side_corner_pt(s), eps);
+                halfspace(side_free_pt(s), [-1, 0, 0]);               // free end square, x = side_bot
+            }
+        }
         panel_cutters();
     }
 }
