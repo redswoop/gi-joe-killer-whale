@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 f="${1:-windscreen.scad}"; name="${2:-${f%.scad}}"; shift 2 2>/dev/null || shift $#
 O=/opt/homebrew/bin/openscad
 mkdir -p renders
-common=(--backend Manifold --imgsize 1400,1000 --viewall --autocenter --colorscheme "Tomorrow Night")
+common=(--backend Manifold --render --imgsize 1400,1000 --viewall --autocenter --colorscheme "Tomorrow Night")
 $O "${common[@]}" --camera 0,0,0,55,0,35,300  -o "renders/${name}_iso.png"  "$@" "$f" 2>&1 | grep -iE "error|warning" | grep -v NoError || true
 $O "${common[@]}" --camera 0,0,0,0,0,0,300    -o "renders/${name}_top.png"  "$@" "$f" 2>&1 | grep -iE "error|warning" | grep -v NoError || true
 $O "${common[@]}" --camera 0,0,0,90,0,90,300  -o "renders/${name}_side.png" "$@" "$f" 2>&1 | grep -iE "error|warning" | grep -v NoError || true

@@ -1,17 +1,13 @@
-// Collision checks. Each `pair` should be EMPTY (the base has groove_clr around every panel).
-//   pair: "back-side_l" | "back-side_r" | "base-back" | "base-side_l" | "base-side_r"
+// Collision checks. Rails have groove_clr around every panel, so those pairs should be EMPTY;
+// the mitred corners touch face to face (joint_clr = 0), so front-side pairs report `touch`.
+//   pair: "front-side_l" | "front-side_r" | "base-front" | "base-side_l" | "base-side_r" | "top-front" | "top-side_l" | "top-side_r"
 // Run (from scad/): tools/check.sh whale/windscreen/check.scad 'height=10'
 include <windscreen.scad>
 show_all = false;
-pair = "back-side_l";
+pair = "front-side_l";
 
-module A() {
-    if (pair == "back-side_l" || pair == "back-side_r") back();
-    else base();
-}
-module B() {
-    if (pair == "back-side_l" || pair == "base-side_l") side_l();
-    if (pair == "back-side_r" || pair == "base-side_r") side_r();
-    if (pair == "base-back") back();
-}
-intersection() { A(); B(); }
+a = pair == "front-side_l" || pair == "front-side_r" ? "front" : pair == "base-front" || pair == "base-side_l" || pair == "base-side_r" ? "base" : "top";
+b = pair == "base-front" || pair == "top-front" ? "front" : pair == "front-side_l" || pair == "base-side_l" || pair == "top-side_l" ? "side_l" : "side_r";
+
+module pick(n) { if (n == "front") front(); if (n == "side_l") side_l(); if (n == "side_r") side_r(); if (n == "base") base(); if (n == "top") top(); }
+intersection() { pick(a); pick(b); }

@@ -2,9 +2,10 @@
   "file": "windscreen.scad",
   "defines": { "show_all": false },
   "parts": [
-    { "name": "back",   "call": "back();",   "color": "#87cefa" },
+    { "name": "front",  "call": "front();",  "color": "#87cefa" },
     { "name": "side_l", "call": "side_l();", "color": "#9ad4f5" },
     { "name": "side_r", "call": "side_r();", "color": "#9ad4f5" },
-    { "name": "base",   "call": "base();",   "color": "#696969" }
+    { "name": "base",   "call": "base();",   "color": "#696969" },
+    { "name": "top",    "call": "top();",    "color": "#2f4f4f" }
   ]
 }
