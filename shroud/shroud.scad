@@ -295,7 +295,7 @@ boss_w     = ear_w + 2 * ear_clr + 2 * pocket_side;
 boss_top   = ear_top + ear_clr + pocket_lid;
 boss_fade  = 3;                // concave fillet radius blending the boss into the bore wall, both sides and the top (max 3.4: the boss's proudness)
 
-// ---------- fan and shaft (2026-09-12, from GI_Joe_Killer_Whale_Blade.stl in ../, an old mesh off the web) ----------
+// ---------- fan and shaft (2026-09-12, from GI_Joe_Killer_Whale_Blade.stl in ../../, an old mesh off the web) ----------
 // Two parts. The FAN prints flat, hub bottom on the bed: hub + fan_n wedge blades whose bottom face is the bed and whose
 // top face slopes blade_pitch across the chord (thin at the leading edge, thick at the trailing edge), so nothing
 // overhangs. The reference's blades are thin twisted sheets pitched about 16 deg (they print as pure overhang) with a
@@ -364,8 +364,8 @@ fillet_fn        = 24;    // facets on fillet arcs (19 boxes x several fillets, 
 $fn = 120;
 eps = 0.01;
 
-use <../lib/shape.scad>   // rounded_pad, rounded_plate, annulus_2d, wall_blend, arc_sweep, arc_pts, stroke_2d, grooves_2d
-use <../lib/fit.scad>     // teardrop_2d, keyhole_2d
+use <../../lib/shape.scad>   // rounded_pad, rounded_plate, annulus_2d, wall_blend, arc_sweep, arc_pts, stroke_2d, grooves_2d
+use <../../lib/fit.scad>     // teardrop_2d, keyhole_2d
 
 // =====================================================================
 //  helpers

@@ -9,13 +9,13 @@ that closes the bow opening, hinged along its bottom edge, folding forward and d
 its side-edge profile is traced off the fenders' inner top edges, which the closed ramp sits flush with.
 
 ## Reference material found (2026-09-11)
-- `../../WHALE/measurements.md`: ramp width 93.3 mm. That is the only ramp number on disk.
-- `../../GI Joe/GI Joe Killer WHALE Landing Ramp Hinge Replacements - 4094032.zip` (Cryoguns, Thingiverse
+- `../../../WHALE/measurements.md`: ramp width 93.3 mm. That is the only ramp number on disk.
+- `../../../GI Joe/GI Joe Killer WHALE Landing Ramp Hinge Replacements - 4094032.zip` (Cryoguns, Thingiverse
   thing:4094032, CC BY-NC): a pair of glue-on hinge brackets for this exact ramp. Summary: "One of the worst
   [breakages] was breaking the front landing ramp hinge pins"; cut the original hinge remnants out with a
   razor saw and glue these in. Bracket 21.4 x 8.1 x 11.1 mm, two uprights with a **3.10 mm pin hole**,
   axis 4.55 mm above the bracket's base, plus a triangular gusset. Renders in `renders/` once render.sh runs.
-- Not the ramp: `../../WHALE/Whale Hatch.3mf` (55 x 72 x 6.2 mm) is the small TOP hatch, and thing:6660330
+- Not the ramp: `../../../WHALE/Whale Hatch.3mf` (55 x 72 x 6.2 mm) is the small TOP hatch, and thing:6660330
   "Hatch Hinge" is that top hatch's pin.
 - No photos of the ramp or the bow exist on disk.
 
@@ -23,9 +23,9 @@ its side-edge profile is traced off the fenders' inner top edges, which the clos
 | File | What |
 |---|---|
 | `whale_hatch.scad` | The model (template body so far). |
-| `viewer.json` | Part list for the browser viewer (`../viewer`, `SCAD_PROJECT=../whale_hatch bun run dev`, http://127.0.0.1:5180/). |
+| `viewer.json` | Part list for the browser viewer (`../../viewer`, `bun run dev`, open http://127.0.0.1:5180/whale/hatch/). |
 | `print_layout.scad` | `-D part="..."`: each part in its printing pose. |
-| `check.scad` | Collision pairs; `../tools/check.sh check.scad 'pose=..'`. Empty = clear. |
+| `check.scad` | Collision pairs; `../../tools/check.sh check.scad 'pose=..'`. Empty = clear. |
 | `coupon.scad` | Tolerance test print. |
 | `export.sh` / `render.sh` | STLs into `stl/`, PNGs into `renders/`. |
 
