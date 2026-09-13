@@ -39,11 +39,14 @@ show_rim   = true;     // the tray rim on the inside face
 
 // ---------- plate ----------
 hatch_w    = 93.3;     // measured, WHALE/measurements.md "width of ramp"
-hatch_len  = 90;       // traced 2026-09-11: x-extent of the fender edge, cabin face to the front lip
+hatch_len  = 90;       // traced 2026-09-11: y-extent of the fender edge, front lip to where the corner cuts begin
 hatch_rise = 18;       // traced: the hinge end sits 18 below the flat end (drops 0 / 4 / 18 at x = 0 / 50 / 90)
 hatch_sag  = 5.9;      // circle through the three traced points: R 180.7, chord 91.8, sagitta 5.93
 hatch_t    = 1.5;      // Armen 2026-09-11: same as the rest of the shell (the hatch itself is missing)
-plate_extra = 0;       // full-thickness plate past the traced 90 (the cabin face). Tune on the print.
+plate_extra = 0;       // extra full-width plate past the traced hatch_len, in plan. Tune on the print.
+                       // The angled corner cuts are IN ADDITION to that: they start at hatch_len + plate_extra
+                       // and run top_cut_y further (Armen 2026-09-13, corner coupon: the first cut ended
+                       // where it should have started).
 top_bevel  = 0;        // angle of the cabin end face from the radial (square) cut; + makes the OUTER
                        // surface the long one. 0 after the eBay photo of the real part (square edge).
 top_edge_w = 68.85;    // width of the cabin end after the corner cuts = the wide end of the
@@ -135,7 +138,8 @@ arc_cen  = [chord_c / 2 * cos(chord_a), chord_c / 2 * sin(chord_a)]
 a_hinge  = atan2(0 - arc_cen[1], 0 - arc_cen[0]);
 a_top    = atan2(hatch_rise - arc_cen[1], hatch_len - arc_cen[0]);
 a_dir    = sign(a_top - a_hinge);                     // which way the angle runs, hinge -> cabin
-a_end    = a_top + a_dir * plate_extra / arc_R * 180 / PI;
+end_y    = hatch_len + plate_extra + top_cut_y;       // plan y of the cabin end (outer corner)
+a_end    = acos((end_y - arc_cen[0]) / arc_R);        // the arc angle there (all arc angles are in 0..180)
 a_lip    = a_end + a_dir * lip_len / arc_R * 180 / PI;    // where the ledge ends
 end_pt   = arc_cen + arc_R * [cos(a_end), sin(a_end)];   // outer corner at the cabin end
 

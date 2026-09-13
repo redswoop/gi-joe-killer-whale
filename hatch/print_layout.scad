@@ -11,7 +11,7 @@
 include <whale_hatch.scad>
 show_ghost = false; show_all = false; show_hull = false;
 part = "hatch";
-corner_w = 50;   // width of the corner coupon, from the -X side edge inward
+corner_w = 25;   // width of the corner coupon, from the -X side edge inward (50 was more than needed)
 
 if (part == "hatch") translate([0, 0, hatch_w / 2]) rotate([0, 90, 0]) hatch();     // x = +w/2 face -> z = 0
 if (part == "front") translate([0, 0, front_t]) rotate([-90, 0, 0]) translate([0, 0, -front_bot]) front_local();

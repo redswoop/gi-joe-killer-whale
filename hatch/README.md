@@ -1,6 +1,6 @@
 # Killer W.H.A.L.E. front landing hatch (bow ramp) with replacement hinge
 
-State as of 2026-09-13 (later). Plan outline fixed: the cabin-end corner cuts are now real 30 deg cuts (the old polygon produced an 11 deg sliver) and the plate is rabbeted thinner along them to sit on the hull's corner tabs. Three printed parts: the arched tray (`hatch`) with a dovetail socket under its front edge, a flat front plate (`front`) that slides into it along X and carries the hinge pins out of its side edges, and two brackets (`mount`) with pin holes that glue to the fenders. Coupon for the dovetail and pin fits is ready and unprinted. Pin position and bracket size are estimates.
+State as of 2026-09-13 (night). First corner coupon printed: the plate was short by the corner cuts' run, fixed (`end_y = hatch_len + plate_extra + top_cut_y`), coupon narrowed to 25. Plan outline fixed: the cabin-end corner cuts are now real 30 deg cuts (the old polygon produced an 11 deg sliver) and the plate is rabbeted thinner along them to sit on the hull's corner tabs. Three printed parts: the arched tray (`hatch`) with a dovetail socket under its front edge, a flat front plate (`front`) that slides into it along X and carries the hinge pins out of its side edges, and two brackets (`mount`) with pin holes that glue to the fenders. Coupon for the dovetail and pin fits is ready and unprinted. Pin position and bracket size are estimates.
 
 ## What the part is
 The bow ramp of the 1984 Killer W.H.A.L.E. (part "landing ramp" / "sled launch ramp door"). A large curved plate
@@ -53,7 +53,9 @@ console echoes where the axis sits relative to the front face and the lip level.
 ## Settled 2026-09-11
 - Profile: Armen traced the fender edge on paper: drops 0 / 4 / 18 below the baseline at 0 / 50 / 90 mm.
   Circle through those: R 180.7, chord 91.8, sagitta 5.9 -> `hatch_len 90, hatch_rise 18, hatch_sag 5.9`.
-  The steep end is the hinge (front lip), the flat end sits at the cabin.
+  The steep end is the hinge (front lip), the flat end sits at the cabin. The 90 runs from the lip to where
+  the angled corner cuts BEGIN (first corner coupon, 2026-09-13); the cuts add `top_cut_y 7.1` beyond it,
+  so the outer corner of the plate is at `end_y 97.1` (`plate_extra` adds to that if the print says so).
 - Thickness 1.5 (`hatch_t`), "same as the rest of the shell". A 93 x 92 plate at 1.5 will flex; ribs on the
   inside face (the original had tread there) are the fix if it does.
 
@@ -77,7 +79,7 @@ console echoes where the axis sits relative to the front face and the lip level.
   end where the rabbet begins. Verified by probing the export: 1.0 thick within 4 mm of the angled edge,
   1.5 beyond. A ledge (`lip_drop 2.7` below the outer surface, `lip_t 1.5`, `lip_len 5`)
   tucks under Armen's 2.5 top hatch; it is the step visible on the inside of the real part. The plate
-  scales to ~97 long on the photo vs the 90 traced lip-to-cabin, which is that ledge.
+  scales to ~97 long on the photo vs the 90 traced lip-to-cabin: that is the corner cuts' run (97.1 now).
 - Four small latch hooks on the side edges (two per side, ~14 % and ~48 % of the length from the cabin end),
   engaging the notched rails on the fenders. Not modelled yet.
 - Outer face: two perforated vent grilles near the cabin end, seven ribbed panels, "PANEL REMOVAL" /
@@ -112,15 +114,16 @@ the front and fixes inside the hull.
 - `check.scad`: `hatch-front`, `front-mounts`, `hatch-mounts` all clear at 0 and 115 deg.
 
 ## Print next (as of 2026-09-13)
-0. `stl/corner.stl`: the fit coupon for the cabin end (Armen 2026-09-13). The -X 50 mm of the tray at full
-   length, standing on its cut face (94.8 x 22.8 footprint, 50 tall, brim). Checks the 30 deg corner cut,
+0. `stl/corner.stl`: the fit coupon for the cabin end (Armen 2026-09-13). The -X 25 mm of the tray at full
+   length, standing on its cut face (101.7 x 22.8 footprint, 25 tall, brim). Round 1 (50 wide) showed the
+   plate short by the cut's run; round 2 has the fix. Checks the 30 deg corner cut,
    the rabbet on the hull tab, the cabin ledge under the top hatch, and the lip-to-cabin length.
    `corner_w` in `print_layout.scad` sets the width.
 1. `stl/coupon.stl` first: three 20 mm socket slices (groove at 0.1 / 0.15 / 0.25 per face, standing so the
    slot is vertical like the real hatch) + one 20 mm rail slice printed on its inner face; three pin holes
    (+0.3 / 0.4 / 0.5) + a pin stub. Report which slide is snug-but-moving and which hole turns freely;
    write back `slide_clr` and `pin_clr`.
-2. `stl/hatch.stl` ON ITS SIDE: the +X side face on the bed, footprint 22.8 x 94.8, 93.3 tall. Brim. Arc,
+2. `stl/hatch.stl` ON ITS SIDE: the +X side face on the bed, footprint 22.8 x 101.7, 93.3 tall. Brim. Arc,
    front face and groove are traced in every layer.
 3. `stl/front.stl` flat on its inner face, 100.3 x 12.2 x 3.5, pins lying on the bed.
 4. `stl/mount.stl` x2, flat, 14 x 10 x 3.
