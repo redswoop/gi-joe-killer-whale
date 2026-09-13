@@ -11,7 +11,7 @@ https://makerworld.com/en/models/690907-gi-joe-killer-whale-cannon-covers
 
 ## What makes this one different
 
-- **Fully parametric CAD.** Written in OpenSCAD, so every tolerance (hinge clearance, strut fit, shaft fit) is a number at the top of the file. If your printer runs tight or loose, change one value and re-export instead of sanding.
+- **Fully parametric CAD.** Written in OpenSCAD, so every tolerance (hinge clearance, strut fit, shaft fit) is a number at the top of the file. If your printer runs tight or loose, change one value and re-export instead of sanding. Use MakerWorld's Customize button: pick the part, tweak the clearances, generate.
 - **Designed for PLA, not for the museum.** This is not a 100% faithful recreation. I took some liberties with the original so it prints at the best quality and strength. The vane roots and the shroud are one piece instead of separate snap-on parts, because that joint is where the original always broke.
 - **Snap together, no glue.** The only extra thing you need is a few short lengths of 1.75 mm filament, which serve as the hinge pins for the vanes.
 
