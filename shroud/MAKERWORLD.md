@@ -26,7 +26,7 @@ https://makerworld.com/en/models/690907-gi-joe-killer-whale-cannon-covers
 
 ## Printing
 
-- **Filament:** Bambu Army Green Matte PLA.
+- **Filament:** Bambu PLA Matte Dark Green.
 - **Profile:** 0.16 mm High Quality on a Bambu.
 - **Orientation matters.** Every part is oriented in the profile for the best combination of looks and strength. The vane plates stand on their long edge, the shaft lies on its flat, the shroud prints base down. If you reorient parts, some of them (the hinges and the thin vane features especially) will come out too brittle. Tread carefully.
 - **Supports:** the shroud's root bars bridge the bore, so enable supports under them. The other parts print without support.
