@@ -4,17 +4,58 @@
     "profile_tracing.jpeg": {
       "caption": "Armen's pencil tracing of the fender's inner top edge (2026-09-11). Baseline with ticks at 50 and 90 mm; heights above the paper edge 28 / 24 / 10 mm at 0 / 50 / 90. Cabin end at the left, hinge (steep end) at the right. The 0 tick is just off the left edge.",
       "view": "YZ",
-      "scale": { "px": [[786, 964], [1438, 964]], "mm": 40 }
+      "scale": {
+        "px": [
+          [
+            786,
+            964
+          ],
+          [
+            1438,
+            964
+          ]
+        ],
+        "mm": 40
+      }
     },
-    "hull_photo_0.jpeg": { "caption": "Armen's hull, ruler in cm (2026-09-11)" },
-    "hull_photo_1.jpeg": { "caption": "Armen's hull, ruler in cm (2026-09-11)" },
-    "hull_photo_2.jpeg": { "caption": "Armen's hull, ruler in cm (2026-09-11)" },
-    "hull_photo_3.jpeg": { "caption": "Armen's hull, ruler in cm (2026-09-11)" },
-    "hull_photo_4.jpeg": { "caption": "Armen's hull, ruler in cm (2026-09-11)" },
-    "ebay_outer_face.jpeg": { "caption": "eBay: real ramp M-3798-4, outer face: two vent grilles, seven ribbed panels, four latch hooks on the side edges, hinge pins at the bottom" },
-    "ebay_hinge_closeup.jpeg": { "caption": "eBay: hinge bar with lobed ears and outward pins" },
-    "ebay_three_quarter.jpeg": { "caption": "eBay: three-quarter view of the real ramp" },
-    "ebay_edge_profile.jpeg": { "caption": "eBay: edge-on, shows the arch and the hinge-end flange (a perspective photo, not to scale)" },
-    "ebay_bottom_view.png": { "caption": "eBay: inside face with the tray rim" }
+    "hull_photo_0.jpeg": {
+      "caption": "Armen's hull, ruler in cm (2026-09-11)"
+    },
+    "hull_photo_1.jpeg": {
+      "caption": "Armen's hull, ruler in cm (2026-09-11)"
+    },
+    "hull_photo_2.jpeg": {
+      "caption": "Armen's hull, ruler in cm (2026-09-11)"
+    },
+    "hull_photo_3.jpeg": {
+      "caption": "Armen's hull, ruler in cm (2026-09-11)"
+    },
+    "hull_photo_4.jpeg": {
+      "caption": "Armen's hull, ruler in cm (2026-09-11)"
+    },
+    "ebay_outer_face.jpeg": {
+      "caption": "eBay: real ramp M-3798-4, outer face: two vent grilles, seven ribbed panels, four latch hooks on the side edges, hinge pins at the bottom"
+    },
+    "ebay_hinge_closeup.jpeg": {
+      "caption": "eBay: hinge bar with lobed ears and outward pins"
+    },
+    "ebay_three_quarter.jpeg": {
+      "caption": "eBay: three-quarter view of the real ramp"
+    },
+    "ebay_edge_profile.jpeg": {
+      "caption": "eBay: edge-on, shows the arch and the hinge-end flange (a perspective photo, not to scale)"
+    },
+    "ebay_bottom_view.png": {
+      "caption": "eBay: inside face with the tray rim"
+    },
+    "web_front_iso_closed.jpeg": {
+      "caption": "yojoe.com right-front iso, ramp closed: the ramp's vertical front face (RAMP ACCESS label) is a band below the fender top line, roughly twice our 10 mm, and a round black hinge boss sits on the black nose at each bottom corner of it (2026-09-13)"
+    },
+    "web_front_straight_closed.jpeg": {
+      "caption": "Straight-on front, ramp closed (web photo): the ramp's front face is inset between the fenders' front faces, hinge at its bottom edge, sled-launch door on the black nose below (2026-09-13)"
+    },
+    "web_front_iso_open.jpeg": {
+      "caption": "Front iso from slightly below, ramp lowered flat to the table (web photo, BLC): the ramp pivots at the top of the black nose and lies flat; the black boss at the nose corner is the hull-side hinge (2026-09-13)"
+    }
   }
 }

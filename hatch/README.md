@@ -17,6 +17,13 @@ its side-edge profile is traced off the fenders' inner top edges, which the clos
   axis 4.55 mm above the bracket's base, plus a triangular gusset. Renders in `renders/` once render.sh runs.
 - Not the ramp: `../../../WHALE/Whale Hatch.3mf` (55 x 72 x 6.2 mm) is the small TOP hatch, and thing:6660330
   "Hatch Hinge" is that top hatch's pin.
+- `ref/web_front_*.jpeg` (2026-09-13, from yojoe.com and a blog): the bow with the ramp closed (iso and
+  straight on) and lowered flat. They show the hinge end the eBay photos could not: the ramp's front face is a
+  band that hangs BELOW the fenders' front faces (about as tall again as the 10 mm fender drop, "RAMP ACCESS"
+  label on it), flanked by the black nose's rounded top corners, and a round black boss on the nose at each
+  end of that band is the hull-side hinge: the ramp's pins go into those bosses. Lowered, the ramp pivots at
+  the top of the nose and lies flat on the table. So `pin_below_lip 3` is probably far too small and the
+  hull-side hinge points are on the black lower hull, not the green fenders.
 - `ref/`: Armen's pencil tracing of the fender edge (`profile_tracing.jpeg`: 28 / 24 / 10 above the paper edge at
   0 / 50 / 90), his five hull photos (`hull_photo_*.jpeg`) and the eBay photos of the real ramp (`ebay_*`).
   Recovered from the 2026-09-11 session transcript on 2026-09-12.
