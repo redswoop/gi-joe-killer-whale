@@ -18,6 +18,7 @@ for (i = [0 : len(clrs) - 1]) translate([i * 16, 0, 0]) {
     }
     translate([sock_d / 2, -6, 0]) label(str(clrs[i]));
 }
-// rail slice: front plate 20 wide, 6 tall, rail on top; printed on its inner face like the real part
-translate([-20, 0, front_t]) rotate([-90, 0, 0]) translate([0, 0, -seam_z + 6])
+// rail slice: front plate 20 wide, 6 tall, rail on top; STANDING on its cut face like the real part
+// now prints (the front stands on its bottom edge). Brim.
+translate([-20, 0, -(seam_z - 6)])
     intersection() { front_local(); translate([-10, -5, seam_z - 6]) cube([20, 20, 6 + rail_h + 1]); }

@@ -101,22 +101,23 @@ hinge_pin_d = 2.6;     // pin diameter (photo ~2.6; Cryoguns' replacement bracke
 pin_len     = 3.5;     // how far each pin sticks out past the side edge (photo ~3.5-4.5)
 // The real front (web photos 2026-09-13, ref/web_front_*; Armen): two 10 mm bands. The upper one is
 // flush with the fenders' front faces (front_h, shared by the socket block and the top of this plate);
-// then a 1 mm step OUT; then a lower band, on the real part a thin flange about 1.5-2 thick, with the
-// hinge at its bottom edge in black bosses on the skirt's top corners (broken off on Armen's hull).
-// The front plate replicates the faces: 4 thick where the rail needs it, the lower band 1 proud of
-// it, rounded bottom edge coaxial with the pins. The inner face stays flat because the part prints
-// on it, so the lower band is 5 thick here, not 2; only its face and the step show on the toy.
+// then a 1 mm step OUT; then a lower band, a thin flange about 1.5-2 thick, with the hinge at its
+// bottom edge in black bosses on the skirt's top corners (broken off on Armen's hull). The front
+// plate replicates that: the upper band 4 thick because the rail needs it, the lower band a thin
+// flange 1 proud of it with the pins centred in it, so the flange's bottom sweeps only ~2 mm past
+// the axis when the ramp opens (a thick flange with the axis at its back swept 3.7 into the skirt).
+// The inner face steps too (Armen: "step the back face as well"), so the part no longer prints
+// flat: it stands on the flange's flat bottom edge (print_layout).
 front_step  = 1;       // the lower band's face stands this far PROUD of the upper band's (Armen 2026-09-13,
                        // "it steps out")
 front_band  = 10;      // lower band height, lip level to its bottom edge (Armen: "another 10 mm drop")
-pin_y       = front_t - hinge_pin_d / 2;   // axis aft of the UPPER band's face: the pin lies on the bed
-                                            // when the front prints on its inner face
-flange_r    = pin_y + front_step;           // 3.7: round of the bottom edge about the axis, tangent to the
-                                            // lower band's face. Flange thickness = front_t + front_step = 5
-pin_below_lip = front_band - flange_r;      // 6.3: pin axis below the lip level
-front_skin  = hatch_t;  // the front is shelled from its inner face (Armen 2026-09-13): this much skin on
-                        // the outer face, the step, the bottom round, and under the rail
-front_end_wall = 4;     // solid at each end, around the pins
+flange_t    = 3;       // lower band thickness: the 2.6 pin plus 0.2 a side. Real part ~1.5-2
+flange_ch   = 0.5;     // chamfer on the flange's bottom corners (sweep radius, and a cleaner first layer)
+front_in_step = front_t - (flange_t - front_step);   // 2: how far the inner face steps back above the
+                                                     // lip; a 45 deg chamfer, since it faces down in print
+pin_y       = -front_step + flange_t / 2;   // 0.5: axis aft of the UPPER band's face = centred in the flange
+pin_below_lip = front_band - hinge_pin_d / 2;   // 8.7: the pin is tangent to the flange's bottom edge, so
+                                                // it lies on the bed when the front prints standing
 
 // ---------- mounts: one bracket per side, pin hole, glued where the skirt's hinge bosses were ----------
 // The hull's own hinge was a black boss on each top corner of the skirt (web photos); Armen's are broken
@@ -171,7 +172,7 @@ end_pt   = arc_cen + arc_R * [cos(a_end), sin(a_end)];   // outer corner at the 
 // The socket block spans z = 0 .. -sock_h; the front plate hangs below the seam and carries
 // the pins on the world X axis once hatch_shift is applied.
 seam_z     = -sock_h;                                // socket / front plate seam
-front_bot  = -front_h - front_band;                  // front plate's bottom edge (the round's lowest point)
+front_bot  = -front_h - front_band;                  // front plate's bottom edge (flat: the print's first layer)
 pin_axis   = [pin_y, -front_h - pin_below_lip];      // (y, z) of the hinge axis in the plate frame
 hatch_shift = [0, -pin_axis[0], -pin_axis[1]];       // plate frame -> world (axis on X)
 echo(str("hinge axis ", pin_axis[0], " aft of the front face, ", pin_below_lip, " below the lip; front plate ",
@@ -282,13 +283,7 @@ module socket_block() {
 // The front plate: flat, y = 0 .. front_t, from the seam down to front_bot, with the rail on
 // top and a pin out of each side edge. Plate frame. Prints on its inner face (print_layout).
 module front_local() {
-    // The body, shelled: the profile minus the same profile inset front_skin on its closed faces and
-    // opened through the inner face, over the middle of the width. Prints on the inner face, so the
-    // pocket faces the bed and the outer skin bridges it (a 12 mm span).
-    difference() {
-        across(hatch_w) front_body_2d();
-        across(hatch_w - 2 * front_end_wall) front_body_2d(front_skin);
-    }
+    across(hatch_w) front_body_2d();
     across(hatch_w) polygon(rail_2d());
     for (sx = [-1, 1]) translate([sx * hatch_w / 2, pin_axis[0], pin_axis[1]]) rotate([0, sx * 90, 0]) {
         cylinder(d = hinge_pin_d, h = pin_len - hinge_pin_d / 2);
@@ -297,22 +292,15 @@ module front_local() {
 }
 module front() { translate(hatch_shift) front_local(); }          // world frame, closed pose
 
-// The front plate's profile (y, z), plate frame. Upper band: outer face at y = 0, seam down to the
-// lip level. Lower band: face stepped out to y = -front_step, down to a half-round of radius flange_r
-// about the axis, clipped to the flange. Every point of the bottom is within flange_r of the axis,
-// so the swinging front never reaches below its own pins into the skirt. Both share the flat inner
-// face y = front_t. With k > 0 the closed faces move in by k and the shape runs out past the inner
-// face: that is the pocket.
-module front_body_2d(k = 0) {
-    y_in = front_t + (k > 0 ? 1 : 0);
-    polygon([[k, -front_h - k - 0.5], [y_in, -front_h - k - 0.5], [y_in, seam_z - k], [k, seam_z - k]]);
-    intersection() {
-        hull() {
-            translate(pin_axis) circle(r = flange_r - k);
-            polygon([[-front_step + k, pin_axis[1]], [y_in, pin_axis[1]], [y_in, -front_h - k], [-front_step + k, -front_h - k]]);
-        }
-        translate([-front_step + k, front_bot - 1]) square([y_in + front_step - k, seam_z - front_bot + 1]);
-    }
+// The front plate's profile (y, z), plate frame, counter-clockwise from the bottom. Lower band: a
+// flange flange_t thick with its face at y = -front_step, flat bottom with chamfered corners, from
+// front_bot up to the lip level. Upper band: y = 0 .. front_t from the lip level to the seam; its
+// inner face steps back front_in_step from the flange's inner face through a 45 deg chamfer.
+module front_body_2d() {
+    y0 = -front_step; y1 = -front_step + flange_t;    // the flange's faces
+    polygon([[y0 + flange_ch, front_bot], [y1 - flange_ch, front_bot], [y1, front_bot + flange_ch],
+             [y1, -front_h], [front_t, -front_h + front_in_step], [front_t, seam_z], [0, seam_z],
+             [0, -front_h], [y0, -front_h], [y0, front_bot + flange_ch]]);
 }
 
 // One mount bracket, in its own frame: a plate in YZ, thickness along +X from x = 0,
