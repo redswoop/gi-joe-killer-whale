@@ -110,7 +110,10 @@ the front and fixes inside the hull.
   lip the face steps out `front_step 1` and the lower band (`front_band 10` tall) ends in a half-round of
   radius `flange_r 3.7` about the pin axis, tangent to its face. The inner face stays flat for printing, so
   that lower band is 5 thick, not 2; only its face and the step show. No point of the bottom is further
-  than `flange_r` from the axis, so the swinging front clears the skirt. 14.5 tall + the 2.5 rail. Its top edge carries the rail: `rail_h 2.5` up, `rail_neck 1.8`
+  than `flange_r` from the axis, so the swinging front clears the skirt. 14.5 tall + the 2.5 rail.
+  Shelled from the inner face (Armen 2026-09-13): `front_skin 1.5` on the outer face, step, bottom round and
+  under the rail, `front_end_wall 4` solid at each end around the pins, pocket open to the bed. Volume 3.7 cm3
+  instead of 6.7. Its top edge carries the rail: `rail_h 2.5` up, `rail_neck 1.8`
   thick where it leaves the plate, widening by `rail_taper 1.2` toward the OUTER face. One-sided dovetail: the
   inner face is flat so the front prints on that face with no overhang and the taper is a top-side slope.
   Round 1 of the coupon (rail 1.2 / 1.2 / 1.0, plate 3.5, clearances 0.1 / 0.15 / 0.25 per face) was far too
@@ -143,7 +146,8 @@ the front and fixes inside the hull.
    Report which slide is snug-but-moving; write back `slide_clr`.
 2. `stl/hatch.stl` ON ITS SIDE: the +X side face on the bed, footprint 23.8 x 101.7, 93.3 tall. Brim. Arc,
    front face and groove are traced in every layer.
-3. `stl/front.stl` flat on its inner face, 100.3 x 17.0 x 5.0, pins lying on the bed, the proud lower band on top.
+3. `stl/front.stl` flat on its inner face, 100.3 x 17.0 x 5.0, pins lying on the bed, the proud lower band on top,
+   the pocket facing the bed (the skin bridges a 12 mm span; no support).
 4. `stl/mount.stl` x2, flat, 14 x 10 x 3.
 - Fit checks: curve flush with the fender edges and the front face flush with their 10 mm front drop; the
   front slides in and stays; brackets fit the fender gap (`mount_t`); the pin height that lets the ramp open

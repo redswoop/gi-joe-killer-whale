@@ -114,6 +114,9 @@ pin_y       = front_t - hinge_pin_d / 2;   // axis aft of the UPPER band's face:
 flange_r    = pin_y + front_step;           // 3.7: round of the bottom edge about the axis, tangent to the
                                             // lower band's face. Flange thickness = front_t + front_step = 5
 pin_below_lip = front_band - flange_r;      // 6.3: pin axis below the lip level
+front_skin  = hatch_t;  // the front is shelled from its inner face (Armen 2026-09-13): this much skin on
+                        // the outer face, the step, the bottom round, and under the rail
+front_end_wall = 4;     // solid at each end, around the pins
 
 // ---------- mounts: one bracket per side, pin hole, glued where the skirt's hinge bosses were ----------
 // The hull's own hinge was a black boss on each top corner of the skirt (web photos); Armen's are broken
@@ -279,19 +282,12 @@ module socket_block() {
 // The front plate: flat, y = 0 .. front_t, from the seam down to front_bot, with the rail on
 // top and a pin out of each side edge. Plate frame. Prints on its inner face (print_layout).
 module front_local() {
-    // Upper band: outer face at y = 0, seam down to the lip level. Lower band: face stepped out to
-    // y = -front_step, down to a half-round of radius flange_r about the axis, clipped to the flange.
-    // Every point of the bottom is within flange_r of the axis, so the swinging front never reaches
-    // below its own pins into the skirt. Both share the flat inner face y = front_t.
-    across(hatch_w) {
-        polygon([[0, -front_h], [front_t, -front_h], [front_t, seam_z], [0, seam_z]]);
-        intersection() {
-            hull() {
-                translate(pin_axis) circle(r = flange_r);
-                polygon([[-front_step, pin_axis[1]], [front_t, pin_axis[1]], [front_t, -front_h + 0.5], [-front_step, -front_h + 0.5]]);
-            }
-            translate([-front_step, front_bot - 1]) square([front_t + front_step, seam_z - front_bot + 1]);
-        }
+    // The body, shelled: the profile minus the same profile inset front_skin on its closed faces and
+    // opened through the inner face, over the middle of the width. Prints on the inner face, so the
+    // pocket faces the bed and the outer skin bridges it (a 12 mm span).
+    difference() {
+        across(hatch_w) front_body_2d();
+        across(hatch_w - 2 * front_end_wall) front_body_2d(front_skin);
     }
     across(hatch_w) polygon(rail_2d());
     for (sx = [-1, 1]) translate([sx * hatch_w / 2, pin_axis[0], pin_axis[1]]) rotate([0, sx * 90, 0]) {
@@ -300,6 +296,24 @@ module front_local() {
     }
 }
 module front() { translate(hatch_shift) front_local(); }          // world frame, closed pose
+
+// The front plate's profile (y, z), plate frame. Upper band: outer face at y = 0, seam down to the
+// lip level. Lower band: face stepped out to y = -front_step, down to a half-round of radius flange_r
+// about the axis, clipped to the flange. Every point of the bottom is within flange_r of the axis,
+// so the swinging front never reaches below its own pins into the skirt. Both share the flat inner
+// face y = front_t. With k > 0 the closed faces move in by k and the shape runs out past the inner
+// face: that is the pocket.
+module front_body_2d(k = 0) {
+    y_in = front_t + (k > 0 ? 1 : 0);
+    polygon([[k, -front_h - k - 0.5], [y_in, -front_h - k - 0.5], [y_in, seam_z - k], [k, seam_z - k]]);
+    intersection() {
+        hull() {
+            translate(pin_axis) circle(r = flange_r - k);
+            polygon([[-front_step + k, pin_axis[1]], [y_in, pin_axis[1]], [y_in, -front_h - k], [-front_step + k, -front_h - k]]);
+        }
+        translate([-front_step + k, front_bot - 1]) square([y_in + front_step - k, seam_z - front_bot + 1]);
+    }
+}
 
 // One mount bracket, in its own frame: a plate in YZ, thickness along +X from x = 0,
 // front-bottom corner at the origin, hole through it at (mount_hole_back, mount_hole_up).
