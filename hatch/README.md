@@ -103,18 +103,19 @@ the front and fixes inside the hull.
   width, open at both ends, mouth on the seam face. The block's front face is the top 5.5 of the vertical
   front drop. It is clipped against the outer arc only (`band_2d` would cut it along the slanted radial
   line at the plate's front corner and shave the groove's lip off; that bug is fixed).
-- **Front** (`front`): a flat plate `front_t 4.0` thick, `hatch_w` wide, from the seam down to a
-  half-round bottom edge of radius `pin_y` about the pin axis (15.2 tall + the rail). Web photos 2026-09-13:
-  the real front is a full-width band hanging below the fenders' front faces, about as tall again as the
-  10 mm fender drop, hinge at its bottom edge; this plate replicates that band, and the round means no
-  point of the bottom is further than `pin_y` from the axis, so the swinging front clears the skirt. Its top edge carries the rail: `rail_h 2.5` up, `rail_neck 1.8`
+- **Front** (`front`): `hatch_w` wide, flat inner face, stepped outer face. Armen 2026-09-13: the real front
+  is "2 x 10 mm sections: one flush with the top, then a 1 mm step, then another 10 mm drop where the hinges
+  are", about 1.5-2 thick. Here: the upper band (seam to lip level, with the socket block's face above it
+  making up `front_h 10`) is `front_t 4.0` thick because the rail needs it; below the lip the face steps back
+  `front_step 1` and the lower band (`front_band 10` tall) is a 3 mm flange ending in a half-round of radius
+  `flange_r 1.7` about the pin axis, tangent to its face. No point of the bottom is further than `flange_r`
+  from the axis, so the swinging front clears the skirt. 14.5 tall + the 2.5 rail. Its top edge carries the rail: `rail_h 2.5` up, `rail_neck 1.8`
   thick where it leaves the plate, widening by `rail_taper 1.2` toward the OUTER face. One-sided dovetail: the
   inner face is flat so the front prints on that face with no overhang and the taper is a top-side slope.
   Round 1 of the coupon (rail 1.2 / 1.2 / 1.0, plate 3.5, clearances 0.1 / 0.15 / 0.25 per face) was far too
   loose everywhere, so the rail doubled on 2026-09-13; `slide_clr` is 0 until round 2 says otherwise.
   Pins `hinge_pin_d 2.6` x `pin_len 3.5` straight out of the side edges, axis `pin_y` = 2.7 aft of the outer
-  face (so they lie on the bed) and `pin_below_lip 8` below the lip level (band below the lip 10.7; PHOTO
-  ESTIMATE from the web photos, the hull decides).
+  face (so they lie on the bed) and `pin_below_lip` = `front_band - flange_r` = 8.3 below the lip level.
   `rail_2d(g, ext)` gives the profile, grown by `g` for the groove (`slide_clr` per face; negative = interference).
 - **Mounts** (`mounts`, print `mount.stl` twice): a `mount_len 14` x `mount_h 10` x `mount_t 3.0` plate with a
   `hinge_pin_d + pin_clr` hole (`pin_clr = fit_pin_clr()` = 0.3 on the diameter, coupon 2026-09-13: "perfect fit") `mount_hole_back 5` from its front edge and `mount_hole_up 4` above its
@@ -141,7 +142,7 @@ the front and fixes inside the hull.
    Report which slide is snug-but-moving; write back `slide_clr`.
 2. `stl/hatch.stl` ON ITS SIDE: the +X side face on the bed, footprint 23.8 x 101.7, 93.3 tall. Brim. Arc,
    front face and groove are traced in every layer.
-3. `stl/front.stl` flat on its inner face, 100.3 x 17.7 x 4.0, pins lying on the bed.
+3. `stl/front.stl` flat on its inner face, 100.3 x 17.0 x 4.0, pins lying on the bed, the step a top-side ledge.
 4. `stl/mount.stl` x2, flat, 14 x 10 x 3.
 - Fit checks: curve flush with the fender edges and the front face flush with their 10 mm front drop; the
   front slides in and stays; brackets fit the fender gap (`mount_t`); the pin height that lets the ramp open
@@ -162,9 +163,9 @@ in frame.
   (`tab_edge_t`, is the outer surface flush?) and the straight width between the tabs (`top_edge_w`); the
   full-width hatch print will show both.
   A flexible tape along the fender curve would settle the width numbers the ruler could not.
-- Hull side: `pin_below_lip` (8, from the web photos: the band below the fenders is about a fender drop
-  tall) needs the hull's number: from the fender's front bottom edge down to where the boss's hole centre
-  was. Bracket shape: photo of a broken boss stub with a ruler. No lip or skirt in `bay_mock` yet.
+- Hull side: `front_band 10` and `front_step 1` are Armen's reading of the photos; the hull's own numbers
+  (fender front bottom edge down to the boss's hole centre) would confirm. Bracket shape: photo of a broken
+  boss stub with a ruler. No lip or skirt in `bay_mock` yet.
 - Trace the fender edge properly: `k` (points tool) along the pencil line on overlay `o1`, Enter, then
   `../../tools/notes whale/hatch points <id> --scad fender_pts --2d` gives a `[y, z]` list. The single circle
   (`hatch_sag`) sits a little low mid-span and a little high at the hinge; a polyline or two-arc profile through the

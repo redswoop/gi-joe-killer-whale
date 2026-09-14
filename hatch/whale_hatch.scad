@@ -99,14 +99,19 @@ sock_d     = front_t + slide_clr + sock_back;   // socket block depth aft of the
 // ---------- hinge pins, out of the front plate's side edges ----------
 hinge_pin_d = 2.6;     // pin diameter (photo ~2.6; Cryoguns' replacement bracket bores 3.10)
 pin_len     = 3.5;     // how far each pin sticks out past the side edge (photo ~3.5-4.5)
-// The real front (web photos 2026-09-13, ref/web_front_*): a flat band the full width of the ramp that
-// hangs BELOW the fenders' front faces, about as tall again as the 10 mm fender drop, with the hinge
-// at its bottom edge in black bosses on the skirt's top corners (broken off on Armen's hull). The
-// front plate replicates that band: flat face, rounded bottom edge coaxial with the pins.
-pin_below_lip = 8;     // pin axis below the lip level (band below the lip = this + pin_y = 10.7).  PHOTO ESTIMATE
+// The real front (web photos 2026-09-13, ref/web_front_*; Armen): two 10 mm bands. The upper one is
+// flush with the fenders' front faces (front_h, shared by the socket block and the top of this plate);
+// then a 1 mm step back; then a lower band, a thin flange about 1.5-2 thick, with the hinge at its
+// bottom edge in black bosses on the skirt's top corners (broken off on Armen's hull). The front
+// plate replicates that: 4 thick where the rail needs it, stepped back and thinner below the lip,
+// rounded bottom edge coaxial with the pins. The inner face stays flat (it prints on it).
+front_step  = 1;       // the lower band's face sits this far behind the upper band's (Armen 2026-09-13)
+front_band  = 10;      // lower band height, lip level to its bottom edge (Armen: "another 10 mm drop")
 pin_y       = front_t - hinge_pin_d / 2;   // axis aft of the outer face: the pin lies on the bed when
-                                            // the front prints on its inner face. Also the radius of the
-                                            // plate's rounded bottom edge, so it is tangent to the outer face
+                                            // the front prints on its inner face
+flange_r    = pin_y - front_step;           // 1.7: round of the bottom edge about the axis, tangent to the
+                                            // lower band's face. Flange thickness = front_t - front_step = 3
+pin_below_lip = front_band - flange_r;      // 8.3: pin axis below the lip level
 
 // ---------- mounts: one bracket per side, pin hole, glued where the skirt's hinge bosses were ----------
 // The hull's own hinge was a black boss on each top corner of the skirt (web photos); Armen's are broken
@@ -161,7 +166,7 @@ end_pt   = arc_cen + arc_R * [cos(a_end), sin(a_end)];   // outer corner at the 
 // The socket block spans z = 0 .. -sock_h; the front plate hangs below the seam and carries
 // the pins on the world X axis once hatch_shift is applied.
 seam_z     = -sock_h;                                // socket / front plate seam
-front_bot  = -front_h - pin_below_lip - pin_y;       // front plate's bottom edge (the round's lowest point)
+front_bot  = -front_h - front_band;                  // front plate's bottom edge (the round's lowest point)
 pin_axis   = [pin_y, -front_h - pin_below_lip];      // (y, z) of the hinge axis in the plate frame
 hatch_shift = [0, -pin_axis[0], -pin_axis[1]];       // plate frame -> world (axis on X)
 echo(str("hinge axis ", pin_axis[0], " aft of the front face, ", pin_below_lip, " below the lip; front plate ",
@@ -272,15 +277,19 @@ module socket_block() {
 // The front plate: flat, y = 0 .. front_t, from the seam down to front_bot, with the rail on
 // top and a pin out of each side edge. Plate frame. Prints on its inner face (print_layout).
 module front_local() {
-    // the band: a rectangle from the seam down to the axis, then a half-round of radius pin_y about the
-    // axis, clipped to the plate's thickness. Every point of the bottom is within pin_y of the axis, so
-    // the swinging front never reaches below its own pins into the skirt.
-    across(hatch_w) intersection() {
-        hull() {
-            translate(pin_axis) circle(r = pin_y);
-            polygon([[0, pin_axis[1]], [front_t, pin_axis[1]], [front_t, seam_z], [0, seam_z]]);
+    // Upper band: full thickness, outer face at y = 0, seam down to the lip level. Lower band: face
+    // stepped back to y = front_step, down to a half-round of radius flange_r about the axis, clipped
+    // to the flange. Every point of the bottom is within flange_r of the axis, so the swinging front
+    // never reaches below its own pins into the skirt. Both share the flat inner face y = front_t.
+    across(hatch_w) {
+        polygon([[0, -front_h], [front_t, -front_h], [front_t, seam_z], [0, seam_z]]);
+        intersection() {
+            hull() {
+                translate(pin_axis) circle(r = flange_r);
+                polygon([[front_step, pin_axis[1]], [front_t, pin_axis[1]], [front_t, -front_h + 0.5], [front_step, -front_h + 0.5]]);
+            }
+            translate([front_step, front_bot - 1]) square([front_t - front_step, seam_z - front_bot + 1]);
         }
-        translate([0, front_bot - 1]) square([front_t, seam_z - front_bot + 1]);
     }
     across(hatch_w) polygon(rail_2d());
     for (sx = [-1, 1]) translate([sx * hatch_w / 2, pin_axis[0], pin_axis[1]]) rotate([0, sx * 90, 0]) {
