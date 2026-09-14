@@ -13,9 +13,9 @@
 //    front  a flat plate carrying the front face and the hinge pins out of its side
 //           edges; a dovetail RAIL on its top edge slides into the socket along X.
 //           This is the part to iterate on.
-//    mount  x2, a plate with a pin hole that sits between the front's side edge and
-//           the fender's inner face and is glued to the fender, with the closed hatch
-//           as the jig. The pins do not touch the hull directly.
+//    mount  x2, a C-clip with the pin hole that snaps over the middle layer's front edge
+//           in the gap between the front's side edge and the bay wall (2026-09-13
+//           teardown). Captured, no glue. The pins do not touch the hull directly.
 //
 //  The real part (eBay photos, 2026-09-11) is a shallow tray: a 1.5 plate with a
 //  ~3 mm rim on the inside along both sides and the cabin end, a round hinge bar
@@ -34,7 +34,9 @@
 show_ghost = false;    // no reference STL yet
 show_all   = true;
 show_hull  = true;     // grey mock of the bay: floor + fenders, for the viewer only
-open_deg   = 0;        // animate: 0 = closed, ~115 = ramp lowered over the nose
+open_deg   = 0;        // animate: 0 = closed, the cabin end swings UP and over the nose; ~180 = the band
+                       // hangs down the nose's front, which is what stops it (fixed 2026-09-13: the sign was
+                       // reversed and the checks had been sweeping the ramp down through the bay)
 show_rim   = true;     // the tray rim on the inside face
 show_detail = true;    // vent grilles, ribbed panels and recessed bars on the outer face
 
@@ -141,24 +143,48 @@ flange_t    = 3;       // lower band thickness: the 2.6 pin plus 0.2 a side. Rea
 flange_ch   = 0.5;     // chamfer on the flange's bottom corners (sweep radius, and a cleaner first layer)
 front_in_step = front_t - (flange_t - front_step);   // 2: how far the inner face steps back above the
                                                      // lip; a 45 deg chamfer, since it faces down in print
-pin_y       = -front_step + flange_t / 2;   // 0.5: axis aft of the UPPER band's face = centred in the flange
+pin_fwd     = 0.75;    // axis forward of the flange's centre: the pin hole in the C-clip needs a wall between it
+                       // and the middle layer's face (2 - 1.45 = 0.55 without this; 1.3 with it). Teardown 2026-09-13
+pin_y       = -front_step + flange_t / 2 - pin_fwd;   // -0.25: axis aft of the UPPER band's face
 pin_below_lip = front_band - hinge_pin_d / 2;   // 8.7: the pin is tangent to the flange's bottom edge, so
                                                 // it lies on the bed when the front prints standing
 
-// ---------- mounts: one bracket per side, pin hole, glued where the skirt's hinge bosses were ----------
-// The hull's own hinge was a black boss on each top corner of the skirt (web photos); Armen's are broken
-// off. The bracket is still a plate with a hole in the fender gap, but its glue face and footprint
-// must follow the broken stub, which needs a photo with a ruler. Shape below is the placeholder.
+// ---------- middle layer (the black skirt's upper half) at the bow: teardown 2026-09-13, ref/hull_apart_* ----------
+// Armen took the hull apart. The ramp's front band hangs in front of the middle layer's front face,
+// which sits ml_inset behind the fenders' front faces ("about 2 mm inset"). The hull-side hinge was two
+// very thin plastic panels on the UNDERSIDE of that layer, projecting forward past its leading edge
+// with the pin holes in them; both snapped off (symmetric stress lines on the underside: an earlier
+// repair). Nothing projects, no drilling, no glue: the bracket has to be CAPTURED by what is there.
+// So the bracket is a C-clip over the layer's front edge at each corner, in the gap between the
+// front plate's side edge and the bay wall: a lip on the layer's top face, the bridge in the 2 mm
+// recess, a leg underneath with a slot that clears the broken panel stub, and the pin boss hanging
+// off the bridge's bottom where the original panel was. Once both pins are in, the ramp ties the
+// two clips together, and a forward pull on the open ramp wedges them tighter (the axis is in front
+// of and below the edge). Every number here is a photo guess until the layer is measured.
+ml_inset   = 2;        // the layer's front face behind the fenders' front faces (Armen: "about 2 mm")
+ml_face_h  = 10;       // that face's height, lip level to the layer's bottom leading edge (= front_band: the
+                       // band covers it; the pin ends up 1.3 above the bottom). UNMEASURED
+ml_wall_t  = 2;        // thickness of the front wall behind the face (mock, for the opening sweep). UNMEASURED
+ml_edge_r  = 1;        // round on that wall's top edges (mock). UNMEASURED
+stub_t     = 1.5;      // the broken panel stubs under the layer: thickness ("very thin"). UNMEASURED
+stub_len   = 6;        // how far aft of the leading edge they run. UNMEASURED. Anything forward of the
+                       // face gets trimmed flush, the boss sits there
+stub_x     = 1.5;      // stub centre in the clip's frame (0 = the clip's inner face): assumed under the pin
+stub_clr   = 0.4;      // slot clearance around the stub, total
+clip_clr   = 0;        // C opening = ml_face_h + clip_clr; negative = interference. export.sh: -0.2 / 0 / 0.2
+clip_lip_t = 1.0;      // top lip on the layer's top face (in the fender gap, nothing above it): thickness
+clip_lip_len = 6;      //   and reach aft of the front face
+clip_leg_t = 1.2;      // bottom leg under the layer: thickness
+clip_leg_len = 10;     //   reach aft
+clip_leg_in = 6;       //   extension inboard past the clip's inner face (the slot leaves only a sliver outboard)
+clip_boss_d = 6.5;     // boss around the pin hole, hanging off the bridge's bottom in front of the layer
+
+// ---------- mounts: one C-clip per side (section above), pin hole on the axis ----------
 pin_clr     = fit_pin_clr();   // 0.3: pin-to-hole clearance, settled by the coupon 2026-09-13 ("perfect
                                // fit"); lives in lib/fit.scad as the known H2C number
-mount_t     = 3.0;     // bracket thickness = the gap between the hatch and the fender minus a hair
+mount_t     = 3.0;     // clip thickness across the gap = the gap between the hatch and the fender minus a hair
                        // ((bay_w - hatch_w) / 2 = 3.6 measured, pin_len 3.5 passes through)
-mount_clr   = 0.2;     // gap between the front plate's side edge and the bracket
-mount_len   = 14;      // bracket along Y
-mount_h     = 10;      // bracket along Z
-mount_hole_back = 5;   // hole centre from the bracket's front edge
-mount_hole_up   = 4;   // hole centre above the bracket's bottom edge
-mount_r     = 1.5;     // corner radius
+mount_clr   = 0.2;     // gap between the front plate's side edge and the clip
 
 // ---------- bay mock (photo estimates, viewer only) ----------
 bay_w      = 100.5;    // ruler across the bay near the cabin: 0.2 .. 10.2 cm
@@ -201,6 +227,11 @@ seam_z     = -sock_h;                                // socket / front plate sea
 front_bot  = -front_h - front_band;                  // front plate's bottom edge (flat: the print's first layer)
 pin_axis   = [pin_y, -front_h - pin_below_lip];      // (y, z) of the hinge axis in the plate frame
 hatch_shift = [0, -pin_axis[0], -pin_axis[1]];       // plate frame -> world (axis on X)
+// The middle layer in the world frame (see its parameter section)
+fender_y   = -pin_y;                    // y of the fenders' front faces (plate frame y = 0)
+ml_face_y  = fender_y + ml_inset;       // y of the layer's front face
+ml_top     = pin_below_lip;             // z of its top face = the lip level
+ml_bot     = ml_top - ml_face_h;        // z of its bottom leading edge
 echo(str("hinge axis ", pin_axis[0], " aft of the front face, ", pin_below_lip, " below the lip; front plate ",
          seam_z - front_bot, " tall + ", rail_h, " rail"));
 
@@ -369,18 +400,50 @@ module surface_details() {
     for (b = bar_x) surf_cut(b[0], b[1], bar_y[0], bar_y[1], bar_d);
 }
 
-// One mount bracket, in its own frame: a plate in YZ, thickness along +X from x = 0,
-// front-bottom corner at the origin, hole through it at (mount_hole_back, mount_hole_up).
-module mount_local() {
-    rotate([90, 0, 90]) linear_extrude(mount_t) difference() {
-        offset(r = mount_r) offset(delta = -mount_r) square([mount_len, mount_h]);
-        translate([mount_hole_back, mount_hole_up]) circle(d = hinge_pin_d + pin_clr);
+// One C-clip in its own frame: world y and z (the axis at the origin), x = 0 is the clip's inner
+// face toward the front plate, mount_t thick outboard; the bottom leg also runs clip_leg_in inboard.
+// clip_2d is the YZ profile: lip on top of the layer, bridge in the recess, leg underneath, the boss
+// around the hole clipped to the layer's outline, minus the pin hole.
+module clip_2d() {
+    lip_z = ml_top + clip_clr / 2;  leg_z = ml_bot - clip_clr / 2;
+    difference() {
+        union() {
+            translate([ml_face_y - eps, lip_z]) square([clip_lip_len + eps, clip_lip_t]);
+            translate([fender_y, leg_z - clip_leg_t]) square([ml_inset, lip_z + clip_lip_t - leg_z + clip_leg_t]);
+            translate([ml_face_y - eps, leg_z - clip_leg_t]) square([clip_leg_len + eps, clip_leg_t]);
+            difference() { circle(d = clip_boss_d); translate([ml_face_y, leg_z]) square(50); }
+        }
+        circle(d = hinge_pin_d + pin_clr);
     }
 }
-// Both brackets in the world frame: hole on the hinge axis, inner face mount_clr off the front plate.
+module mount_local() {
+    leg_z = ml_bot - clip_clr / 2 - clip_leg_t;
+    difference() {
+        union() {
+            rotate([90, 0, 90]) linear_extrude(mount_t) clip_2d();
+            translate([-clip_leg_in, ml_face_y, leg_z]) cube([clip_leg_in + eps, clip_leg_len, clip_leg_t]);
+        }
+        // slot for the broken panel stub, under the layer only (aft of its face), open at the front
+        // and downward, so it also notches the boss's lower-aft quarter
+        translate([stub_x - (stub_t + stub_clr) / 2, ml_face_y - eps, -clip_boss_d])
+            cube([stub_t + stub_clr, stub_len + 2 * eps, clip_boss_d + leg_z + clip_leg_t + eps]);
+    }
+}
+// Both clips in the world frame: hole on the hinge axis, inner face mount_clr off the front plate.
 module mounts() {
+    for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0]) translate([hatch_w / 2 + mount_clr, 0, 0]) mount_local();
+}
+
+// The middle layer's front wall and the broken panel stubs, world frame: the hull side of the
+// hinge, for the collision checks and the viewer. A guess (see the parameter section).
+module nose_mock() {
+    translate([-bay_w / 2, 0, 0]) rotate([90, 0, 90]) linear_extrude(bay_w) hull() {
+        translate([ml_face_y, ml_bot]) square([ml_wall_t, eps]);
+        for (y = [ml_face_y + ml_edge_r, ml_face_y + ml_wall_t - ml_edge_r])
+            translate([y, ml_top - ml_edge_r]) circle(r = ml_edge_r);
+    }
     for (sx = [-1, 1]) mirror([sx < 0 ? 1 : 0, 0, 0])
-        translate([hatch_w / 2 + mount_clr, -mount_hole_back, -mount_hole_up]) mount_local();
+        translate([hatch_w / 2 + mount_clr + stub_x - stub_t / 2, ml_face_y, ml_bot - 3]) cube([stub_t, stub_len, 3]);
 }
 
 module hatch() {              // the printed hatch, closed pose, world frame
@@ -390,6 +453,7 @@ module hatch() {              // the printed hatch, closed pose, world frame
 }
 
 module bay_mock() {           // hull stand-in for the viewer, not printed
+    color("DimGray", 0.6) nose_mock();
     color("DimGray", 0.35) translate(hatch_shift) {
         translate([-bay_w / 2, 0, -bay_depth]) cube([bay_w, bay_len, 2]);
         // fenders: the arch, then the 10 mm vertical drop at the front, down to the floor
@@ -403,6 +467,6 @@ module bay_mock() {           // hull stand-in for the viewer, not printed
 // =====================================================================
 if (show_hull) bay_mock();
 if (show_all) {
-    rotate([-open_deg, 0, 0]) { color("OliveDrab") hatch(); color("DarkOliveGreen") front(); }
+    rotate([open_deg, 0, 0]) { color("OliveDrab") hatch(); color("DarkOliveGreen") front(); }
     color("SlateGray") mounts();
 }

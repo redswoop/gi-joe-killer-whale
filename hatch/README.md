@@ -1,6 +1,8 @@
 # Killer W.H.A.L.E. front landing hatch (bow ramp) with replacement hinge
 
-State as of 2026-09-13 (end of day). Tray settled at the cabin end (30 deg corner cuts, rabbet on the hull tabs, 97.1 length; two corner coupons fit) and carrying the outer-face details (grilles, ribbed panels, bars). Front redone from the web photos: two 10 mm bands, the lower one a 3 mm flange 1 mm proud with the pins centred in it, both faces stepped, prints standing. Dovetail doubled after coupon round 1 was far too loose; round 2 (-0.1 / 0 / 0.1) exported, unprinted. Pin clearance settled at 0.3 (lib/fit.scad). Brackets are placeholders until a ruler photo of the skirt's broken hinge-boss stubs. Three printed parts: the arched tray (`hatch`) with a dovetail socket under its front edge, a flat front plate (`front`) that slides into it along X and carries the hinge pins out of its side edges, and two brackets (`mount`) with pin holes that glue to the skirt. Pin position and bracket size are estimates.
+State as of 2026-09-13 (late). HULL APART: the brackets are now C-clips over the middle layer's front edge, captured,
+no glue (section "Hull side", below); three grips exported, unprinted. Every middle-layer number is a photo guess.
+The opening direction was reversed in the model until tonight; the checks now sweep 0..180 the right way. Tray settled at the cabin end (30 deg corner cuts, rabbet on the hull tabs, 97.1 length; two corner coupons fit) and carrying the outer-face details (grilles, ribbed panels, bars). Front redone from the web photos: two 10 mm bands, the lower one a 3 mm flange 1 mm proud with the pins centred in it, both faces stepped, prints standing. Dovetail doubled after coupon round 1 was far too loose; round 2 (-0.1 / 0 / 0.1) exported, unprinted. Pin clearance settled at 0.3 (lib/fit.scad). Brackets are placeholders until a ruler photo of the skirt's broken hinge-boss stubs. Three printed parts: the arched tray (`hatch`) with a dovetail socket under its front edge, a flat front plate (`front`) that slides into it along X and carries the hinge pins out of its side edges, and two brackets (`mount`) with pin holes that glue to the skirt. Pin position and bracket size are estimates.
 
 ## What the part is
 The bow ramp of the 1984 Killer W.H.A.L.E. (part "landing ramp" / "sled launch ramp door"). A large curved plate
@@ -123,22 +125,49 @@ the front and fixes inside the hull.
   Pins `hinge_pin_d 2.6` x `pin_len 3.5` straight out of the side edges, axis `pin_y` = 2.7 aft of the outer
   face, `pin_y` = 0.5, and `pin_below_lip` = `front_band - hinge_pin_d / 2` = 8.7 below the lip level.
   `rail_2d(g, ext)` gives the profile, grown by `g` for the groove (`slide_clr` per face; negative = interference).
-- **Mounts** (`mounts`, print `mount.stl` twice): a `mount_len 14` x `mount_h 10` x `mount_t 3.0` plate with a
-  `hinge_pin_d + pin_clr` hole (`pin_clr = fit_pin_clr()` = 0.3 on the diameter, coupon 2026-09-13: "perfect fit") `mount_hole_back 5` from its front edge and `mount_hole_up 4` above its
-  bottom, corners `mount_r 1.5`. `mount_t` is the fender gap ((100.5 - 93.3) / 2 = 3.6) minus a hair, so the
-  3.5 pin passes through; `mount_clr 0.2` off the front's side edge. Glue face = the outer face.
-- **Assembly**: slide the front into the socket from one side (the brackets stop it sliding back out), put a
-  bracket on each pin, set the hatch closed and flush in the bay, glue the brackets where the skirt's own
-  hinge bosses were (the black round bosses on the skirt's top corners in the web photos; broken off on
-  Armen's hull, 2026-09-13). The bracket's glue face and footprint must follow the broken stubs, so the
-  14 x 10 x 3 plate is a placeholder until there is a photo of a stub with a ruler. No hull holes needed.
+- **Mounts** (`mounts`, print two): see "Hull side" below. `mount_t 3.0` across the fender gap
+  ((100.5 - 93.3) / 2 = 3.6 minus a hair, the 3.5 pin passes through), `mount_clr 0.2` off the front's side
+  edge, hole `hinge_pin_d + pin_clr` (`pin_clr = fit_pin_clr()` = 0.3, coupon 2026-09-13 "perfect fit").
+- **Assembly**: snap a clip over the middle layer's front edge at each corner (hull apart, top shell off), slide
+  the front into the socket, put the pins in the clips, close the hull. No glue, no holes.
 - The angled skirt and the tilted slide bar from earlier on 2026-09-13 are gone (git history has them). The
   front plate is the place to bring an overhang back if the hull wants it.
 - `check.scad`: `hatch-front`, `front-mounts`, `hatch-mounts` all clear at 0 and 115 deg.
 
-## Print next (as of 2026-09-13, end of day)
-Order: coupon round 2 -> corner coupon again (now with the grille and bar details) -> hatch -> front -> mounts
-once the boss stubs are photographed.
+## Hull side (teardown, 2026-09-13 late; ref/hull_apart_0..9.jpeg)
+Armen took the hull apart (green top shell, black middle layer = upper skirt half, lower hull). What he said:
+the middle layer's front face sits **about 2 mm** behind the fenders' front faces and does not project;
+its sides are nearly flush with the bay walls; under it is the big sled dock; the original hinge was two
+**very thin panels on the layer's underside, projecting forward past its leading edge**, both snapped off
+(symmetric stress lines, an earlier repair). No drilling, no CA: a captured mount or nothing. He was tired
+and said to wing it, so:
+
+- **The clip** (`mount_local`, section "middle layer" in the .scad): a C over the layer's front edge at each
+  corner, in the 3.5 gap beside the front plate. `clip_lip_t 1.0` x `clip_lip_len 6` on the layer's top face
+  (nothing sits on that strip), the bridge fills the `ml_inset 2` recess flush with the fender plane, a
+  `clip_leg_t 1.2` x `clip_leg_len 10` leg underneath that also runs `clip_leg_in 6` inboard for strength,
+  and a `clip_boss_d 6.5` boss around the pin hole hanging off the bridge's bottom where the panel was.
+  A slot `stub_t 1.5 + stub_clr 0.4` wide at `stub_x 1.5` clears the broken panel stub (anything forward of
+  the face gets trimmed flush; the boss sits there). Opening = `ml_face_h 10 + clip_clr`.
+- **Why it holds**: the axis is in front of and below the edge, so a forward pull on the open ramp rotates
+  the clip nose-down, pressing the lip's tip onto the layer and the leg's root up into it. Both pins in,
+  the ramp ties the two clips together. Rigid, no spring.
+- **Axis moved forward** `pin_fwd 0.75` (now 0.25 forward of the upper band's face, no longer centred in the
+  flange) so the hole has a 1.3 wall between it and the layer's face instead of 0.55.
+- **Nose mock** (`nose_mock`, in `bay_mock` and the checks): the layer's front wall `ml_wall_t 2` with
+  `ml_edge_r 1` rounds, plus the two stubs. Pairs `hatch-nose`, `front-nose`, `mounts-nose` added. At 10 deg
+  the wall's rounded corner grazes the band's underside by 3.6 mm3 across the whole width (a lid hinged in
+  front of and below the edge it sits on always does this; the real toy's edge round absorbs it).
+  Everything else is clear 0..180.
+- **Unmeasured** (all defaults are guesses): `ml_inset`, `ml_face_h`, `ml_wall_t`, `ml_edge_r`, `stub_t`,
+  `stub_len`, `stub_x`. The print will say more than a ruler would: hold `mount.stl` against the corner.
+- **Opening direction**: `open_deg` used to rotate the wrong way (the cabin end went down through the bay);
+  the earlier "clear at 115" checks were sweeping the wrong path. Now 0 = closed, the cabin end goes up and
+  over, ~180 = the band hangs down the nose's front and stops it.
+
+## Print next (as of 2026-09-13, late)
+Order: **the clips first** (three grips, 20 min, hold them against the corner with the hull apart) -> coupon
+round 2 -> corner coupon again (now with the grille and bar details) -> hatch -> front.
 0. `stl/corner.stl`: the fit coupon for the cabin end (Armen 2026-09-13). The -X 25 mm of the tray at full
    length, standing on its cut face (101.7 x 22.8 footprint, 25 tall, brim). Round 1 (50 wide) showed the
    plate short by the cut's run; round 2 has the fix and Armen reports it "great angle and fit wise". Done. Checks the 30 deg corner cut,
@@ -154,7 +183,10 @@ once the boss stubs are photographed.
    footprint 100.3 x 5.0, 17 tall, rail on top, pins tangent to the bed. Brim. The rail's taper is a 26 deg
    overhang, the inner step a 45 deg chamfer, the outer step a ledge facing up. The coupon's rail slice
    stands the same way.
-4. `stl/mount.stl` x2, flat, 14 x 10 x 3.
+4. `stl/mount.stl`, `stl/mount_clr-0.2.stl`, `stl/mount_clr0.2.stl`: the C-clip at three grips, on its outboard
+   face, 13 x 15.5 footprint, 9 tall (the inboard leg stands up). Print one of each, snap onto a corner of the
+   middle layer; the one that snaps on and stays is the grip (`clip_clr`). Print that twice. Also tells whether
+   the 2 mm recess, the 10 face height and the stub slot are real.
 - Fit checks: curve flush with the fender edges and the front face flush with their 10 mm front drop; the
   front slides in and stays; brackets fit the fender gap (`mount_t`); the pin height that lets the ramp open
   over the lip (`pin_below_lip`); cabin end under the top hatch (`plate_extra`, `lip_len`); width between
@@ -176,9 +208,9 @@ in frame.
   (`tab_edge_t`, is the outer surface flush?) and the straight width between the tabs (`top_edge_w`); the
   full-width hatch print will show both.
   A flexible tape along the fender curve would settle the width numbers the ruler could not.
-- Hull side: `front_band 10` and `front_step 1` are Armen's reading of the photos; the hull's own numbers
-  (fender front bottom edge down to the boss's hole centre) would confirm. Bracket shape: photo of a broken
-  boss stub with a ruler. No lip or skirt in `bay_mock` yet.
+- Hull side: the clip's numbers are guesses (see "Hull side"). With the hull apart, a ruler on the middle
+  layer's front face (height, recess depth, wall thickness at the top edge) and the stubs would replace them;
+  or just print the clips and look.
 - Trace the fender edge properly: `k` (points tool) along the pencil line on overlay `o1`, Enter, then
   `../../tools/notes whale/hatch points <id> --scad fender_pts --2d` gives a `[y, z]` list. The single circle
   (`hatch_sag`) sits a little low mid-span and a little high at the hinge; a polyline or two-arc profile through the
