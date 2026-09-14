@@ -121,7 +121,10 @@ rail_neck  = 1.8;      // rail thickness where it leaves the plate (measured bac
 rail_taper = 1.2;      // extra thickness at the rail's top, toward the OUTER face. One-sided dovetail:
                        // the inner face is flat so the front prints on that face with no overhang.
                        // Leaves a 1.0 hook between the groove's top and the front face.
-slide_clr  = 0;        // rail-to-groove clearance per face. ROUND 2 PENDING (coupon: -0.1 / 0 / 0.1)
+slide_clr  = 0;        // GROOVE growth per face. Left at 0: the hatch is printed with this groove (2026-09-14)
+rail_shrink = 0.1;     // RAIL shrink per fitting face, the front only: the first hatch + front print was "a bit too
+                       // tight" (Armen 2026-09-14), and the rail is the cheap part to reprint. Total play per face
+                       // = slide_clr + rail_shrink
 sock_d     = front_t + slide_clr + sock_back;   // socket block depth aft of the front face
 
 // ---------- hinge pins, out of the front plate's side edges ----------
@@ -345,7 +348,7 @@ module socket_block() {
 // top and a pin out of each side edge. Plate frame. Prints on its inner face (print_layout).
 module front_local() {
     across(hatch_w) front_body_2d();
-    across(hatch_w) polygon(rail_2d());
+    across(hatch_w) polygon(rail_2d(-rail_shrink));   // the rail, shrunk so the printed groove stays
     for (sx = [-1, 1]) translate([sx * hatch_w / 2, pin_axis[0], pin_axis[1]]) rotate([0, sx * 90, 0]) {
         cylinder(d = hinge_pin_d, h = pin_len - hinge_pin_d / 2);
         translate([0, 0, pin_len - hinge_pin_d / 2]) sphere(d = hinge_pin_d);   // rounded tip

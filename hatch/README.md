@@ -200,7 +200,9 @@ pencil width on a first look. The 0 mm tick is just off the left of the photo, s
 in frame.
 
 ## Open items
-- Dovetail clearance (`slide_clr`): coupon round 2 pending. Pins done.
+- Dovetail: the first hatch + front print was "a bit too tight" (2026-09-14). `rail_shrink 0.1` takes 0.1 off every
+  fitting face of the RAIL only, so the printed hatch keeps its groove (`slide_clr` stays 0). Reprint `front.stl`;
+  if it is still tight, step `rail_shrink` to 0.15. Pins done.
 - Outer-face details are photo-scaled estimates; the corner coupon now carries the left grille's outer third
   and the left bar, so the next print shows whether 0.3 recesses and 1.0 holes read on the side-printed face.
 - Cabin-end corners: angle (`top_cut_deg 30`), tab reach (`tab_w 4`) and the plate length (`end_y 97.1`)
