@@ -1,6 +1,6 @@
 # Killer W.H.A.L.E. front landing hatch (bow ramp) with replacement hinge
 
-State as of 2026-09-13 (night). Dovetail + pin coupon printed: pins settled (`pin_clr 0.3`, now `fit_pin_clr()` in lib/fit.scad), dovetail far too loose at every clearance, so the rail is doubled (2.5 tall, 1.8 neck, 1.2 taper, front plate 4.0, socket 5.5) and round 2 of the coupon tests -0.1 / 0 / 0.1. Two corner coupons printed. Round 1 showed the plate short by the corner cuts' run, fixed (`end_y = hatch_len + plate_extra + top_cut_y`); round 2 (25 wide, lengthened) fits: angle, tab reach and length all confirmed on the hull. Plan outline fixed: the cabin-end corner cuts are now real 30 deg cuts (the old polygon produced an 11 deg sliver) and the plate is rabbeted thinner along them to sit on the hull's corner tabs. Three printed parts: the arched tray (`hatch`) with a dovetail socket under its front edge, a flat front plate (`front`) that slides into it along X and carries the hinge pins out of its side edges, and two brackets (`mount`) with pin holes that glue to the fenders. Pin position and bracket size are estimates.
+State as of 2026-09-13 (end of day). Tray settled at the cabin end (30 deg corner cuts, rabbet on the hull tabs, 97.1 length; two corner coupons fit) and carrying the outer-face details (grilles, ribbed panels, bars). Front redone from the web photos: two 10 mm bands, the lower one a 3 mm flange 1 mm proud with the pins centred in it, both faces stepped, prints standing. Dovetail doubled after coupon round 1 was far too loose; round 2 (-0.1 / 0 / 0.1) exported, unprinted. Pin clearance settled at 0.3 (lib/fit.scad). Brackets are placeholders until a ruler photo of the skirt's broken hinge-boss stubs. Three printed parts: the arched tray (`hatch`) with a dovetail socket under its front edge, a flat front plate (`front`) that slides into it along X and carries the hinge pins out of its side edges, and two brackets (`mount`) with pin holes that glue to the skirt. Pin position and bracket size are estimates.
 
 ## What the part is
 The bow ramp of the 1984 Killer W.H.A.L.E. (part "landing ramp" / "sled launch ramp door"). A large curved plate
@@ -136,7 +136,9 @@ the front and fixes inside the hull.
   front plate is the place to bring an overhang back if the hull wants it.
 - `check.scad`: `hatch-front`, `front-mounts`, `hatch-mounts` all clear at 0 and 115 deg.
 
-## Print next (as of 2026-09-13)
+## Print next (as of 2026-09-13, end of day)
+Order: coupon round 2 -> corner coupon again (now with the grille and bar details) -> hatch -> front -> mounts
+once the boss stubs are photographed.
 0. `stl/corner.stl`: the fit coupon for the cabin end (Armen 2026-09-13). The -X 25 mm of the tray at full
    length, standing on its cut face (101.7 x 22.8 footprint, 25 tall, brim). Round 1 (50 wide) showed the
    plate short by the cut's run; round 2 has the fix and Armen reports it "great angle and fit wise". Done. Checks the 30 deg corner cut,

@@ -17,7 +17,7 @@ them separately. The toy is one git repo (this folder).
 | Assembly | Folder | State |
 |---|---|---|
 | Fan shroud + steering vanes | [`shroud/`](shroud/README.md) | Printed and fitted; fused shroud variant is current. |
-| Front landing hatch (bow ramp) + hinge | [`hatch/`](hatch/README.md) | Three parts since 2026-09-13: tray with a dovetail socket, flat front plate with the pins, two glue-on brackets. Cabin-end corner (30 deg cuts, rabbet for the hull tabs, 97.1 length) confirmed by two corner coupons. Dovetail + pin coupon still unprinted. Profile still the 3-point circle. |
+| Front landing hatch (bow ramp) + hinge | [`hatch/`](hatch/README.md) | Three parts: tray with a dovetail socket, stepped front plate with the pins, two glue-on brackets. Tray's cabin end confirmed by two corner coupons; outer-face details modelled. Dovetail coupon round 2 exported, unprinted; pin fit settled (0.3). Brackets wait on a photo of the skirt's broken hinge bosses. 2026-09-13. |
 | Cockpit windscreen (3 clear panels, base, top frame) | [`windscreen/`](windscreen/README.md) | Modelled 2026-09-13 (60/65 x 40/44 x 10, mitred corners, flat top rim, tabbed base with lines, optional top frame). Coupon unprinted. |
 
 Viewer: `cd ../viewer && bun run dev` (once), then http://127.0.0.1:5180/whale/shroud/ or
