@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "rev": 20,
-  "updated": "2026-09-13T14:59:33.831Z",
+  "rev": 21,
+  "updated": "2026-09-14T00:56:28.871Z",
   "annotations": [
     {
       "kind": "text",
@@ -43,7 +43,9 @@
       ],
       "id": "a2",
       "created": "2026-09-13T12:59:46.890Z",
-      "status": "open"
+      "status": "done",
+      "done": "2026-09-14T00:56:28+00:00",
+      "reply": "Answered by the web photos: the hull's hinge was a black boss on each top corner of the skirt, broken off on this hull. The brackets go there, not on the fender; shape waits on a photo of the broken stub."
     }
   ],
   "overlays": [

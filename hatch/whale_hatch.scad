@@ -99,12 +99,19 @@ sock_d     = front_t + slide_clr + sock_back;   // socket block depth aft of the
 // ---------- hinge pins, out of the front plate's side edges ----------
 hinge_pin_d = 2.6;     // pin diameter (photo ~2.6; Cryoguns' replacement bracket bores 3.10)
 pin_len     = 3.5;     // how far each pin sticks out past the side edge (photo ~3.5-4.5)
-pin_below_lip = 3;     // pin axis below the lip level.                               PHOTO ESTIMATE
-pin_edge    = 2.5;     // front plate material below the pin axis
+// The real front (web photos 2026-09-13, ref/web_front_*): a flat band the full width of the ramp that
+// hangs BELOW the fenders' front faces, about as tall again as the 10 mm fender drop, with the hinge
+// at its bottom edge in black bosses on the skirt's top corners (broken off on Armen's hull). The
+// front plate replicates that band: flat face, rounded bottom edge coaxial with the pins.
+pin_below_lip = 8;     // pin axis below the lip level (band below the lip = this + pin_y = 10.7).  PHOTO ESTIMATE
 pin_y       = front_t - hinge_pin_d / 2;   // axis aft of the outer face: the pin lies on the bed when
-                                            // the front prints on its inner face
+                                            // the front prints on its inner face. Also the radius of the
+                                            // plate's rounded bottom edge, so it is tangent to the outer face
 
-// ---------- mounts: one bracket per side, pin hole, glued to the fender's inner face ----------
+// ---------- mounts: one bracket per side, pin hole, glued where the skirt's hinge bosses were ----------
+// The hull's own hinge was a black boss on each top corner of the skirt (web photos); Armen's are broken
+// off. The bracket is still a plate with a hole in the fender gap, but its glue face and footprint
+// must follow the broken stub, which needs a photo with a ruler. Shape below is the placeholder.
 pin_clr     = fit_pin_clr();   // 0.3: pin-to-hole clearance, settled by the coupon 2026-09-13 ("perfect
                                // fit"); lives in lib/fit.scad as the known H2C number
 mount_t     = 3.0;     // bracket thickness = the gap between the hatch and the fender minus a hair
@@ -154,7 +161,7 @@ end_pt   = arc_cen + arc_R * [cos(a_end), sin(a_end)];   // outer corner at the 
 // The socket block spans z = 0 .. -sock_h; the front plate hangs below the seam and carries
 // the pins on the world X axis once hatch_shift is applied.
 seam_z     = -sock_h;                                // socket / front plate seam
-front_bot  = -front_h - pin_below_lip - pin_edge;    // front plate's bottom edge
+front_bot  = -front_h - pin_below_lip - pin_y;       // front plate's bottom edge (the round's lowest point)
 pin_axis   = [pin_y, -front_h - pin_below_lip];      // (y, z) of the hinge axis in the plate frame
 hatch_shift = [0, -pin_axis[0], -pin_axis[1]];       // plate frame -> world (axis on X)
 echo(str("hinge axis ", pin_axis[0], " aft of the front face, ", pin_below_lip, " below the lip; front plate ",
@@ -265,7 +272,16 @@ module socket_block() {
 // The front plate: flat, y = 0 .. front_t, from the seam down to front_bot, with the rail on
 // top and a pin out of each side edge. Plate frame. Prints on its inner face (print_layout).
 module front_local() {
-    across(hatch_w) polygon([[0, front_bot], [front_t, front_bot], [front_t, seam_z], [0, seam_z]]);
+    // the band: a rectangle from the seam down to the axis, then a half-round of radius pin_y about the
+    // axis, clipped to the plate's thickness. Every point of the bottom is within pin_y of the axis, so
+    // the swinging front never reaches below its own pins into the skirt.
+    across(hatch_w) intersection() {
+        hull() {
+            translate(pin_axis) circle(r = pin_y);
+            polygon([[0, pin_axis[1]], [front_t, pin_axis[1]], [front_t, seam_z], [0, seam_z]]);
+        }
+        translate([0, front_bot - 1]) square([front_t, seam_z - front_bot + 1]);
+    }
     across(hatch_w) polygon(rail_2d());
     for (sx = [-1, 1]) translate([sx * hatch_w / 2, pin_axis[0], pin_axis[1]]) rotate([0, sx * 90, 0]) {
         cylinder(d = hinge_pin_d, h = pin_len - hinge_pin_d / 2);
