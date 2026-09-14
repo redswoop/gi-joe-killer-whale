@@ -31,7 +31,7 @@ its side-edge profile is traced off the fenders' inner top edges, which the clos
 ## Files
 | File | What |
 |---|---|
-| `whale_hatch.scad` | The model: `hatch()`, `front()`, `mounts()`, `bay_mock()`. |
+| `whale_hatch.scad` | The model: `hatch()`, `front()`, `mounts()`, `bay_mock()`; `show_detail` toggles the outer-face details. |
 | `viewer.json` | Part list for the browser viewer (`../../viewer`, `bun run dev`, open http://127.0.0.1:5180/whale/hatch/). |
 | `print_layout.scad` | `-D part="..."`: each part in its printing pose; `corner` is the cabin-end fit coupon. |
 | `check.scad` | Collision pairs; `../../tools/check.sh check.scad 'pose=..'`. Empty = clear. |
@@ -91,7 +91,14 @@ console echoes where the axis sits relative to the front face and the lip level.
 - Four small latch hooks on the side edges (two per side, ~14 % and ~48 % of the length from the cabin end),
   engaging the notched rails on the fenders. Not modelled yet.
 - Outer face: two perforated vent grilles near the cabin end, seven ribbed panels, "PANEL REMOVAL" /
-  "UNLATCH" / "RAMP ACCESS" labels. Cosmetic, not modelled yet.
+  "UNLATCH" / "RAMP ACCESS" labels. Modelled 2026-09-13 (`show_detail`, section "outer face details",
+  positions scaled off the straight-on eBay photo at 9.4 px/mm): grilles 30 x 12.5 at x = +-21, y = 78.9,
+  a 1.2 frame around a 0.3 recessed field with 1.0 through holes on a 2.5 staggered pitch, 5 rows; seven
+  panels in a 70.5 row centred at y = 30.6, 21 tall, 1.0 strips between them, each a 0.3 recess with
+  0.4 x 0.3 grooves along y at 1.2 pitch (the real ribs are finer than a nozzle); two 0.4 recessed bars at
+  y = 8.1..13.6 (x = -36..9.1 and 18.1..34.5). Every cut is a `surf_cut` / `surf_hole` mapped onto the arc
+  by `a_of_y`, so it prints on the side as layer-aligned steps (features along y) or perimeter notches
+  (along x). Labels are stickers on the real toy; not modelled. Latch hooks still not modelled.
 
 ## Hinge end (Armen 2026-09-13): the front is its own part, dovetailed to the plate
 Armen: "the entire front and hinge assembly should dovetail to the top ... then the front we can iterate on.
@@ -160,6 +167,8 @@ in frame.
 
 ## Open items
 - Dovetail clearance (`slide_clr`): coupon round 2 pending. Pins done.
+- Outer-face details are photo-scaled estimates; the corner coupon now carries the left grille's outer third
+  and the left bar, so the next print shows whether 0.3 recesses and 1.0 holes read on the side-printed face.
 - Cabin-end corners: angle (`top_cut_deg 30`), tab reach (`tab_w 4`) and the plate length (`end_y 97.1`)
   confirmed by the two corner coupons (2026-09-13). Not explicitly judged yet: the thickness over the tab
   (`tab_edge_t`, is the outer surface flush?) and the straight width between the tabs (`top_edge_w`); the

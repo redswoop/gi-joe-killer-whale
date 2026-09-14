@@ -36,6 +36,7 @@ show_all   = true;
 show_hull  = true;     // grey mock of the bay: floor + fenders, for the viewer only
 open_deg   = 0;        // animate: 0 = closed, ~115 = ramp lowered over the nose
 show_rim   = true;     // the tray rim on the inside face
+show_detail = true;    // vent grilles, ribbed panels and recessed bars on the outer face
 
 // ---------- plate ----------
 hatch_w    = 93.3;     // measured, WHALE/measurements.md "width of ramp"
@@ -68,6 +69,31 @@ lip_len    = 5;        // ledge reach past the plate's end, under the top hatch 
 // ---------- tray rim (inside face; PHOTO ESTIMATES) ----------
 rim_h      = 3;        // rim height above the plate's inner face (photo: shallow tray)
 rim_t      = 1.5;      // rim wall thickness
+
+// ---------- outer face details (eBay outer-face photo, 2026-09-13; scaled at 9.4 px/mm off the 93.3 width) ----------
+// Plan coordinates: x across (0 = centre), y along the plate from the front face, as plan_2d. Depths are
+// what a 0.4 nozzle prints cleanly with the hatch on its side (the outer face is a vertical wall then;
+// features along y are layer-aligned, features along x are traced in each perimeter).
+det_d      = 0.3;      // recess depth of a grille field / panel field
+vent_w     = 30;       // vent grille, outer size (x by y) and centre position, one each side
+vent_h     = 12.5;
+vent_x     = 21;
+vent_y     = 78.9;
+vent_frame = 1.2;      // raised border left around the recessed field
+vent_hole  = 1.0;      // through holes in the field, staggered grid
+vent_pitch = 2.5;
+vent_rows  = 5;
+panel_n    = 7;        // ribbed panels in a row across the plate
+panel_span = 70.5;     // outer width of the row, centred
+panel_h    = 21;       // panel height along y
+panel_y    = 30.6;     // row centre along y
+panel_gap  = 1.0;      // flat strip between neighbouring panels
+rib_pitch  = 1.2;      // grooves along y inside each panel (real ones are finer than a nozzle)
+rib_w      = 0.4;
+rib_d      = 0.3;      // groove depth below the panel field
+bar_y      = [8.1, 13.6];              // two recessed bars under the panels ("PANEL REMOVAL" strip)
+bar_x      = [[-36, 9.1], [18.1, 34.5]];
+bar_d      = 0.4;
 
 // ---------- angled cabin-end edges: rabbeted underneath, they rest on hull tabs (Armen 2026-09-13) ----------
 // The plan outline is six-sided: square hinge edge, two long sides, and two angled edges (top_cut_deg)
@@ -215,7 +241,10 @@ module plan_clip(inset = 0) { translate([0, 0, -100]) linear_extrude(300) plan_2
 //  parts
 // =====================================================================
 module hatch_plate() {                              // the 1.5 skin alone
-    intersection() { across(hatch_w) band_2d(arc_R, arc_R - hatch_t); plan_clip(); }
+    difference() {
+        intersection() { across(hatch_w) band_2d(arc_R, arc_R - hatch_t); plan_clip(); }
+        if (show_detail) surface_details();
+    }
 }
 
 // Ledge under the top hatch: a band lip_t thick, its top lip_drop below the outer surface,
@@ -243,6 +272,7 @@ module hatch_tray() {                               // skin + rim + socket block
         }
         across(hatch_w + 2) polygon(rail_2d(slide_clr, 1));   // the groove, open at both ends
         tab_rabbet();
+        if (show_detail) surface_details();
     }
 }
 
@@ -301,6 +331,42 @@ module front_body_2d() {
     polygon([[y0 + flange_ch, front_bot], [y1 - flange_ch, front_bot], [y1, front_bot + flange_ch],
              [y1, -front_h], [front_t, -front_h + front_in_step], [front_t, seam_z], [0, seam_z],
              [0, -front_h], [y0, -front_h], [y0, front_bot + flange_ch]]);
+}
+
+// ---- outer face details ----
+function a_of_y(y) = acos((y - arc_cen[0]) / arc_R);   // arc angle of the outer surface at plan y
+
+// A recess d deep into the outer surface over x in [x0, x1], plan y in [y0, y1]. Plate frame.
+module surf_cut(x0, x1, y0, y1, d) {
+    a0 = a_of_y(y0); a1 = a_of_y(y1);
+    translate([(x0 + x1) / 2, 0, 0]) across(x1 - x0)
+        polygon(concat(arc_seg(arc_R + 1, a0, a1, 6), arc_seg(arc_R - d, a1, a0, 6)));
+}
+// A round hole through the skin at plan (x, y), bored along the local normal.
+module surf_hole(x, y, d) {
+    a = a_of_y(y);
+    translate([x, arc_cen[0], arc_cen[1]]) rotate([a - 90, 0, 0])
+        translate([0, 0, arc_R - hatch_t - 1]) cylinder(d = d, h = hatch_t + 2, $fn = 16);
+}
+module surface_details() {
+    // vent grilles: recessed field inside a raised frame, staggered through holes
+    for (sx = [-1, 1]) {
+        fx0 = sx * vent_x - vent_w / 2 + vent_frame; fx1 = sx * vent_x + vent_w / 2 - vent_frame;
+        fy0 = vent_y - vent_h / 2 + vent_frame;      fy1 = vent_y + vent_h / 2 - vent_frame;
+        surf_cut(fx0, fx1, fy0, fy1, det_d);
+        rp = (fy1 - fy0 - 1) / (vent_rows - 1);
+        for (r = [0 : vent_rows - 1]) let (y = fy0 + 0.5 + r * rp, off = (r % 2) * vent_pitch / 2)
+            for (x = [fx0 + 1 + off : vent_pitch : fx1 - 1]) surf_hole(x, y, vent_hole);
+    }
+    // ribbed panels: each a recessed field with grooves along y
+    pw = (panel_span - (panel_n - 1) * panel_gap) / panel_n;
+    for (i = [0 : panel_n - 1]) let (x0 = -panel_span / 2 + i * (pw + panel_gap), x1 = x0 + pw) {
+        surf_cut(x0, x1, panel_y - panel_h / 2, panel_y + panel_h / 2, det_d);
+        for (x = [x0 + rib_pitch : rib_pitch : x1 - rib_pitch / 2])
+            surf_cut(x - rib_w / 2, x + rib_w / 2, panel_y - panel_h / 2 + 0.6, panel_y + panel_h / 2 - 0.6, det_d + rib_d);
+    }
+    // the two bars under the panels
+    for (b = bar_x) surf_cut(b[0], b[1], bar_y[0], bar_y[1], bar_d);
 }
 
 // One mount bracket, in its own frame: a plate in YZ, thickness along +X from x = 0,
