@@ -105,17 +105,18 @@ the front and fixes inside the hull.
   line at the plate's front corner and shave the groove's lip off; that bug is fixed).
 - **Front** (`front`): `hatch_w` wide, flat inner face, stepped outer face. Armen 2026-09-13: the real front
   is "2 x 10 mm sections: one flush with the top, then a 1 mm step, then another 10 mm drop where the hinges
-  are", about 1.5-2 thick. Here: the upper band (seam to lip level, with the socket block's face above it
-  making up `front_h 10`) is `front_t 4.0` thick because the rail needs it; below the lip the face steps back
-  `front_step 1` and the lower band (`front_band 10` tall) is a 3 mm flange ending in a half-round of radius
-  `flange_r 1.7` about the pin axis, tangent to its face. No point of the bottom is further than `flange_r`
-  from the axis, so the swinging front clears the skirt. 14.5 tall + the 2.5 rail. Its top edge carries the rail: `rail_h 2.5` up, `rail_neck 1.8`
+  are", about 1.5-2 thick, and the step goes OUT. Here: the upper band (seam to lip level, with the socket
+  block's face above it making up `front_h 10`) is `front_t 4.0` thick because the rail needs it; below the
+  lip the face steps out `front_step 1` and the lower band (`front_band 10` tall) ends in a half-round of
+  radius `flange_r 3.7` about the pin axis, tangent to its face. The inner face stays flat for printing, so
+  that lower band is 5 thick, not 2; only its face and the step show. No point of the bottom is further
+  than `flange_r` from the axis, so the swinging front clears the skirt. 14.5 tall + the 2.5 rail. Its top edge carries the rail: `rail_h 2.5` up, `rail_neck 1.8`
   thick where it leaves the plate, widening by `rail_taper 1.2` toward the OUTER face. One-sided dovetail: the
   inner face is flat so the front prints on that face with no overhang and the taper is a top-side slope.
   Round 1 of the coupon (rail 1.2 / 1.2 / 1.0, plate 3.5, clearances 0.1 / 0.15 / 0.25 per face) was far too
   loose everywhere, so the rail doubled on 2026-09-13; `slide_clr` is 0 until round 2 says otherwise.
   Pins `hinge_pin_d 2.6` x `pin_len 3.5` straight out of the side edges, axis `pin_y` = 2.7 aft of the outer
-  face (so they lie on the bed) and `pin_below_lip` = `front_band - flange_r` = 8.3 below the lip level.
+  face (so they lie on the bed) and `pin_below_lip` = `front_band - flange_r` = 6.3 below the lip level.
   `rail_2d(g, ext)` gives the profile, grown by `g` for the groove (`slide_clr` per face; negative = interference).
 - **Mounts** (`mounts`, print `mount.stl` twice): a `mount_len 14` x `mount_h 10` x `mount_t 3.0` plate with a
   `hinge_pin_d + pin_clr` hole (`pin_clr = fit_pin_clr()` = 0.3 on the diameter, coupon 2026-09-13: "perfect fit") `mount_hole_back 5` from its front edge and `mount_hole_up 4` above its
@@ -142,7 +143,7 @@ the front and fixes inside the hull.
    Report which slide is snug-but-moving; write back `slide_clr`.
 2. `stl/hatch.stl` ON ITS SIDE: the +X side face on the bed, footprint 23.8 x 101.7, 93.3 tall. Brim. Arc,
    front face and groove are traced in every layer.
-3. `stl/front.stl` flat on its inner face, 100.3 x 17.0 x 4.0, pins lying on the bed, the step a top-side ledge.
+3. `stl/front.stl` flat on its inner face, 100.3 x 17.0 x 5.0, pins lying on the bed, the proud lower band on top.
 4. `stl/mount.stl` x2, flat, 14 x 10 x 3.
 - Fit checks: curve flush with the fender edges and the front face flush with their 10 mm front drop; the
   front slides in and stays; brackets fit the fender gap (`mount_t`); the pin height that lets the ramp open
