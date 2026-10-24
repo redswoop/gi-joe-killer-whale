@@ -6,7 +6,7 @@ Project memory for the G.I. Joe Killer W.H.A.L.E. toy repo. Loaded automatically
 
 - One repo for the whole toy, one subfolder per assembly: `shroud/` (fan shroud + vanes), `hatch/` (bow ramp), `windscreen/`. Toy-level `README.md` has the state table.
 - Public on GitHub since 2026-09-13: https://github.com/redswoop/gi-joe-killer-whale (MIT, remote `origin`, branch `main`). Push with plain `git push` from `whale/`. `shroud/MAKERWORLD.md` holds the listing text.
-- Shared modules are used by name (`use <armenscad/shape.scad>`), resolved through the workbench's OPENSCADPATH/user-library symlink; the vendored `whale/lib/` copy was removed 2026-10-24. The public README tells readers to clone scad-workbench and run `tools/install-lib.sh`. `shroud/build_makerworld.py` reads the lib from `$ARMENSCAD_LIB` or the symlink.
+- Shared modules are used by name (`use <armenscad/shape.scad>`), resolved through the workbench's OPENSCADPATH/user-library symlink; the vendored `whale/lib/` copy was removed 2026-10-24. The public README tells readers to install the armenscad plugin (or clone it) and run `armenscad install`. `shroud/build_makerworld.py` reads the lib from `$ARMENSCAD_LIB` or the symlink.
 - Viewer: `armenscad browse .` here lists shroud/hatch/windscreen at http://127.0.0.1:5180/<name>/ (from `projects/` they are /gi_joe/whale/<name>/).
 
 ## Hull (teardown 2026-09-13)

@@ -4,8 +4,8 @@ Open-source (MIT) OpenSCAD replacement parts for the 1984 G.I. Joe Killer W.H.A.
 On Makerworld: [cannon covers](https://makerworld.com/en/models/690907-gi-joe-killer-whale-cannon-covers); fan shroud listing in progress (`shroud/MAKERWORLD.md`).
 
 ## Building
-Needs OpenSCAD 2025+ (Manifold backend). Shared helpers come from the scad-workbench library (https://github.com/redswoop/armenscad, `lib/armenscad/`),
-used as `use <armenscad/shape.scad>`; clone it and run its `tools/install-lib.sh` once so OpenSCAD finds it. Each assembly's `export.sh` regenerates its `stl/`; `print_layout.scad -D part="..."`
+Needs OpenSCAD 2025+ (Manifold backend). Shared helpers come from the armenscad workbench (https://github.com/redswoop/armenscad, `lib/armenscad/`),
+used as `use <armenscad/shape.scad>`; install it (`/plugin install armenscad --marketplace redswoop/armenscad`, then `armenscad install`) so OpenSCAD finds it. Each assembly's `export.sh` regenerates its `stl/`; `print_layout.scad -D part="..."`
 gives one part in its print pose; `check.scad` runs the collision pairs. Everything else below is workbench
 convention (the viewer and `tools/` are not part of this repo).
 
