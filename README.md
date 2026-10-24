@@ -4,7 +4,7 @@ Open-source (MIT) OpenSCAD replacement parts for the 1984 G.I. Joe Killer W.H.A.
 On Makerworld: [cannon covers](https://makerworld.com/en/models/690907-gi-joe-killer-whale-cannon-covers); fan shroud listing in progress (`shroud/MAKERWORLD.md`).
 
 ## Building
-Needs OpenSCAD 2025+ (Manifold backend). Shared helpers come from the scad-workbench library (https://github.com/redswoop/scad-workbench, `lib/armenscad/`),
+Needs OpenSCAD 2025+ (Manifold backend). Shared helpers come from the scad-workbench library (https://github.com/redswoop/armenscad, `lib/armenscad/`),
 used as `use <armenscad/shape.scad>`; clone it and run its `tools/install-lib.sh` once so OpenSCAD finds it. Each assembly's `export.sh` regenerates its `stl/`; `print_layout.scad -D part="..."`
 gives one part in its print pose; `check.scad` runs the collision pairs. Everything else below is workbench
 convention (the viewer and `tools/` are not part of this repo).
@@ -29,5 +29,5 @@ Reference material outside this repo: `../../WHALE/` (measurements, the small to
 Adding an assembly: `armenscad init <name>` here copies the template into a new subfolder
 (it does not run `git init` inside an existing repo).
 
-History: `shroud/` was the `scad/whale/` repo until 2026-09-12; `hatch/` was a separate `scad/whale_hatch/`
+History: `shroud/` was the `projects/gi_joe/whale/` repo until 2026-09-12; `hatch/` was a separate `projects/gi_joe/whale_hatch/`
 repo, merged in with `git subtree add` so its commits are here too.

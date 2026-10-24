@@ -7,7 +7,7 @@ Project memory for the G.I. Joe Killer W.H.A.L.E. toy repo. Loaded automatically
 - One repo for the whole toy, one subfolder per assembly: `shroud/` (fan shroud + vanes), `hatch/` (bow ramp), `windscreen/`. Toy-level `README.md` has the state table.
 - Public on GitHub since 2026-09-13: https://github.com/redswoop/gi-joe-killer-whale (MIT, remote `origin`, branch `main`). Push with plain `git push` from `whale/`. `shroud/MAKERWORLD.md` holds the listing text.
 - Shared modules are used by name (`use <armenscad/shape.scad>`), resolved through the workbench's OPENSCADPATH/user-library symlink; the vendored `whale/lib/` copy was removed 2026-10-24. The public README tells readers to clone scad-workbench and run `tools/install-lib.sh`. `shroud/build_makerworld.py` reads the lib from `$ARMENSCAD_LIB` or the symlink.
-- Viewer: `armenscad browse .` here lists shroud/hatch/windscreen at http://127.0.0.1:5180/<name>/ (from the scad/ root they are /whale/<name>/).
+- Viewer: `armenscad browse .` here lists shroud/hatch/windscreen at http://127.0.0.1:5180/<name>/ (from `projects/` they are /gi_joe/whale/<name>/).
 
 ## Hull (teardown 2026-09-13)
 
@@ -23,7 +23,7 @@ Why: Armen wanted to learn OpenSCAD by rebuilding a known part; explain construc
 
 State as of 2026-09-12 (see `shroud/README.md` for files, frame, assembly, "Print next"): tab settled by two coupons (tab_grip 0.7, tab_stem_extra 0.2), strut mount is ears-in-pockets (v4), hinge_clr 0.15. Armen prints in Bambu olive green. Next: hinge coupon round 3 (hinge 0.25/0.30/0.35, ear pockets, keyhole, bullet pins), then the full shroud and strut.
 
-FAN (2026-09-12): `fan()` + `shaft()` in shroud.scad replace the old web mesh (`GI_Joe_Killer_Whale_Blade.stl`, "terrible"). Wedge blades (flat bottom, blade_pitch top) print flat; D-section shaft prints on its flat; its tip is a screwdriver-style BLADE (2.8 x 1.2 x 3, convex rounded shoulders 2 long) keying into a slot in the gear's socket; fit the gear on the first print. Blades: two Bezier edges starting on the hub circle, rounded lofted section, capped thickness; Armen wants svelte, sharp, swept; tip 3 mm from the strut bosses (fan_tip_clr). Tip r follows the strut boss (39.6; the mesh's 42.6 hits the bosses). Open: blade_hand (gearbox direction), shaft_extra (mesh's 65 mm is too short), shaft_clr. Spin box out of scope.
+FAN (2026-09-12): `fan()` + `shaft()` in shroud.scad replace the old web mesh (`projects/_loose/GI_Joe_Killer_Whale_Blade.stl`, "terrible"). Wedge blades (flat bottom, blade_pitch top) print flat; D-section shaft prints on its flat; its tip is a screwdriver-style BLADE (2.8 x 1.2 x 3, convex rounded shoulders 2 long) keying into a slot in the gear's socket; fit the gear on the first print. Blades: two Bezier edges starting on the hub circle, rounded lofted section, capped thickness; Armen wants svelte, sharp, swept; tip 3 mm from the strut bosses (fan_tip_clr). Tip r follows the strut boss (39.6; the mesh's 42.6 hits the bosses). Open: blade_hand (gearbox direction), shaft_extra (mesh's 65 mm is too short), shaft_clr. Spin box out of scope.
 
 ### Vane mechanism (section "vane mechanism" in shroud.scad)
 
