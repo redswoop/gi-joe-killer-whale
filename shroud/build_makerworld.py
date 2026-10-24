@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Flatten the model into one self-contained file for MakerWorld's Parametric Model Maker (single file, OpenSCAD 2021.01):
-   ../lib/shape.scad + ../lib/fit.scad + shroud.scad + the print poses from print_layout.scad, with a `part` selector and
+   armenscad/shape.scad + armenscad/fit.scad + shroud.scad + the print poses from print_layout.scad, with a `part` selector and
    a curated set of customizer parameters at the top (everything else is under [Hidden]). Output: shroud_makerworld.scad.
-   Re-run after any change to shroud.scad, print_layout.scad or ../lib/."""
+   Re-run after any change to shroud.scad, print_layout.scad or the armenscad lib."""
 import re, pathlib
 here = pathlib.Path(__file__).parent
-lib = (here / "../lib/shape.scad").read_text() + "\n" + (here / "../lib/fit.scad").read_text()
+import os
+# the shared library: $ARMENSCAD_LIB, else OpenSCAD's user library symlink made by tools/install-lib.sh
+libdir = pathlib.Path(os.environ.get("ARMENSCAD_LIB") or pathlib.Path.home() / "Documents/OpenSCAD/libraries/armenscad")
+lib = (libdir / "shape.scad").read_text() + "\n" + (libdir / "fit.scad").read_text()
 model = (here / "shroud.scad").read_text()
 layout = (here / "print_layout.scad").read_text()
 

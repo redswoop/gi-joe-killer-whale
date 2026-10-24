@@ -198,8 +198,8 @@ fender_w   = 30;
 $fn = 96;
 eps = 0.01;
 
-use <../lib/shape.scad>
-use <../lib/fit.scad>
+use <armenscad/shape.scad>
+use <armenscad/fit.scad>
 
 // =====================================================================
 //  geometry helpers

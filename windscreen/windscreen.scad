@@ -63,8 +63,8 @@ $fn = 48;
 eps = 0.01;
 BIG = 500;          // "infinite" half-space size
 
-use <../lib/shape.scad>
-use <../lib/fit.scad>
+use <armenscad/shape.scad>
+use <armenscad/fit.scad>
 
 // ---------- derived ----------
 rake   = side_top - side_bot;             // front leans away from the opening by this over `height`
